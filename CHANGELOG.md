@@ -1,5 +1,11 @@
 # Changelog
 
+
+## [1.10.0] - 2024-11-27
+### Added
+- Former nexus3-pro role (based on the ThoTeam/nexus-oss role) has been added to this collection.
+Note that this is only temporarily until their features are covered in new roles.
+
 ## [1.9.1] - 2024-11-25
 ### Added
 - Molecule Nexus Pro scenario
