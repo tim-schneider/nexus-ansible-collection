@@ -32,7 +32,8 @@ Example how to add it to your playboks:
     - cloudkrafter.nexus
 
   roles:
-    - role: cloudkrafter.nexus.config_api
+    - role: cloudkrafter.nexus.nexus_oss # (fork of thoteam/nexus3-oss)
+    - role: cloudkrafter.nexus.config_api # Only use this role if you know what you're doing.
 ```
 
 ## [v1.8.0] - 2024-11-21

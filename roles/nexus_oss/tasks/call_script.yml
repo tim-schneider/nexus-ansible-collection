@@ -17,18 +17,18 @@
         validate_certs: "{{ nexus_api_validate_certs }}"
         body: "{{ call_args | to_json }}"
       register: script_run
-      failed_when: script_run | nexus_groovy_error | bool
-      changed_when: script_run | nexus_groovy_changed | bool
+      failed_when: script_run | cloudkrafter.nexus.nexus_groovy_error | bool
+      changed_when: script_run | cloudkrafter.nexus.nexus_groovy_changed | bool
 
     - name: Details about run script if verbose mode is on
       ansible.builtin.debug:
-        msg: "{{ script_run | nexus_groovy_details }}"
+        msg: "{{ script_run | cloudkrafter.nexus.nexus_groovy_details }}"
         verbosity: 1
       when: not ansible_check_mode
 
   rescue:
     - name: Handle script failure with debugging
-      when: script_run | nexus_groovy_details == 'Global script failure'
+      when: script_run | cloudkrafter.nexus.nexus_groovy_details == 'Global script failure'
       block:
         - name: Debug script result for global fail
           ansible.builtin.debug:
@@ -42,7 +42,7 @@
 
     - name: Debug script result for failed script actions
       ansible.builtin.debug:
-        msg: "{{ script_run | nexus_groovy_details }}"
+        msg: "{{ script_run | cloudkrafter.nexus.nexus_groovy_details }}"
 
     - name: Script action failure
       ansible.builtin.fail:
