@@ -1,4 +1,17 @@
 ---
+- name: Remove license
+  ansible.builtin.uri:
+    url: "{{ nexus_protocol }}://{{ nexus_hostname }}:{{ nexus_port }}/service/rest/v1/system/license"
+    method: DELETE
+    validate_certs: false
+    user: "{{ nexus_admin_username }}"
+    password: "{{ nexus_admin_password }}"
+    force_basic_auth: true
+    status_code: 204
+  when: not nexus_enable_pro_version
+  changed_when: true
+  tags: license
+
 - name: Get license information
   ansible.builtin.uri:
     url: "{{ nexus_protocol }}://{{ nexus_hostname }}:{{ nexus_port }}/service/rest/v1/system/license"
@@ -11,6 +24,12 @@
   register: __nexus_license_info__
   tags: license
 
+# Set fact to determine if we running pro already or nor
+- name: Set fact to determine if we're running pro version
+  ansible.builtin.set_fact:
+    nexus_pro_version: "{{ __nexus_license_info__.json.effectiveDate is defined | bool }}"
+  tags: license
+
 # Nexus API expects a license file in binary format to be uploaded
 # So we need to decode the base64 encoded license string into a file
 - name: Create license file
@@ -19,8 +38,7 @@
     dest: "nexus.lic"
     mode: "0644"
   register: __license_status__
-  # TODO: Need a fact to detmerine if we're already on pro version or not
-  when: nexus_enable_pro and (__nexus_license_info__.json.effectiveDate is not defined) and (lookup('env', 'NEXUS_LICENSE_B64') or nexus_license_b64)
+  when: nexus_enable_pro_version and (not nexus_pro_version) and (lookup('env', 'NEXUS_LICENSE_B64') or nexus_license_b64)
   tags: license
 
 - name: Upload license file through API
@@ -37,8 +55,7 @@
     src: "nexus.lic"
     status_code: 200
   register: __uploaded_license__
-  # TODO: Need a fact to detmerine if we're already on pro version or not
-  when: nexus_enable_pro and (__nexus_license_info__.json.effectiveDate is not defined) and (lookup('env', 'NEXUS_LICENSE_B64') or nexus_license_b64)
+  when: nexus_enable_pro_version and (not nexus_pro_version) and (lookup('env', 'NEXUS_LICENSE_B64') or nexus_license_b64)
   tags: license
 
 # After uploading the license file, we can remove it from the file system
@@ -46,18 +63,4 @@
   ansible.builtin.file:
     path: "nexus.lic"
     state: absent
-  tags: license
-
-- name: Remove license
-  ansible.builtin.uri:
-    url: "{{ nexus_protocol }}://{{ nexus_hostname }}:{{ nexus_port }}/service/rest/v1/system/license"
-    method: DELETE
-    validate_certs: false
-    user: "{{ nexus_admin_username }}"
-    password: "{{ nexus_admin_password }}"
-    force_basic_auth: true
-    status_code: 204
-  # TODO: Need a fact to detmerine if we're already on pro version or not
-  when: not nexus_enable_pro and __nexus_license_info__.json.effectiveDate is defined
-  changed_when: true
   tags: license

@@ -1,8 +1,11 @@
 # Changelog
 ## [1.10.2] - 2024-11-29
 ### Added
-- Cleanup policies are now backwards compatible with the nexus_oss role.
+- **config_api** Cleanup policies are now backwards compatible with the nexus_oss role.
   Added a new filter to normalize the cleanup policies API payload. No need to rewrite/transform your `nexus_repos_cleanup_policies` definition when using the config_api role.
+
+### Changed
+- **config_api** `nexus_enable_pro` variable has be renamed to `nexus_enable_pro_version` to be compatible with nexus_oss role.
 
 ## [1.10.1] - 2024-11-28
 ### Added

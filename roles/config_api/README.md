@@ -18,7 +18,7 @@ To make this role work out-of-the-box you have to provide the following values f
 - `nexus_admin_password:`
 
 If you want to enable the Pro features, please note that you have to provide your own license.
-If your Nexus instance is already running on the Pro version, you still need the `nexus_enable_pro` set to true, to execute the tasks that are compatible with Nexus Pro.
+If your Nexus instance is already running on the Pro version, you still need the `nexus_enable_pro_version` set to true, otherwise it will remove your license!
 
 Role Variables
 --------------
@@ -31,7 +31,7 @@ nexus_hostname: localhost
 nexus_port: 8081
 nexus_admin_username: admin
 nexus_admin_password: changeme
-nexus_enable_pro: false
+nexus_enable_pro_version: false
 
 nexus_repos_cleanup_policies: []
 

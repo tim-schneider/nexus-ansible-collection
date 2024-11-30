@@ -10,8 +10,7 @@
 
 - name: Include user-tokens-api
   ansible.builtin.include_tasks: user-tokens-api.yml
-  # TODO: Need a fact to detmerine if we're already on pro version or not
-  when: nexus_enable_pro | bool
+  when: nexus_pro_version | bool
   tags: user-tokens
 
 - name: Include ssl-truststore-api
@@ -28,6 +27,7 @@
 
 - name: Include cleanup-policies-tasks
   ansible.builtin.include_tasks: cleanup-policies-tasks.yml
+  when: nexus_pro_version | bool
   tags: cleanup-policies
 
 ########### Blobstores ###########
