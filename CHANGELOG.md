@@ -1,4 +1,15 @@
 # Changelog
+## [1.10.2] - 2024-11-29
+### Added
+- Cleanup policies are now backwards compatible with the nexus_oss role.
+  Added a new filter to normalize the cleanup policies API payload. No need to rewrite/transform your `nexus_repos_cleanup_policies` definition when using the config_api role.
+
+## [1.10.1] - 2024-11-28
+### Added
+- Nothing added
+
+### Fixed
+- plugin filter for nexus_oss role works as expected
 
 
 ## [1.10.0] - 2024-11-27
