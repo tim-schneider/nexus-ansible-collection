@@ -1,10 +1,10 @@
-nexus3_config_api
+cloudkrafter.nexus.config_api
 =========
 
-[![Dynamic JSON Badge](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fgalaxy.ansible.com%2Fapi%2Fv1%2Froles%2F%3Fname%3Dnexus3_config_api%26namespace%3Dcloudkrafter%26page_size%3D1&query=%24.results.%5B0%5D.download_count&label=Galaxy%20Downloads)](https://galaxy.ansible.com/ui/standalone/roles/cloudkrafter/nexus3_config_api/)
+[![Dynamic JSON Badge](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fgalaxy.ansible.com%2Fapi%2Fv3%2Fplugin%2Fansible%2Fcontent%2Fpublished%2Fcollections%2Findex%2Fcloudkrafter%2Fnexus%2F&query=%24.download_count&label=Galaxy%20Downloads)](https://galaxy.ansible.com/ui/repo/published/cloudkrafter/nexus/)
 
 
-Ansible role to configure Nexus3 with Config as Code.
+Ansible role to configure Nexus Repository Manager with Config as Code.
 
 Requirements
 ------------
