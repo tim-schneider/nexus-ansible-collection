@@ -1,4 +1,9 @@
 ---
+- name: Normalize nexus_anonymous_access configuration
+  ansible.builtin.set_fact:
+    nexus_anonymous_access_normalized: "{{ nexus_anonymous_access | cloudkrafter.nexus.normalize_anonymous_access }}"
+  tags: security-anonymous-access
+
 - name: Get status of Anonymous Access configuration
   ansible.builtin.uri:
     url: "{{ nexus_protocol }}://{{ nexus_hostname }}:{{ nexus_port }}/service/rest/v1/security/anonymous"
@@ -21,7 +26,7 @@
 
 - name: Set fact for desired_nexus_anonymous_config
   ansible.builtin.set_fact:
-    desired_nexus_anonymous_config: "{{ nexus_anonymous_access | dict2items | sort(attribute='key') | items2dict }}"
+    desired_nexus_anonymous_config: "{{ nexus_anonymous_access_normalized | dict2items | sort(attribute='key') | items2dict }}"
   tags: security-anonymous-access
 
 - name: Configure Anonymous Access

@@ -963,7 +963,7 @@ nexus_user_tokens_capability:
   expirationDays: 30
 
 nexus_anonymous_access:
-  enabled: true
+  enabled: false
   userId: anonymous
   realmName: NexusAuthorizingRealm
 

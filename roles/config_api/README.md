@@ -26,13 +26,27 @@ Role Variables
 <!-- A description of the settable variables for this role should go here, including any variables that are in defaults/main.yml, vars/main.yml, and any variables that can/should be set via parameters to the role. Any variables that are read from other roles and/or the global scope (ie. hostvars, group vars, etc.) should be mentioned here as well. -->
 
 ### defaults file for nexus3-config-as-code
+```yaml
 nexus_protocol: http
 nexus_hostname: localhost
 nexus_port: 8081
 nexus_admin_username: admin
 nexus_admin_password: changeme
 nexus_enable_pro_version: false
+```
 
+#### Anonymous Access
+A note on setting the `nexus_anonymous_access` variable. This variable is backwards compatible with the `nexus_anonymous_access` variable used in the nexus_oss role. Meaning you don't have to change this value to make it work. However, when enabling anonymous access through the API, Nexus expects an username and realm to be provied as well. By default this will be the **anonymous** user and the **NexusAuthorizingRealm**.
+If you want to change this, provide these options as following:
+
+```yaml
+nexus_anonymous_access:
+  enabled: true
+  userId: anonymous
+  realmName: NexusAuthorizingRealm
+```
+
+```yaml
 nexus_repos_cleanup_policies: []
 
 nexus_config_maven: true
@@ -100,6 +114,7 @@ nexus_repos_maven_proxy: []
 nexus_repos_maven_group: []
 
 nexus_routing_rules: []
+```
 
 If you set `nexus_enable_pro` to `true`, you must provide a base64 encoded license file
 
