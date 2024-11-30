@@ -116,7 +116,7 @@ nexus_repos_maven_group: []
 nexus_routing_rules: []
 ```
 
-If you set `nexus_enable_pro` to `true`, you must provide a base64 encoded license file
+If you set `nexus_enable_pro_version` to `true`, you must provide a base64 encoded license file
 
 Either by setting the `NEXUS_LICENSE_B64` environment variable or by providing the base64 encoded license string directly below.
 `nexus_license_b64: <your Nexus .lic license file encoded into a base64 string>`
