@@ -135,7 +135,7 @@ nexus_repos_maven_proxy: []
 
 nexus_repos_maven_group: []
 
-nexus_routing_rules: []
+nexus_repos_routing_rules: []
 ```
 
 

@@ -1772,7 +1772,7 @@ nexus_repos_maven_group:
         - maven-proxy-2
         - maven-central
 
-nexus_routing_rules:
+nexus_repos_routing_rules:
   - name: routing-rule-block-nmap
     description: routing-rule-1
     mode: BLOCK

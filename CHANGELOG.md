@@ -31,6 +31,7 @@
 
 ### Changed
 - **config_api** `nexus_enable_pro` variable has be renamed to `nexus_enable_pro_version` to be compatible with nexus_oss role.
+- **config_api** `nexus_routing_rules` variable has be renamed to `nexus_repos_routing_rules` to be compatible with nexus_oss role.
 
 ---
 ### Summary of Actions
@@ -40,7 +41,8 @@
    - All legacy configurations will be normalized automatically.
 2. **LDAP Connections:** While legacy LDAP connection definitions are supported, it’s a good opportunity to transition to the new API-compatible format to future-proof your setup.
 3. **Security Realms:** Our recommendation is to configure security realms using the `config_api` role and not using the `nexus_oss` role.
-4. **No Manual Changes Needed:** This update ensures seamless compatibility, so you can upgrade with confidence.
+4. **Change routing rules variable:** Change `nexus_routing_rules` to `nexus_repos_routing_rules`
+5. **Change nexus Pro variable:** Change `nexus_enable_pro` to `nexus_enable_pro_version`
 
 ## [1.10.1] - 2024-11-28
 ### Added
