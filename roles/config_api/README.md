@@ -41,6 +41,17 @@ nexus_admin_password: changeme
 nexus_enable_pro_version: false
 ```
 
+#### Note on compatibility with the nexus_oss role
+Most of the variables in this role are the same as the variables used in the `nexus_oss` role.
+This is intentionally to help facilitating the migration process where the _provisional_ and _configuration_ tasks will be separated.
+
+This role also aims to stick with the API definitions as described in the Nexus API reference.
+Meaning the format of all dictionaries, lists, strings etc. will be in line with the API requirements.
+
+To maintain compatibility with the values set previously if you are using the `nexus_oss` role, all payloads to the API will be transformed and mapped accorindly a.k.a normalized.
+
+Eventually the `nexus_oss` role will not be handling tasks to create, update or delete Nexus assets suchs as; repositories, local users, cleanup policies, routing rules, content selectors, security realms, roles, privileges etc.. That will be handled by this role.
+
 #### Anonymous Access
 A note on setting the `nexus_anonymous_access` variable. This variable is backwards compatible with the `nexus_anonymous_access` variable used in the nexus_oss role. Meaning you don't have to change this value to make it work. However, when enabling anonymous access through the API, Nexus expects an username and realm to be provided as well. By default this will be the **anonymous** user and the **NexusAuthorizingRealm**.
 If you want to change this, provide these options as following:
@@ -68,8 +79,22 @@ However, if you define the `nexus_security_realms` with any realm other than `Ne
 
 Our recommendation is to configure security realms using this role and not using the nexus_oss role.
 
+#### Cleanup Policies
 ```yaml
 nexus_repos_cleanup_policies: []
+```
+
+#### Routing Rules
+```yaml
+nexus_repos_routing_rules: []
+```
+
+#### Local Users
+````yaml
+nexus_local_users: []
+````
+
+#### Other
 
 nexus_config_maven: true
 
@@ -135,7 +160,6 @@ nexus_repos_maven_proxy: []
 
 nexus_repos_maven_group: []
 
-nexus_repos_routing_rules: []
 ```
 
 
