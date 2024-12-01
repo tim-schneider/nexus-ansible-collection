@@ -46,7 +46,7 @@
 # TODO: Normalize payloads
 - name: Get all repositories
   ansible.builtin.uri:
-    url: "{{ nexus_protocol }}://{{ nexus_hostname }}:{{ nexus_port }}/service/rest/v1/repositorySettings"
+    url: "{{ nexus_api_scheme }}://{{ nexus_hostname }}:{{ nexus_api_port }}/service/rest/v1/repositorySettings"
     method: GET
     validate_certs: false
     status_code: 200

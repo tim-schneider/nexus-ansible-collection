@@ -1,7 +1,7 @@
 ---
 - name: Get status of User tokens capability
   ansible.builtin.uri:
-    url: "{{ nexus_protocol }}://{{ nexus_hostname }}:{{ nexus_port }}/service/rest/v1/security/user-tokens"
+    url: "{{ nexus_api_scheme }}://{{ nexus_hostname }}:{{ nexus_api_port }}/service/rest/v1/security/user-tokens"
     method: GET
     validate_certs: false
     user: "{{ nexus_admin_username }}"
@@ -26,7 +26,7 @@
 
 - name: Configure User tokens capability
   ansible.builtin.uri:
-    url: "{{ nexus_protocol }}://{{ nexus_hostname }}:{{ nexus_port }}/service/rest/v1/security/user-tokens"
+    url: "{{ nexus_api_scheme }}://{{ nexus_hostname }}:{{ nexus_api_port }}/service/rest/v1/security/user-tokens"
     method: PUT
     validate_certs: false
     user: "{{ nexus_admin_username }}"

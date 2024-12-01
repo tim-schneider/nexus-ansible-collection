@@ -12,9 +12,9 @@ Requirements
 This role has been tested with Nexus Repository Manager OSS and Pro version 3.73 and higher.
 To make this role work out-of-the-box you have to provide the following values first:
 
-- `nexus_protocol:`
-- `nexus_hostname:`
-- `nexus_port:`
+- `nexus_api_scheme:`
+- `nexus_api_hostname:`
+- `nexus_api_port:`
 - `nexus_admin_username:`
 - `nexus_admin_password:`
 
@@ -33,9 +33,9 @@ Role Variables
 
 ### defaults file for nexus3-config-as-code
 ```yaml
-nexus_protocol: http
-nexus_hostname: localhost
-nexus_port: 8081
+nexus_api_scheme: http
+nexus_api_hostname: localhost
+nexus_api_port: 8081
 nexus_admin_username: admin
 nexus_admin_password: changeme
 nexus_enable_pro_version: false

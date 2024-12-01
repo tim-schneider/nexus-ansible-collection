@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.10.3] - 2024-12-01
+
+## Changed
+- **config_api** `nexus_protocol` variable has be renamed to `nexus_api_scheme` to be compatible with nexus_oss role.
+- **config_api** `nexus_hostname` variable has be renamed to `nexus_api_hostname` to be compatible with nexus_oss role.
+- **config_api** `nexus_port` variable has be renamed to `nexus_api_port` to be compatible with nexus_oss role.
+
 ## [1.10.2] - 2024-11-30
 
 ### Added

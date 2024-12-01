@@ -1,6 +1,6 @@
 - name: Get all Roles
   ansible.builtin.uri:
-    url: "{{ nexus_protocol }}://{{ nexus_hostname }}:{{ nexus_port }}/service/rest/v1/security/roles"
+    url: "{{ nexus_api_scheme }}://{{ nexus_hostname }}:{{ nexus_api_port }}/service/rest/v1/security/roles"
     method: GET
     validate_certs: false
     status_code: 200

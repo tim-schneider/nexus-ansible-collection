@@ -1,7 +1,7 @@
 ---
 - name: Remove license
   ansible.builtin.uri:
-    url: "{{ nexus_protocol }}://{{ nexus_hostname }}:{{ nexus_port }}/service/rest/v1/system/license"
+    url: "{{ nexus_api_scheme }}://{{ nexus_hostname }}:{{ nexus_api_port }}/service/rest/v1/system/license"
     method: DELETE
     validate_certs: false
     user: "{{ nexus_admin_username }}"
@@ -14,7 +14,7 @@
 
 - name: Get license information
   ansible.builtin.uri:
-    url: "{{ nexus_protocol }}://{{ nexus_hostname }}:{{ nexus_port }}/service/rest/v1/system/license"
+    url: "{{ nexus_api_scheme }}://{{ nexus_hostname }}:{{ nexus_api_port }}/service/rest/v1/system/license"
     method: GET
     validate_certs: false
     user: "{{ nexus_admin_username }}"
@@ -43,7 +43,7 @@
 
 - name: Upload license file through API
   ansible.builtin.uri:
-    url: "{{ nexus_protocol }}://{{ nexus_hostname }}:{{ nexus_port }}/service/rest/v1/system/license"
+    url: "{{ nexus_api_scheme }}://{{ nexus_hostname }}:{{ nexus_api_port }}/service/rest/v1/system/license"
     method: POST
     validate_certs: false
     user: "{{ nexus_admin_username }}"

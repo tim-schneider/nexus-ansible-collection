@@ -11,7 +11,7 @@
 
 - name: Get full details of each {{ type }} blobstore
   ansible.builtin.uri:
-    url: "{{ nexus_protocol }}://{{ nexus_hostname }}:{{ nexus_port }}/service/rest/v1/blobstores/{{ type | lower }}/{{ blobstore.name }}"
+    url: "{{ nexus_api_scheme }}://{{ nexus_hostname }}:{{ nexus_api_port }}/service/rest/v1/blobstores/{{ type | lower }}/{{ blobstore.name }}"
     method: GET
     validate_certs: false
     user: "{{ nexus_admin_username }}"
@@ -52,7 +52,7 @@
 
 - name: Create {{ type }} blobstores
   ansible.builtin.uri:
-    url: "{{ nexus_protocol }}://{{ nexus_hostname }}:{{ nexus_port }}/service/rest/v1/blobstores/{{ type | lower }}"
+    url: "{{ nexus_api_scheme }}://{{ nexus_hostname }}:{{ nexus_api_port }}/service/rest/v1/blobstores/{{ type | lower }}"
     method: POST
     validate_certs: false
     user: "{{ nexus_admin_username }}"
@@ -104,7 +104,7 @@
 
 - name: Update {{ type }} blobstores
   ansible.builtin.uri:
-    url: "{{ nexus_protocol }}://{{ nexus_hostname }}:{{ nexus_port }}/service/rest/v1/blobstores/{{ type | lower }}/{{ blobstore.name }}"
+    url: "{{ nexus_api_scheme }}://{{ nexus_hostname }}:{{ nexus_api_port }}/service/rest/v1/blobstores/{{ type | lower }}/{{ blobstore.name }}"
     method: PUT
     validate_certs: false
     user: "{{ nexus_admin_username }}"
@@ -134,7 +134,7 @@
 
 - name: Delete {{ type }} blobstores
   ansible.builtin.uri:
-    url: "{{ nexus_protocol }}://{{ nexus_hostname }}:{{ nexus_port }}/service/rest/v1/blobstores/{{ blobstore.name }}"
+    url: "{{ nexus_api_scheme }}://{{ nexus_hostname }}:{{ nexus_api_port }}/service/rest/v1/blobstores/{{ blobstore.name }}"
     method: DELETE
     validate_certs: false
     user: "{{ nexus_admin_username }}"

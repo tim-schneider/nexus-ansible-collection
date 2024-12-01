@@ -8,7 +8,7 @@
 
 - name: Get all Cleanup policies
   ansible.builtin.uri:
-    url: "{{ nexus_protocol }}://{{ nexus_hostname }}:{{ nexus_port }}/service/rest/v1/cleanup-policies"
+    url: "{{ nexus_api_scheme }}://{{ nexus_hostname }}:{{ nexus_api_port }}/service/rest/v1/cleanup-policies"
     method: GET
     validate_certs: false
     status_code: 200

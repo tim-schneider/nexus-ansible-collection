@@ -2,11 +2,11 @@
   ansible.builtin.set_fact:
     api_url: >
       {% if method in ['POST'] %}
-        {{ nexus_protocol }}://{{ nexus_hostname }}:{{ nexus_port }}/service/rest/v1/blobstores/{{ item.type | lower }}
+        {{ nexus_api_scheme }}://{{ nexus_hostname }}:{{ nexus_api_port }}/service/rest/v1/blobstores/{{ item.type | lower }}
       {% elif method in ['PUT', 'GET'] %}
-        {{ nexus_protocol }}://{{ nexus_hostname }}:{{ nexus_port }}/service/rest/v1/blobstores/{{ item.type | lower }}/{{ item.name}}
+        {{ nexus_api_scheme }}://{{ nexus_hostname }}:{{ nexus_api_port }}/service/rest/v1/blobstores/{{ item.type | lower }}/{{ item.name}}
       {% elif method in ['DELETE'] %}
-        {{ nexus_protocol }}://{{ nexus_hostname }}:{{ nexus_port }}/service/rest/v1/blobstores/{{ item.name }}
+        {{ nexus_api_scheme }}://{{ nexus_hostname }}:{{ nexus_api_port }}/service/rest/v1/blobstores/{{ item.name }}
       {% endif %}
   tags: blobstores
 

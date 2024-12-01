@@ -11,7 +11,7 @@
 
 - name: Get all LDAP configurations
   ansible.builtin.uri:
-    url: "{{ nexus_protocol }}://{{ nexus_hostname }}:{{ nexus_port }}/service/rest/v1/security/ldap"
+    url: "{{ nexus_api_scheme }}://{{ nexus_hostname }}:{{ nexus_api_port }}/service/rest/v1/security/ldap"
     method: GET
     validate_certs: false
     user: "{{ nexus_admin_username }}"
@@ -131,7 +131,7 @@
 
 - name: Ensure LDAP connections are in desired order
   ansible.builtin.uri:
-    url: "{{ nexus_protocol }}://{{ nexus_hostname }}:{{ nexus_port }}/service/rest/v1/security/ldap/change-order"
+    url: "{{ nexus_api_scheme }}://{{ nexus_hostname }}:{{ nexus_api_port }}/service/rest/v1/security/ldap/change-order"
     method: POST
     validate_certs: false
     user: "{{ nexus_admin_username }}"

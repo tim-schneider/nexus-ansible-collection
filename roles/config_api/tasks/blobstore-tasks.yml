@@ -1,6 +1,6 @@
 - name: Get all blobstores
   ansible.builtin.uri:
-    url: "{{ nexus_protocol }}://{{ nexus_hostname }}:{{ nexus_port }}/service/rest/v1/blobstores"
+    url: "{{ nexus_api_scheme }}://{{ nexus_hostname }}:{{ nexus_api_port }}/service/rest/v1/blobstores"
     method: GET
     validate_certs: false
     status_code: 200

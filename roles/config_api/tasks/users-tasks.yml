@@ -5,7 +5,7 @@
 
 - name: Get all Users
   ansible.builtin.uri:
-    url: "{{ nexus_protocol }}://{{ nexus_hostname }}:{{ nexus_port }}/service/rest/v1/security/users"
+    url: "{{ nexus_api_scheme }}://{{ nexus_hostname }}:{{ nexus_api_port }}/service/rest/v1/security/users"
     method: GET
     validate_certs: false
     user: "{{ nexus_admin_username }}"
