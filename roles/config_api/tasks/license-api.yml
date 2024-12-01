@@ -11,7 +11,9 @@
     status_code: 204
   when: not nexus_enable_pro_version
   changed_when: true
-  tags: license
+  tags:
+    - license
+    - always
 
 - name: Get license information
   ansible.builtin.uri:
@@ -24,13 +26,17 @@
     timeout: "{{ nexus_api_timeout }}"
     status_code: [200, 402]
   register: __nexus_license_info__
-  tags: license
+  tags:
+    - license
+    - always
 
 # Set fact to determine if we running pro already or nor
 - name: Set fact to determine if we're running pro version
   ansible.builtin.set_fact:
     nexus_pro_version: "{{ __nexus_license_info__.json.effectiveDate is defined | bool }}"
-  tags: license
+  tags:
+    - license
+    - always
 
 # Nexus API expects a license file in binary format to be uploaded
 # So we need to decode the base64 encoded license string into a file
@@ -41,7 +47,9 @@
     mode: "0644"
   register: __license_status__
   when: nexus_enable_pro_version and (not nexus_pro_version) and (lookup('env', 'NEXUS_LICENSE_B64') or nexus_license_b64)
-  tags: license
+  tags:
+    - license
+    - always
 
 - name: Upload license file through API
   ansible.builtin.uri:
@@ -59,11 +67,15 @@
     status_code: 200
   register: __uploaded_license__
   when: nexus_enable_pro_version and (not nexus_pro_version) and (lookup('env', 'NEXUS_LICENSE_B64') or nexus_license_b64)
-  tags: license
+  tags:
+    - license
+    - always
 
 # After uploading the license file, we can remove it from the file system
 - name: Remove license from file system
   ansible.builtin.file:
     path: "nexus.lic"
     state: absent
-  tags: license
+  tags:
+    - license
+    - always
