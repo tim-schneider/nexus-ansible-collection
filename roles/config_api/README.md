@@ -11,6 +11,7 @@ Requirements
 
 This role has been tested with Nexus Repository Manager OSS and Pro version 3.73 and higher.
 To make this role work out-of-the-box you have to provide the following values first:
+
 - `nexus_protocol:`
 - `nexus_hostname:`
 - `nexus_port:`
@@ -19,6 +20,11 @@ To make this role work out-of-the-box you have to provide the following values f
 
 If you want to enable the Pro features, please note that you have to provide your own license.
 If your Nexus instance is already running on the Pro version, you still need the `nexus_enable_pro_version` set to true, otherwise it will remove your license!
+
+If you set `nexus_enable_pro_version` to `true`, you must provide a base64 encoded license file
+
+Either by setting the `NEXUS_LICENSE_B64` environment variable on the system that executes your playbook or by providing the base64 encoded license string in your vars.
+`nexus_license_b64: <your Nexus .lic license file encoded into a base64 string>`
 
 Role Variables
 --------------
@@ -36,7 +42,7 @@ nexus_enable_pro_version: false
 ```
 
 #### Anonymous Access
-A note on setting the `nexus_anonymous_access` variable. This variable is backwards compatible with the `nexus_anonymous_access` variable used in the nexus_oss role. Meaning you don't have to change this value to make it work. However, when enabling anonymous access through the API, Nexus expects an username and realm to be provied as well. By default this will be the **anonymous** user and the **NexusAuthorizingRealm**.
+A note on setting the `nexus_anonymous_access` variable. This variable is backwards compatible with the `nexus_anonymous_access` variable used in the nexus_oss role. Meaning you don't have to change this value to make it work. However, when enabling anonymous access through the API, Nexus expects an username and realm to be provided as well. By default this will be the **anonymous** user and the **NexusAuthorizingRealm**.
 If you want to change this, provide these options as following:
 
 ```yaml
@@ -131,11 +137,6 @@ nexus_repos_maven_group: []
 
 nexus_routing_rules: []
 ```
-
-If you set `nexus_enable_pro_version` to `true`, you must provide a base64 encoded license file
-
-Either by setting the `NEXUS_LICENSE_B64` environment variable or by providing the base64 encoded license string directly below.
-`nexus_license_b64: <your Nexus .lic license file encoded into a base64 string>`
 
 
 Dependencies
