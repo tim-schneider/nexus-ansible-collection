@@ -419,8 +419,20 @@ nexus_local_users:
     roles:
       - nx-anonymous
     externalRoles: []
+  - username: jenkins-nexus-oss
+    first_name: Jenkins
+    last_name: CI
+    email: support@company.com
+    password: s3cr3t
+    roles:
+      - nx-anonymous
 
 nexus_repos_cleanup_policies:
+  - name: mvn_cleanup_legacy_format
+    format: maven2
+    criteria:
+      lastBlobUpdated: 90
+      lastDownloaded: 150
   - name: cargo_cleanup_config_api
     format: cargo
     notes: "cargo"
