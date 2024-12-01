@@ -4,19 +4,15 @@
     ldap_connections_normalized: "{{ ldap_connections | cloudkrafter.nexus.normalize_ldap_connections }}"
   tags: ldap
 
-- name: Debug normalized LDAP connections
-  ansible.builtin.debug:
-    var: ldap_connections_normalized
-  tags: ldap
-
 - name: Get all LDAP configurations
   ansible.builtin.uri:
     url: "{{ nexus_api_scheme }}://{{ nexus_hostname }}:{{ nexus_api_port }}/service/rest/v1/security/ldap"
     method: GET
-    validate_certs: false
+    validate_certs: "{{ nexus_api_validate_certs }}"
     user: "{{ nexus_admin_username }}"
     password: "{{ nexus_admin_password }}"
     force_basic_auth: true
+    timeout: "{{ nexus_api_timeout }}"
     headers:
       Accept: "application/json"
     status_code: 200
@@ -133,10 +129,11 @@
   ansible.builtin.uri:
     url: "{{ nexus_api_scheme }}://{{ nexus_hostname }}:{{ nexus_api_port }}/service/rest/v1/security/ldap/change-order"
     method: POST
-    validate_certs: false
+    validate_certs: "{{ nexus_api_validate_certs }}"
     user: "{{ nexus_admin_username }}"
     password: "{{ nexus_admin_password }}"
     force_basic_auth: true
+    timeout: "{{ nexus_api_timeout }}"
     headers:
       Accept: "application/json"
       Content-Type: "application/json"

@@ -3,10 +3,11 @@
   ansible.builtin.uri:
     url: "{{ nexus_api_scheme }}://{{ nexus_hostname }}:{{ nexus_api_port }}/service/rest/v1/system/license"
     method: DELETE
-    validate_certs: false
+    validate_certs: "{{ nexus_api_validate_certs }}"
     user: "{{ nexus_admin_username }}"
     password: "{{ nexus_admin_password }}"
     force_basic_auth: true
+    timeout: "{{ nexus_api_timeout }}"
     status_code: 204
   when: not nexus_enable_pro_version
   changed_when: true
@@ -16,10 +17,11 @@
   ansible.builtin.uri:
     url: "{{ nexus_api_scheme }}://{{ nexus_hostname }}:{{ nexus_api_port }}/service/rest/v1/system/license"
     method: GET
-    validate_certs: false
+    validate_certs: "{{ nexus_api_validate_certs }}"
     user: "{{ nexus_admin_username }}"
     password: "{{ nexus_admin_password }}"
     force_basic_auth: true
+    timeout: "{{ nexus_api_timeout }}"
     status_code: [200, 402]
   register: __nexus_license_info__
   tags: license
@@ -45,10 +47,11 @@
   ansible.builtin.uri:
     url: "{{ nexus_api_scheme }}://{{ nexus_hostname }}:{{ nexus_api_port }}/service/rest/v1/system/license"
     method: POST
-    validate_certs: false
+    validate_certs: "{{ nexus_api_validate_certs }}"
     user: "{{ nexus_admin_username }}"
     password: "{{ nexus_admin_password }}"
     force_basic_auth: true
+    timeout: "{{ nexus_api_timeout }}"
     headers:
       Accept: "application/json"
       Content-Type: "application/octet-stream"

@@ -13,10 +13,11 @@
   ansible.builtin.uri:
     url: "{{ nexus_api_scheme }}://{{ nexus_hostname }}:{{ nexus_api_port }}/service/rest/v1/blobstores/{{ type | lower }}/{{ blobstore.name }}"
     method: GET
-    validate_certs: false
+    validate_certs: "{{ nexus_api_validate_certs }}"
     user: "{{ nexus_admin_username }}"
     password: "{{ nexus_admin_password }}"
     force_basic_auth: true
+    timeout: "{{ nexus_api_timeout }}"
     headers:
       Accept: "application/json"
   register: blobstore_details
@@ -54,10 +55,11 @@
   ansible.builtin.uri:
     url: "{{ nexus_api_scheme }}://{{ nexus_hostname }}:{{ nexus_api_port }}/service/rest/v1/blobstores/{{ type | lower }}"
     method: POST
-    validate_certs: false
+    validate_certs: "{{ nexus_api_validate_certs }}"
     user: "{{ nexus_admin_username }}"
     password: "{{ nexus_admin_password }}"
     force_basic_auth: true
+    timeout: "{{ nexus_api_timeout }}"
     status_code: 204
     headers:
       Accept: "application/json"
@@ -106,11 +108,12 @@
   ansible.builtin.uri:
     url: "{{ nexus_api_scheme }}://{{ nexus_hostname }}:{{ nexus_api_port }}/service/rest/v1/blobstores/{{ type | lower }}/{{ blobstore.name }}"
     method: PUT
-    validate_certs: false
+    validate_certs: "{{ nexus_api_validate_certs }}"
     user: "{{ nexus_admin_username }}"
     password: "{{ nexus_admin_password }}"
     status_code: 204
     force_basic_auth: true
+    timeout: "{{ nexus_api_timeout }}"
     headers:
       Accept: "application/json"
     body: "{{ blobstore }}"
@@ -136,10 +139,11 @@
   ansible.builtin.uri:
     url: "{{ nexus_api_scheme }}://{{ nexus_hostname }}:{{ nexus_api_port }}/service/rest/v1/blobstores/{{ blobstore.name }}"
     method: DELETE
-    validate_certs: false
+    validate_certs: "{{ nexus_api_validate_certs }}"
     user: "{{ nexus_admin_username }}"
     password: "{{ nexus_admin_password }}"
     force_basic_auth: true
+    timeout: "{{ nexus_api_timeout }}"
     status_code: 204
   loop: "{{ nxs_delete_blobstores }}"
   loop_control:

@@ -14,7 +14,7 @@
   ansible.builtin.uri:
     url: "{{ api_url }}"
     method: "{{ method }}"
-    validate_certs: false
+    validate_certs: "{{ nexus_api_validate_certs }}"
     status_code: >
       {% if method == 'POST' and item.type == 'S3' %}
         201
@@ -28,6 +28,7 @@
     user: "{{ nexus_admin_username }}"
     password: "{{ nexus_admin_password }}"
     force_basic_auth: true
+    timeout: "{{ nexus_api_timeout }}"
     body: "{{ item | to_json }}"
     headers:
       Content-Type: "application/json"

@@ -13,10 +13,11 @@
   ansible.builtin.uri:
     url: "{{ api_url }}"
     method: "{{ method }}"
-    validate_certs: false
+    validate_certs: "{{ nexus_api_validate_certs }}"
     user: "{{ nexus_admin_username }}"
     password: "{{ nexus_admin_password }}"
     force_basic_auth: true
+    timeout: "{{ nexus_api_timeout }}"
     body: "{{ item | combine({'id': item.id}) | to_json if method == 'PUT' else item | to_json }}"
     status_code: "{{ '201' if method == 'POST' else '204' if method in ['PUT', 'DELETE'] else '200' }}"
     headers:

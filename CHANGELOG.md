@@ -2,6 +2,9 @@
 
 ## [1.10.3] - 2024-12-01
 
+## Added
+- Introduced `nexus_api_validate_certs` and `nexus_api_timeout` variables.
+
 ## Changed
 - **config_api** `nexus_protocol` variable has be renamed to `nexus_api_scheme` to be compatible with nexus_oss role.
 - **config_api** `nexus_hostname` variable has be renamed to `nexus_api_hostname` to be compatible with nexus_oss role.
