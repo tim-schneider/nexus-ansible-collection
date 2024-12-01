@@ -812,8 +812,9 @@ maven is configured by default
 
 These are all false unless you override them from playbook / group_var / cli, these all utilize the same mechanism as maven.
 
-Note that you might need to enable certain security realms if you want to use other repository types than maven. These are
-false by default
+### Security Realms
+
+You might need to enable certain security realms if you want to use other repository types than maven. These are false by default
 
 ```yaml
 nexus_nuget_api_key_realm: false
@@ -832,6 +833,9 @@ and the header can be configured by defining
 ```yaml
 nexus_rut_auth_header: "CUSTOM_HEADER"
 ```
+
+**Note**: this role will NOT set the order of the realms.
+If you want define the order of the realms, consider using the **config_api** role after you have executed this role.
 
 ### Scheduled tasks
 

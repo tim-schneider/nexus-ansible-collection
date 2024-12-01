@@ -5,6 +5,7 @@
   Added a new filter to normalize the cleanup policies API payload. No need to rewrite/transform your `nexus_repos_cleanup_policies` definition when using the config_api role.
 - **config_api** Anonymous Access has been made backwards compatible with the nexus_oss role.
   Added a new filter to normalize the anonymous access API payload. No need to rewrite/transform your `nexus_anonymous_access` definition when using the config_api role.
+- **config_api** Security Realms will map and normalize realm variables defined for nexus_oss role for backwards compatibility.
 
 ### Changed
 - **config_api** `nexus_enable_pro` variable has be renamed to `nexus_enable_pro_version` to be compatible with nexus_oss role.
