@@ -1,14 +1,46 @@
 # Changelog
-## [1.10.2] - 2024-11-29
+
+## [1.10.2] - 2024-11-30
+
 ### Added
-- **config_api** Cleanup policies are now backwards compatible with the nexus_oss role.
-  Added a new filter to normalize the cleanup policies API payload. No need to rewrite/transform your `nexus_repos_cleanup_policies` definition when using the config_api role.
-- **config_api** Anonymous Access has been made backwards compatible with the nexus_oss role.
-  Added a new filter to normalize the anonymous access API payload. No need to rewrite/transform your `nexus_anonymous_access` definition when using the config_api role.
-- **config_api** Security Realms will map and normalize realm variables defined for nexus_oss role for backwards compatibility.
+
+- **Config API - Compatibility for Cleanup Policies defined in nexus_oss**
+  Cleanup policies defined for the `nexus_oss` role are now fully compatible with the `config_api` role. A new filter automatically normalizes the cleanup policies API payload to the required format.
+  **What this means for you:**
+  - No changes are needed to your existing `nexus_repos_cleanup_policies` definitions when transitioning to the `config_api` role.
+  - Your current configurations will work seamlessly without requiring manual transformation.
+
+- **Config API - Compatibility for Anonymous Access defined in nexus_oss**
+  Anonymous Access settings defined for the `nexus_oss` role are now compatible with the `config_api` role. A new filter normalizes the anonymous access API payload to the correct format.
+  **What this means for you:**
+  - You can continue using your existing `nexus_anonymous_access` definitions.
+  - No manual adjustments are required when migrating to the `config_api` role.
+
+- **Config API - Compatibility for Security Realms defined in nexus_oss**
+  Security realms configured in the `nexus_oss` role are now automatically mapped and normalized to be compatible with the `config_api` role.
+  **What this means for you:**
+  - The standalone realm variables (e.g., `nexus_nuget_api_key_realm`, `nexus_npm_bearer_token_realm`) are now supported directly in `config_api`.
+  - You do not need to rewrite these variables; the role will handle the transformation automatically.
+  - If you define the `nexus_security_realms` with any realm other than `NexusAuthenticatingRealm`, the realms variables of `nexus_oss` will be ignored.
+
+- **Config API - Compatibility for LDAP Connections defined in nexus_oss**
+  The `config_api` role now supports LDAP connections defined in the legacy format used by the `nexus_oss` role. A new filter normalizes these connections to the required API-compatible format.
+  **What this means for you:**
+  - You can continue using the legacy `ldap_connections` format as defined in the `nexus_oss` role.
+  - However, it is **recommended** to adopt the new API-compatible format for future configurations to ensure consistency and compatibility with future updates.
 
 ### Changed
 - **config_api** `nexus_enable_pro` variable has be renamed to `nexus_enable_pro_version` to be compatible with nexus_oss role.
+
+---
+### Summary of Actions
+
+1. **Transitioning to `config_api`:** If you're currently using the `nexus_oss` role:
+   - You **do not need to rewrite** your existing configurations for cleanup policies, anonymous access, or security realms.
+   - All legacy configurations will be normalized automatically.
+2. **LDAP Connections:** While legacy LDAP connection definitions are supported, it’s a good opportunity to transition to the new API-compatible format to future-proof your setup.
+3. **Security Realms:** Our recommendation is to configure security realms using the `config_api` role and not using the `nexus_oss` role.
+4. **No Manual Changes Needed:** This update ensures seamless compatibility, so you can upgrade with confidence.
 
 ## [1.10.1] - 2024-11-28
 ### Added
