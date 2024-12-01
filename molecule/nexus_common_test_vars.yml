@@ -8,11 +8,11 @@ nexus_api_timeout: 45
 
 nexus_custom_jvm_settings:
   - XX:+UseG1GC
-  - XX:+PrintGCDetails
-  - Xloggc:{{ nexus_installation_dir }}log/gc.log
-  - XX:+UseGCLogFileRotation
-  - XX:NumberOfGCLogFiles=10
-  - XX:GCLogFileSize=50m
+  # - XX:+PrintGCDetails
+  # - Xloggc:{{ nexus_installation_dir }}log/gc.log
+  # - XX:+UseGCLogFileRotation
+  # - XX:NumberOfGCLogFiles=10
+  # - XX:GCLogFileSize=50m
 
 nexus_download_dir: /nexus-downloads
 
@@ -38,7 +38,7 @@ nexus_config_r: true
 nexus_config_conda: true
 nexus_config_conan: true
 nexus_config_go: true
-nexus_config_bower: true
+nexus_config_bower: false
 nexus_config_p2: true
 nexus_config_cocoapods: true
 

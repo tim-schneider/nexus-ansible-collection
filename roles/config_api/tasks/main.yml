@@ -34,6 +34,8 @@
   ansible.builtin.include_tasks: routing-rules-tasks.yml
   tags: routing-rules
 
+########### Blobstores ###########
+# TODO: Normalize payload
 - name: Get all blobstores
   ansible.builtin.uri:
     url: "{{ nexus_protocol }}://{{ nexus_hostname }}:{{ nexus_port }}/service/rest/v1/blobstores"
@@ -99,7 +101,7 @@
 ############ End Blobstores ############
 
 ########### Roles ###########
-
+# TODO: Normalize payload
 - name: Get all Roles
   ansible.builtin.uri:
     url: "{{ nexus_protocol }}://{{ nexus_hostname }}:{{ nexus_port }}/service/rest/v1/security/roles"
@@ -182,7 +184,7 @@
 ############ End Roles ############
 
 ########### Content Selectors ###########
-
+# TODO: Normalize payload
 - name: Get all Content Selectors
   ansible.builtin.uri:
     url: "{{ nexus_protocol }}://{{ nexus_hostname }}:{{ nexus_port }}/service/rest/v1/security/content-selectors"
@@ -264,7 +266,7 @@
 ############ End Content Selectors ############
 
 ########### Users ############
-
+# TODO: Normalize payload
 - name: Get all Users
   ansible.builtin.uri:
     url: "{{ nexus_protocol }}://{{ nexus_hostname }}:{{ nexus_port }}/service/rest/v1/security/users"
@@ -367,7 +369,7 @@
   delay: 10
 
 ############ Maven Repositories ############
-
+# TODO: Normalize payload
 - name: Process definitions for maven
   # test this conditional
   when: nexus_config_maven | bool
