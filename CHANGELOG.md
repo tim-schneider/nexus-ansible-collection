@@ -34,9 +34,15 @@
   **What this means for you:**
   - You can continue using the legacy `nexus_content_selectors` format as defined in the `nexus_oss` role.
 
+- **Config API - Compatibility for Local Nexus Users defined in nexus_oss**
+  The `config_api` role now supports Local Nexus Users defined in the legacy format used by the `nexus_oss` role. A new filter normalizes these connections to the required API-compatible format.
+  **What this means for you:**
+  - You can continue using the legacy `nexus_local_users` format as defined in the `nexus_oss` role.
+
 ### Changed
 - **config_api** `nexus_enable_pro` variable has be renamed to `nexus_enable_pro_version` to be compatible with nexus_oss role.
 - **config_api** `nexus_routing_rules` variable has be renamed to `nexus_repos_routing_rules` to be compatible with nexus_oss role.
+- **config_api** `nexus_users` variable has be renamed to `nexus_local_users` to be compatible with nexus_oss role.
 
 ---
 ### Summary of Actions

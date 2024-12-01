@@ -89,7 +89,7 @@ nexus_user_tokens_capability:
 nexus_license_path: ../files/license.lic
 
 nexus_default_user_password: changeme
-nexus_users:
+nexus_local_users:
   - userId: anonymous
     firstName: Anonymous
     lastName: User

@@ -368,7 +368,7 @@ nexus_user_tokens_capability:
   expirationDays: 180
 
 nexus_default_user_password: changeme
-nexus_users:
+nexus_local_users:
   - userId: anonymous
     firstName: Anonymous
     lastName: User
