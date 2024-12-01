@@ -29,6 +29,11 @@
   - You can continue using the legacy `ldap_connections` format as defined in the `nexus_oss` role.
   - However, it is **recommended** to adopt the new API-compatible format for future configurations to ensure consistency and compatibility with future updates.
 
+- **Config API - Compatibility for Content Selectors defined in nexus_oss**
+  The `config_api` role now supports Content Selectors defined in the legacy format used by the `nexus_oss` role. A new filter normalizes these connections to the required API-compatible format.
+  **What this means for you:**
+  - You can continue using the legacy `nexus_content_selectors` format as defined in the `nexus_oss` role.
+
 ### Changed
 - **config_api** `nexus_enable_pro` variable has be renamed to `nexus_enable_pro_version` to be compatible with nexus_oss role.
 - **config_api** `nexus_routing_rules` variable has be renamed to `nexus_repos_routing_rules` to be compatible with nexus_oss role.
@@ -37,7 +42,7 @@
 ### Summary of Actions
 
 1. **Transitioning to `config_api`:** If you're currently using the `nexus_oss` role:
-   - You **do not need to rewrite** your existing configurations for cleanup policies, anonymous access, or security realms.
+   - You **do not need to rewrite** your existing configurations for cleanup policies, anonymous access, content selectors or security realms.
    - All legacy configurations will be normalized automatically.
 2. **LDAP Connections:** While legacy LDAP connection definitions are supported, it’s a good opportunity to transition to the new API-compatible format to future-proof your setup.
 3. **Security Realms:** Our recommendation is to configure security realms using the `config_api` role and not using the `nexus_oss` role.
