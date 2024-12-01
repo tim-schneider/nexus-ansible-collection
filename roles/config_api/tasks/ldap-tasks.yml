@@ -1,4 +1,14 @@
 ---
+- name: Normalize LDAP connections
+  ansible.builtin.set_fact:
+    ldap_connections_normalized: "{{ ldap_connections | cloudkrafter.nexus.normalize_ldap_connections }}"
+  tags: ldap
+
+- name: Debug normalized LDAP connections
+  ansible.builtin.debug:
+    var: ldap_connections_normalized
+  tags: ldap
+
 - name: Get all LDAP configurations
   ansible.builtin.uri:
     url: "{{ nexus_protocol }}://{{ nexus_hostname }}:{{ nexus_port }}/service/rest/v1/security/ldap"
@@ -21,17 +31,17 @@
 
 - name: Set fact for desired_nexus_ldap_config
   ansible.builtin.set_fact:
-    desired_nexus_ldap_config: "{{ ldap_connections }}"
+    desired_nexus_ldap_config: "{{ ldap_connections_normalized }}"
   tags: ldap
 
 - name: Determine LDAP connections to be created
   ansible.builtin.set_fact:
-    nxs_create_ldap_connetions: "{{ ldap_connections | rejectattr('name', 'in', current_nexus_ldap_config | map(attribute='name') | list) | list }}"
+    nxs_create_ldap_connetions: "{{ ldap_connections_normalized | rejectattr('name', 'in', current_nexus_ldap_config | map(attribute='name') | list) | list }}"
   tags: ldap
 
 - name: Determine LDAP connections to be deleted
   ansible.builtin.set_fact:
-    nxs_delete_ldap_connetions: "{{ current_nexus_ldap_config | rejectattr('name', 'in', ldap_connections | map(attribute='name') | list) | list }}"
+    nxs_delete_ldap_connetions: "{{ current_nexus_ldap_config | rejectattr('name', 'in', ldap_connections_normalized | map(attribute='name') | list) | list }}"
   tags: ldap
 
 - name: Compare LDAP config for changes if ldap_connections is not empty
@@ -40,10 +50,10 @@
     - name: Compare LDAP config for changes
       ansible.builtin.set_fact:
         nxs_update_ldap_connections: "{{ nxs_update_ldap_connections + [item | combine({'id': (current_nexus_ldap_config | selectattr('name', 'equalto', item.name) | first).id})] }}"
-      loop: "{{ ldap_connections | list }}"
+      loop: "{{ ldap_connections_normalized | list }}"
       when: >
         ( current_nexus_ldap_config | selectattr('name', 'equalto', item.name) | first) is not defined or
-        ( current_nexus_ldap_config | selectattr('name', 'equalto', item.name) | first).protocol | default(omit) != item.protocol | default(None) or
+        ( current_nexus_ldap_config | selectattr('name', 'equalto', item.name) | first).protocol | upper | default(omit) != item.protocol | upper | default(None) or
         ( current_nexus_ldap_config | selectattr('name', 'equalto', item.name) | first).host | default(omit) != item.host | default(None) or
         ( current_nexus_ldap_config | selectattr('name', 'equalto', item.name) | first).searchBase | default(omit) != item.searchBase | default(None) or
         ( current_nexus_ldap_config | selectattr('name', 'equalto', item.name) | first).port | default(omit) != item.port | default(None) or
@@ -131,11 +141,11 @@
       Accept: "application/json"
       Content-Type: "application/json"
     status_code: 204
-    body: "{{ ldap_connections | map(attribute='name') | to_json }}"
+    body: "{{ ldap_connections_normalized | map(attribute='name') | to_json }}"
   register: __nexus_ldap_order__
   # The API always returns 204, even if the order is not changed
   # So we need to check if the order is changed to be idempotent
   changed_when: >
-    ldap_connections | map(attribute='name') | list != current_nexus_ldap_config | map(attribute='name') | list
-  when: ldap_connections | length > 0
+    ldap_connections_normalized | map(attribute='name') | list != current_nexus_ldap_config | map(attribute='name') | list
+  when: ldap_connections_normalized | length > 0
   tags: ldap
