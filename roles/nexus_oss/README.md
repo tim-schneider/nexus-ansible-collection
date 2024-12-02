@@ -27,6 +27,7 @@ _(Created with [gh-md-toc](https://github.com/ekalinin/github-markdown-toc))_
    * [Role Variables](#role-variables)
       * [General variables](#general-variables)
       * [Postgres Database](#postgres-database)
+      * [Nexus HA Cluster](#nexus-ha-cluster)
       * [Download dir for nexus package](#download-dir-for-nexus-package)
       * [Nexus port, context path and listening IP](#nexus-port-context-path-and-listening-ip)
       * [Nexus OS user and group](#nexus-os-user-and-group)
@@ -176,7 +177,7 @@ you can set `nexus_download_ssl_verify: false`.
 It will exist only if nexus is currently installed on the host and will register the current version prior to running
 the role. It can be used later in your playbook if needed (e.g. for an upgrade notification email)
 
-## Postgres database
+### Postgres database
 
 FOR PRO VERSION ONLY!!
 
@@ -196,6 +197,18 @@ nexus_postgres_db_port: 5432
 nexus_postgres_db_username: nexus
 nexus_postgres_db_password: nexus
 ```
+
+### Nexus HA Cluster
+
+This is a Pro feature.
+
+Running Nexus in clustered mode
+
+```yaml
+nexus_cluster_enabled: false
+```
+
+Any new node/instance with the same postgres database credentials will automatically be added to the cluster.
 
 ### Download dir for nexus package
 ```yaml

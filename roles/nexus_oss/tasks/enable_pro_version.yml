@@ -72,3 +72,14 @@
   tags: nexus-postgres,nexus-migrate,nexus-pro
   notify:
     - nexus-service-restart
+
+- name: Configure Nexus in Clustered mode
+  ansible.builtin.lineinfile:
+    path: "{{ nexus_data_dir }}/etc/nexus.properties"
+    line: "nexus.datastore.clustered.enabled={{ nexus_cluster_enabled }}"
+    firstmatch: true
+    insertafter: "EOF"
+    state: present
+  tags: nexus-postgres,nexus-migrate,nexus-pro
+  notify:
+    - nexus-service-restart

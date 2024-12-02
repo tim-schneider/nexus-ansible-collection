@@ -1,5 +1,8 @@
 # Changelog
+## [1.11.0] - 2024-12-02
 
+# Added
+- **nexus_oss** Introduced new option to run in clustered mode. This variable with is default value is `nexus_cluster_enabled: false`.
 ## [1.10.3] - 2024-12-01
 
 ## Added
