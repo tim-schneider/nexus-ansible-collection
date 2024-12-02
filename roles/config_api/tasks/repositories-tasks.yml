@@ -1,6 +1,6 @@
 - name: Get all repositories
   ansible.builtin.uri:
-    url: "{{ nexus_api_scheme }}://{{ nexus_hostname }}:{{ nexus_api_port }}/service/rest/v1/repositorySettings"
+    url: "{{ nexus_api_scheme }}://{{ nexus_api_hostname }}:{{ nexus_api_port }}/service/rest/v1/repositorySettings"
     method: GET
     validate_certs: "{{ nexus_api_validate_certs }}"
     status_code: 200

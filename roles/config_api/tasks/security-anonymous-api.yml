@@ -6,7 +6,7 @@
 
 - name: Get status of Anonymous Access configuration
   ansible.builtin.uri:
-    url: "{{ nexus_api_scheme }}://{{ nexus_hostname }}:{{ nexus_api_port }}/service/rest/v1/security/anonymous"
+    url: "{{ nexus_api_scheme }}://{{ nexus_api_hostname }}:{{ nexus_api_port }}/service/rest/v1/security/anonymous"
     method: GET
     validate_certs: "{{ nexus_api_validate_certs }}"
     user: "{{ nexus_admin_username }}"
@@ -32,7 +32,7 @@
 
 - name: Configure Anonymous Access
   ansible.builtin.uri:
-    url: "{{ nexus_api_scheme }}://{{ nexus_hostname }}:{{ nexus_api_port }}/service/rest/v1/security/anonymous"
+    url: "{{ nexus_api_scheme }}://{{ nexus_api_hostname }}:{{ nexus_api_port }}/service/rest/v1/security/anonymous"
     method: PUT
     validate_certs: "{{ nexus_api_validate_certs }}"
     user: "{{ nexus_admin_username }}"

@@ -3,9 +3,9 @@
   ansible.builtin.set_fact:
     api_url: >
       {% if method in ['POST'] %}
-        {{ nexus_api_scheme }}://{{ nexus_hostname }}:{{ nexus_api_port }}/service/rest/v1/security/content-selectors
+        {{ nexus_api_scheme }}://{{ nexus_api_hostname }}:{{ nexus_api_port }}/service/rest/v1/security/content-selectors
       {% elif method in ['PUT', 'DELETE'] %}
-        {{ nexus_api_scheme }}://{{ nexus_hostname }}:{{ nexus_api_port }}/service/rest/v1/security/content-selectors/{{ item.name }}
+        {{ nexus_api_scheme }}://{{ nexus_api_hostname }}:{{ nexus_api_port }}/service/rest/v1/security/content-selectors/{{ item.name }}
       {% endif %}
   tags: content-selectors
 

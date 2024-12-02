@@ -1,4 +1,9 @@
 # Changelog
+## [1.11.1] - 2024-12-02
+
+## Changed
+- **config_api** Renamed `nexus_hostname` to `nexus_api_hostname` to be compatible with with nexus_oss role
+
 ## [1.11.0] - 2024-12-02
 
 # Added

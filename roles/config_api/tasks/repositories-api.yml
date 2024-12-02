@@ -3,11 +3,11 @@
   ansible.builtin.uri:
     url: >
       {% if method in ['POST'] %}
-        {{ nexus_api_scheme }}://{{ nexus_hostname }}:{{ nexus_api_port }}/service/rest/v1/repositories/{{ format }}/{{ type }}
+        {{ nexus_api_scheme }}://{{ nexus_api_hostname }}:{{ nexus_api_port }}/service/rest/v1/repositories/{{ format }}/{{ type }}
       {% elif method in ['PUT'] %}
-        {{ nexus_api_scheme }}://{{ nexus_hostname }}:{{ nexus_api_port }}/service/rest/v1/repositories/{{ format }}/{{ type }}/{{ item.name }}
+        {{ nexus_api_scheme }}://{{ nexus_api_hostname }}:{{ nexus_api_port }}/service/rest/v1/repositories/{{ format }}/{{ type }}/{{ item.name }}
       {% else %}
-        {{ nexus_api_scheme }}://{{ nexus_hostname }}:{{ nexus_api_port }}/service/rest/v1/repositories/{{ item.name }}
+        {{ nexus_api_scheme }}://{{ nexus_api_hostname }}:{{ nexus_api_port }}/service/rest/v1/repositories/{{ item.name }}
       {% endif %}
     method: "{{ method }}"
     validate_certs: "{{ nexus_api_validate_certs }}"
