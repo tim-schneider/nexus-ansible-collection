@@ -3,6 +3,9 @@
 
 # Added
 - **nexus_oss** Introduced new option to run in clustered mode. This variable with is default value is `nexus_cluster_enabled: false`.
+- **config_api** Nexus license API will always be queried to obtain the license status
+  We need this information to determine if we can use API endpoints for pro features
+
 ## [1.10.3] - 2024-12-01
 
 ## Added
