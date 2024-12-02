@@ -12,13 +12,16 @@
   until: __nxs_all_repos__.status == 200
   retries: 30
   delay: 10
-  tags: repositories
+  tags:
+    - repositories
+    - maven
 
 ############ Maven Repositories ############
 # TODO: Normalize payload
 - name: Process definitions for maven
   # test this conditional
   when: nexus_config_maven | bool
+  tags: maven
   block:
     - name: Apply defaults to maven hosted repos
       ansible.builtin.set_fact:
@@ -56,18 +59,32 @@
     __nxs_crnt_mvn_hstd__: "{{ __nxs_all_repos__.json | selectattr('format', 'equalto', 'maven2') | selectattr('type', 'equalto', 'hosted') | list }}"
     __nxs_crnt_mvn_prxy__: "{{ __nxs_all_repos__.json | selectattr('format', 'equalto', 'maven2') | selectattr('type', 'equalto', 'proxy') | list }}"
     __nxs_crnt_mvn_grp__: "{{ __nxs_all_repos__.json | selectattr('format', 'equalto', 'maven2') | selectattr('type', 'equalto', 'group') | list }}"
+  tags: maven
+
+- name: Normalize Maven Proxy Repository Configurations
+  ansible.builtin.set_fact:
+    nexus_repos_maven_proxy_normalized: >-
+      {{ nxs_desired_mvn_proxy_repos | cloudkrafter.nexus.normalize_repositories('proxy', 'maven', schemas) }}
+  tags: maven
+
+- name: Debug Normalized Maven Proxy Configurations
+  ansible.builtin.debug:
+    var: nexus_repos_maven_proxy_normalized
+  tags: maven
 
 - name: Determine repositories to create
   ansible.builtin.set_fact:
     nxs_create_mvn_hosted_repos: "{{ nxs_desired_mvn_hosted_repos | rejectattr('name', 'in', __nxs_crnt_mvn_hstd__ | map(attribute='name') | list) | list }}"
-    nxs_create_mvn_proxy_repos: "{{ nxs_desired_mvn_proxy_repos | rejectattr('name', 'in', __nxs_crnt_mvn_prxy__ | map(attribute='name') | list) | list }}"
+    nxs_create_mvn_proxy_repos: "{{ nexus_repos_maven_proxy_normalized | rejectattr('name', 'in', __nxs_crnt_mvn_prxy__ | map(attribute='name') | list) | list }}"
     nxs_create_mvn_group_repos: "{{ nxs_desired_mvn_group_repos | rejectattr('name', 'in', __nxs_crnt_mvn_grp__ | map(attribute='name') | list) | list }}"
+  tags: maven
 
 - name: Determine repositories to delete
   ansible.builtin.set_fact:
     nxs_delete_mvn_hosted_repos: "{{ __nxs_crnt_mvn_hstd__ | rejectattr('name', 'in', nxs_desired_mvn_hosted_repos | map(attribute='name') | list) | list }}"
-    nxs_delete_mvn_proxy_repos: "{{ __nxs_crnt_mvn_prxy__ | rejectattr('name', 'in', nxs_desired_mvn_proxy_repos | map(attribute='name') | list) | list }}"
+    nxs_delete_mvn_proxy_repos: "{{ __nxs_crnt_mvn_prxy__ | rejectattr('name', 'in', nexus_repos_maven_proxy_normalized | map(attribute='name') | list) | list }}"
     nxs_delete_mvn_group_repos: "{{ __nxs_crnt_mvn_grp__ | rejectattr('name', 'in', nxs_desired_mvn_group_repos | map(attribute='name') | list) | list }}"
+  tags: maven
 
 - name: Compare maven hosted repositories for changes
   ansible.builtin.set_fact:
@@ -90,7 +107,7 @@
 - name: Compare maven proxy repositories for changes
   ansible.builtin.set_fact:
     nxs_update_mvn_proxy_repos: "{{ nxs_update_mvn_proxy_repos + [item] }}"
-  loop: "{{ nxs_desired_mvn_proxy_repos | list }}"
+  loop: "{{ nexus_repos_maven_proxy_normalized | list }}"
   # TODO: implement replication and authentication
   when: >
     (__nxs_crnt_mvn_prxy__ | selectattr('name', 'equalto', item.name) | first) is not defined or
@@ -117,6 +134,7 @@
     (__nxs_crnt_mvn_prxy__ | selectattr('name', 'equalto', item.name) | first).maven.contentDisposition | default(omit) != item.maven.contentDisposition | default(None) or
     (__nxs_crnt_mvn_prxy__ | selectattr('name', 'equalto', item.name) | first).cleanup.policyNames | default([]) | sort != item.cleanup.policyNames | default([]) | sort or
     (__nxs_crnt_mvn_prxy__ | selectattr('name', 'equalto', item.name) | first).routingRuleName | default(omit) != item.routingRule | default(None)
+  tags: maven
 
 - name: Compare maven group repositories for changes
   ansible.builtin.set_fact:
@@ -146,14 +164,17 @@
 - name: Show nxs_create_mvn_proxy_repos
   ansible.builtin.debug:
     var: nxs_create_mvn_proxy_repos | length
+  tags: maven
 
 - name: Show nxs_update_mvn_proxy_repos
   ansible.builtin.debug:
     var: nxs_update_mvn_proxy_repos | length
+  tags: maven
 
 - name: Show nxs_delete_mvn_proxy_repos
   ansible.builtin.debug:
     var: nxs_delete_mvn_proxy_repos | length
+  tags: maven
 
 - name: Show nxs_create_mvn_group_repos
   ansible.builtin.debug:
@@ -188,6 +209,7 @@
   with_items:
     - "{{ nxs_create_mvn_proxy_repos | default([]) }}"
   when: nxs_create_mvn_proxy_repos | length > 0
+  tags: maven
 
 - name: Create configured Maven Group repositories using Nexus API
   ansible.builtin.include_tasks: repositories-api.yml

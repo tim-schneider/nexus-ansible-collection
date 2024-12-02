@@ -1799,6 +1799,12 @@ nexus_repos_maven_proxy:
     httpClient:
       blocked: false
       autoBlock: true
+  - name: maven-proxy-legacy
+    remote_url: "https://repo.maven.apache.org/maven2"
+    maven:
+      versionPolicy: "MIXED"
+      layoutPolicy: "STRICT"
+      contentDisposition: "ATTACHMENT"
 
 nexus_repos_maven_group:
   - name: maven-group

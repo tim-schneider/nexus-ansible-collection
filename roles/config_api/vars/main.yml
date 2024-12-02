@@ -49,3 +49,35 @@ nxs_update_routingrules: []
 nxs_update_users: []
 nxs_update_content_selectors: []
 nxs_update_roles: []
+
+schemas:
+  proxy:
+    maven:
+      field_map:
+        remote_url: proxy.remoteUrl
+      default_values:
+        online: true
+        proxy:
+          contentMaxAge: 1440
+          metadataMaxAge: 1440
+        negativeCache:
+          enabled: true
+          timeToLive: 1440
+      exclude_fields:
+        - password
+    docker:
+      field_map:
+        remote_url: proxy.remoteUrl
+      default_values:
+        online: true
+        proxy:
+          contentMaxAge: 1440
+          metadataMaxAge: 1440
+        negativeCache:
+          enabled: true
+          timeToLive: 1440
+        docker:
+          indexType: "HUB"
+          forceBasicAuth: true
+      exclude_fields:
+        - password
