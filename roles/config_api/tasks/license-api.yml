@@ -11,8 +11,7 @@
     status_code: 204
   when: not nexus_enable_pro_version
   changed_when: true
-  tags:
-    - license
+  tags: license
 
 - name: Get license information
   ansible.builtin.uri:
@@ -46,8 +45,7 @@
     mode: "0644"
   register: __license_status__
   when: nexus_enable_pro_version and (not nexus_pro_version) and (lookup('env', 'NEXUS_LICENSE_B64') or nexus_license_b64)
-  tags:
-    - license
+  tags: license
 
 - name: Upload license file through API
   ansible.builtin.uri:
@@ -65,13 +63,11 @@
     status_code: 200
   register: __uploaded_license__
   when: nexus_enable_pro_version and (not nexus_pro_version) and (lookup('env', 'NEXUS_LICENSE_B64') or nexus_license_b64)
-  tags:
-    - license
+  tags: license
 
 # After uploading the license file, we can remove it from the file system
 - name: Remove license from file system
   ansible.builtin.file:
     path: "nexus.lic"
     state: absent
-  tags:
-    - license
+  tags: license
