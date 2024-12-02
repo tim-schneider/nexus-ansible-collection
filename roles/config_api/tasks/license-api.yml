@@ -13,7 +13,6 @@
   changed_when: true
   tags:
     - license
-    - always
 
 - name: Get license information
   ansible.builtin.uri:
@@ -49,7 +48,6 @@
   when: nexus_enable_pro_version and (not nexus_pro_version) and (lookup('env', 'NEXUS_LICENSE_B64') or nexus_license_b64)
   tags:
     - license
-    - always
 
 - name: Upload license file through API
   ansible.builtin.uri:
@@ -69,7 +67,6 @@
   when: nexus_enable_pro_version and (not nexus_pro_version) and (lookup('env', 'NEXUS_LICENSE_B64') or nexus_license_b64)
   tags:
     - license
-    - always
 
 # After uploading the license file, we can remove it from the file system
 - name: Remove license from file system
@@ -78,4 +75,3 @@
     state: absent
   tags:
     - license
-    - always
