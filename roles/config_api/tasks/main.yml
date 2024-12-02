@@ -2,7 +2,9 @@
 # include tasks from license-api.yml
 - name: Include license-api
   ansible.builtin.include_tasks: license-api.yml
-  tags: license
+  tags:
+    - license
+    - always
 
 - name: Include security-anonymous-api
   ansible.builtin.include_tasks: security-anonymous-api.yml
