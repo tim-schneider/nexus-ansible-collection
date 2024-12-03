@@ -1,6 +1,6 @@
 # defaults file for nexus3-config-as-code
 nexus_api_scheme: http
-nexus_api_hostname: localhost
+nexus_api_hostname: 172.18.0.5
 nexus_api_port: 8081
 nexus_api_validate_certs: "{{ nexus_api_scheme == 'https' }}"
 nexus_api_timeout: 60
@@ -1805,6 +1805,31 @@ nexus_repos_maven_proxy:
       versionPolicy: "MIXED"
       layoutPolicy: "STRICT"
       contentDisposition: "ATTACHMENT"
+  - name: maven-proxy-legacy-http-authentication
+    remote_url: "https://repo1.maven.org/maven2/"
+    layout_policy: "permissive"
+    remote_username: "admin"
+    remote_password: "admin123"
+    blob_store: "default"
+    strict_content_validation: true
+    version_policy: "release"
+    write_policy: "allow_once"
+    maximum_component_age: -1
+    maximum_metadata_age: 1440
+    negative_cache_enabled: true
+    negative_cache_ttl: 1440
+  - name: "maven-repo-ntlm-auth"
+    remote_url: "https://repo2.maven.org/maven2/"
+    httpClient:
+      blocked: false
+      autoBlock: true
+      authentication:
+        type: ntlm
+        username: "user"
+        password: "password"
+        ntlmDomain: "domain"
+        ntlmHost: "host"
+        preemptive: false
 
 nexus_repos_maven_group:
   - name: maven-group

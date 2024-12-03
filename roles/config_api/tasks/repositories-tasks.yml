@@ -129,6 +129,7 @@
     (__nxs_crnt_mvn_prxy__ | selectattr('name', 'equalto', item.name) | first).httpClient.connection.enableCircularRedirects | default(omit) != item.httpClient.connection.enableCircularRedirects | default(None) or
     (__nxs_crnt_mvn_prxy__ | selectattr('name', 'equalto', item.name) | first).httpClient.connection.enableCookies | default(false) != item.httpClient.connection.enableCookies | default(false) or
     (__nxs_crnt_mvn_prxy__ | selectattr('name', 'equalto', item.name) | first).httpClient.connection.useTrustStore | default(false) != item.httpClient.connection.useTrustStore | default(false) or
+    (__nxs_crnt_mvn_prxy__ | selectattr('name', 'equalto', item.name) | first).httpClient.authentication.preemptive | default(false) != item.httpClient.authentication.preemptive | default(false) or
     (__nxs_crnt_mvn_prxy__ | selectattr('name', 'equalto', item.name) | first).maven.versionPolicy | default(omit) != item.maven.versionPolicy | default(None) or
     (__nxs_crnt_mvn_prxy__ | selectattr('name', 'equalto', item.name) | first).maven.layoutPolicy | default(omit) != item.maven.layoutPolicy | default(None) or
     (__nxs_crnt_mvn_prxy__ | selectattr('name', 'equalto', item.name) | first).maven.contentDisposition | default(omit) != item.maven.contentDisposition | default(None) or
@@ -168,7 +169,7 @@
 
 - name: Show nxs_update_mvn_proxy_repos
   ansible.builtin.debug:
-    var: nxs_update_mvn_proxy_repos | length
+    var: nxs_update_mvn_proxy_repos
   tags: maven
 
 - name: Show nxs_delete_mvn_proxy_repos
@@ -243,6 +244,7 @@
   with_items:
     - "{{ nxs_update_mvn_proxy_repos | default([]) }}"
   when: nxs_update_mvn_proxy_repos | length > 0
+  tags: maven
 
 - name: Update configured Maven Group repositories using Nexus API
   ansible.builtin.include_tasks: repositories-api.yml
@@ -276,6 +278,7 @@
   with_items:
     - "{{ nxs_delete_mvn_proxy_repos | default([]) }}"
   when: nxs_delete_mvn_proxy_repos | length > 0
+  tags: maven
 
 - name: Delete Maven Group repositories using Nexus API
   ansible.builtin.include_tasks: repositories-api.yml

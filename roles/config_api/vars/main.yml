@@ -54,30 +54,48 @@ schemas:
   proxy:
     maven:
       field_map:
+        name: name
         remote_url: proxy.remoteUrl
+        blob_store: storage.blobStoreName
+        strict_content_validation: storage.strictContentTypeValidation
+        maximum_component_age: proxy.contentMaxAge
+        maximum_metadata_age: proxy.metadataMaxAge
+        negative_cache_enabled: negativeCache.enabled
+        negative_cache_ttl: negativeCache.timeToLive
+        remote_username: httpClient.authentication.username
+        remote_password: httpClient.authentication.password
+        layout_policy: maven.layoutPolicy
+        version_policy: maven.versionPolicy
       default_values:
         online: true
+        type: proxy
+        storage:
+          blobStoreName: "default"
+          strictContentTypeValidation: true
         proxy:
           contentMaxAge: 1440
           metadataMaxAge: 1440
         negativeCache:
           enabled: true
           timeToLive: 1440
-      exclude_fields:
-        - password
-    docker:
-      field_map:
-        remote_url: proxy.remoteUrl
-      default_values:
-        online: true
-        proxy:
-          contentMaxAge: 1440
-          metadataMaxAge: 1440
-        negativeCache:
-          enabled: true
-          timeToLive: 1440
-        docker:
-          indexType: "HUB"
-          forceBasicAuth: true
-      exclude_fields:
-        - password
+        httpClient:
+          blocked: False
+          autoBlock: True
+          connection:
+            retries: 0
+            timeout: 60
+            enableCircularRedirects: False
+            enableCookies: False
+            useTrustStore: False
+          authentication:
+            preemptive: false
+        maven:
+          layoutPolicy: "STRICT"
+          versionPolicy: "MIXED"
+          contentDisposition: "ATTACHMENT"
+      required_fields:
+        - storage.blobStoreName
+        - storage.strictContentTypeValidation
+        - maven
+        - type
+

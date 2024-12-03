@@ -5,6 +5,9 @@ httpd_ssl_cert_file_location: "{{ default_cert }}"
 httpd_ssl_cert_key_location: "{{ default_key }}"
 nexus_public_hostname: localhost
 nexus_api_timeout: 45
+nexus_default_port: 9081
+nexus_api_port: 9081
+nexus_hostname: localhost
 
 nexus_custom_jvm_settings:
   - XX:+UseG1GC
@@ -73,12 +76,12 @@ nexus_repos_routing_rules:
       - ".*"
 
 nexus_repos_cleanup_policies:
-  - name: all_cleanup
-    format: all
-    notes: "All"
-    criteria:
-      lastBlobUpdated: 60
-      lastDownloaded: 120
+  # - name: all_cleanup
+  #   format: all
+  #   notes: "All"
+  #   criteria:
+  #     lastBlobUpdated: 60
+  #     lastDownloaded: 120
   - name: mvn_cleanup
     format: maven2
     notes: "mvn"
@@ -600,7 +603,7 @@ nexus_content_selectors:
   # https://help.sonatype.com/repomanager3/formats/docker-registry/content-selectors-and-docker
   - name: docker-login-search
     description: Selector for docker login privilege
-    search_expression: format == "docker" and (path == "/v2/" of path == "/v1/search")
+    search_expression: format == "docker" and (path == "/v2/" or path == "/v1/search")
   - name: docker-private-team1
     description: Selector for docker team1
     search_expression: format == "docker" and path =^ "/v2/team1/"

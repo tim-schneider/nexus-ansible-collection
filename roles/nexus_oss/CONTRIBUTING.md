@@ -78,3 +78,190 @@ fatal: [nexus3-oss-rockylinux9]: UNREACHABLE! => {"changed": false, "msg": "Fail
 ```
 Do not get fooled with this error. It's UNREACHABLE, meaning the container is not started. Usually its refering to an old container that does not exist anymore.
 Try to run `molecule reset` or `molecule destroy --all` first to clean up old references and resources. Then try to run molecule test again.
+
+# Maven Proxy Schema Documentation
+
+## Overview
+
+This documentation outlines the structure and purpose of the schema for normalizing Maven proxy repository configurations. The schema is used to ensure input data (legacy or mixed formats) is transformed into the API-compatible format required by Nexus Repository Manager.
+
+## Schema Structure
+
+```yaml
+schemas:
+  proxy:  # Top-level key indicating the repository type (e.g., proxy, hosted, group)
+    maven:  # Repository format (e.g., maven, docker, npm)
+      field_map:
+        name: name
+        remote_url: proxy.remoteUrl
+        blob_store: storage.blobStoreName
+        strict_content_validation: storage.strictContentTypeValidation
+        maximum_component_age: proxy.contentMaxAge
+        maximum_metadata_age: proxy.metadataMaxAge
+        negative_cache_enabled: negativeCache.enabled
+        negative_cache_ttl: negativeCache.timeToLive
+        remote_username: httpClient.authentication.username
+        remote_password: httpClient.authentication.password
+        layout_policy: maven.layoutPolicy
+        version_policy: maven.versionPolicy
+      default_values:
+        online: true
+        type: "proxy"
+        storage:
+          blobStoreName: "default"
+          strictContentTypeValidation: true
+        proxy:
+          contentMaxAge: 1440
+          metadataMaxAge: 1440
+        negativeCache:
+          enabled: true
+          timeToLive: 1440
+        httpClient:
+          blocked: False
+          autoBlock: True
+          connection:
+            retries: 0
+            timeout: 60
+            enableCircularRedirects: False
+            enableCookies: False
+            useTrustStore: False
+        maven:
+          layoutPolicy: "STRICT"
+          versionPolicy: "MIXED"
+          contentDisposition: "ATTACHMENT"
+      required_fields:
+        - storage.blobStoreName
+        - storage.strictContentTypeValidation
+        - maven
+        - type
+```
+
+---
+
+## Key Components of the Schema
+
+### `field_map`
+
+**Purpose**:
+Maps input attributes (flat or legacy) to their corresponding API-compatible format.
+
+**When to Use**:
+- When input attributes need renaming or restructuring.
+- To handle legacy formats or flat attributes that need to be transformed into nested structures.
+
+**Example**:
+```yaml
+field_map:
+  remote_url: proxy.remoteUrl  # Maps legacy 'remote_url' to 'proxy.remoteUrl'.
+  blob_store: storage.blobStoreName  # Maps 'blob_store' to a nested key in 'storage'.
+```
+**Behavior**:
+
+If the input contains `remote_url`, its value will be mapped to `proxy.remoteUrl` in the normalized output.
+Attributes not present in the input are ignored unless handled by `default_values`.
+
+---
+### `default_values`
+
+**Purpose**: Provides sensible defaults for attributes that are often omitted but required by the API.
+
+**When to Use**:
+
+When attributes are mandatory but may not always be provided in the input.
+To ensure API compatibility without requiring users to define every attribute.
+
+**Example**:
+```yaml
+default_values:
+  online: true  # Ensures all repositories are online by default.
+  type: "proxy"  # Sets the type of repository to 'proxy' as it is mandatory for this schema.
+  storage:
+    blobStoreName: "default"  # Assigns 'default' blob store if not explicitly provided.
+```
+
+**Behavior**:
+
+Defaults are applied **only if the attribute is missing** in the input.
+Input values always take precedence over defaults.
+
+
+---
+
+### `required_fields`
+
+**Purpose**: Validates that all mandatory attributes are present in the final normalized output.
+
+**When to Use**:
+
+To catch missing critical attributes that would cause API errors.
+To enforce schema consistency.
+**Example**:
+
+```yaml
+required_fields:
+  - storage.blobStoreName  # Ensures 'blobStoreName' is always present in the 'storage' section.
+  - type  # The repository type must always be specified.
+  ```
+
+**Behavior**:
+
+After normalization, the filter checks for the presence of all attributes listed in `required_fields`.
+If any required field is missing, an error is raised.
+
+---
+
+## When to Use Each Schema Section
+
+| **Schema Section**  | **Purpose**                                                                                     | **When to Use**                                                                                           |
+|----------------------|-----------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------|
+| `field_map`          | Maps input attributes to their corresponding API-compatible format.                           | Use when input attributes need renaming, nesting, or restructuring.                                       |
+| `default_values`     | Provides sensible defaults for optional or missing attributes.                                | Use when attributes are mandatory but often omitted in user-provided input.                               |
+| `required_fields`    | Validates that all mandatory attributes are included in the final normalized structure.        | Use when missing attributes would cause the API to reject the repository configuration.                   |
+
+## Example: Maven Proxy Configuration
+
+### Input Data (Mixed Format)
+
+```yaml
+nexus_repos_maven_proxy:
+  - name: "maven-central"
+    remote_url: "https://repo1.maven.org/maven2/"
+    blob_store: "custom_blob"
+    strict_content_validation: true
+    version_policy: "release"
+```
+### Output Data
+
+```yaml
+nexus_repos_maven_proxy_normalized:
+  - name: "maven-central"
+    online: true
+    type: "proxy"
+    storage:
+      blobStoreName: "custom_blob"  # Input value takes precedence over default.
+      strictContentTypeValidation: true  # Input value takes precedence over default.
+    proxy:
+      remoteUrl: "https://repo1.maven.org/maven2/"
+      contentMaxAge: 1440  # Default value applied.
+      metadataMaxAge: 1440  # Default value applied.
+    maven:
+      versionPolicy: "release"  # Input value takes precedence over default.
+      layoutPolicy: "STRICT"  # Default value applied.
+      contentDisposition: "ATTACHMENT"  # Default value applied.
+```
+---
+
+## Why This Schema Design?
+
+1. **Flexibility**:
+   - Allows handling of legacy formats (flat attributes) and normalized structures (nested attributes) seamlessly.
+
+2. **Error Prevention**:
+   - Defaults ensure mandatory attributes are always included, avoiding API rejections.
+   - Validation through `required_fields` catches missing attributes before submission.
+
+3. **Reusability**:
+   - The schema-driven design allows extending the normalization logic to other repository types (e.g., Docker, NPM).
+
+4. **Ease of Maintenance**:
+   - Centralized definitions (`field_map`, `default_values`, `required_fields`) make updates straightforward.
