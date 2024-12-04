@@ -57,7 +57,7 @@ def merge_defaults(repo, global_defaults, type_defaults, format_defaults, repo_t
             format_defaults_applied), normalized)
 
         # **Fix: Gracefully handle authentication=None in defaults**
-        if "httpClient" in normalized:
+        if repo_type == "proxy" and "httpClient" in normalized:
             if normalized["httpClient"].get("authentication") is None:
                 # Replace None with a dictionary for processing
                 normalized["httpClient"]["authentication"] = {}
@@ -71,42 +71,48 @@ def merge_defaults(repo, global_defaults, type_defaults, format_defaults, repo_t
         # Step 5: Add repository-specific attributes
         normalized = merge_dict(repo, normalized)
 
-        # Step 6: Set httpClient.authentication.type
-        auth_block = normalized.get("httpClient", {}).get("authentication", {})
-        if auth_block:
-            username = auth_block.get("username")
-            password = auth_block.get("password")
-            ntlm_host = auth_block.get("ntlmHost")
-            ntlm_domain = auth_block.get("ntlmDomain")
+        # Step 6: Set httpClient.authentication.type (only for proxy repositories)
+        if repo_type == "proxy":
+            auth_block = normalized.get(
+                "httpClient", {}).get("authentication", {})
+            if auth_block:
+                username = auth_block.get("username")
+                password = auth_block.get("password")
+                ntlm_host = auth_block.get("ntlmHost")
+                ntlm_domain = auth_block.get("ntlmDomain")
 
-            if ntlm_host or ntlm_domain:
-                # NTLM authentication requires all related fields
-                if not (username and password and ntlm_host and ntlm_domain):
-                    raise ValueError(
-                        f"Repository '{
-                            repo.get('name', 'unknown')}' is missing required fields "
-                        "for NTLM authentication (username, password, ntlmHost, ntlmDomain)."
-                    )
-                auth_block["type"] = "ntlm"
-            elif username or password:
-                # Username-based authentication
-                if not (username and password):
-                    raise ValueError(
-                        f"Repository '{
-                            repo.get('name', 'unknown')}' is missing required fields "
-                        "for username authentication (username and password)."
-                    )
-                auth_block["type"] = "username"
+                if ntlm_host or ntlm_domain:
+                    # NTLM authentication requires all related fields
+                    if not (username and password and ntlm_host and ntlm_domain):
+                        raise ValueError(
+                            f"Repository '{
+                                repo.get('name', 'unknown')}' is missing required fields "
+                            "for NTLM authentication (username, password, ntlmHost, ntlmDomain)."
+                        )
+                    auth_block["type"] = "ntlm"
+                elif username or password:
+                    # Username-based authentication
+                    if not (username and password):
+                        raise ValueError(
+                            f"Repository '{
+                                repo.get('name', 'unknown')}' is missing required fields "
+                            "for username authentication (username and password)."
+                        )
+                    auth_block["type"] = "username"
 
-        # Step 7: Revert authentication to None if originally None
-        original_auth = get_nested_value(
-            type_defaults_applied, "httpClient.authentication", None)
-        if original_auth is None:
-            auth_block = get_nested_value(
-                normalized, "httpClient.authentication", {})
-            # If no authentication attributes exist, set to None
-            if not any(key in auth_block for key in ["username", "password", "ntlmHost", "ntlmDomain", "type"]):
-                normalized["httpClient"]["authentication"] = None
+                # Update the normalized structure with the modified auth_block
+                normalized["httpClient"]["authentication"] = auth_block
+
+        # Step 7: Revert authentication to None if originally None (only for proxy repositories)
+        if repo_type == "proxy":
+            original_auth = get_nested_value(
+                type_defaults_applied, "httpClient.authentication", None)
+            if original_auth is None:
+                auth_block = get_nested_value(
+                    normalized, "httpClient.authentication", {})
+                # If no authentication attributes exist, set to None
+                if not any(key in auth_block for key in ["username", "password", "ntlmHost", "ntlmDomain", "type"]):
+                    normalized["httpClient"]["authentication"] = None
 
         return normalized
     except Exception as e:
