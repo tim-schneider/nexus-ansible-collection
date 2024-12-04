@@ -8,7 +8,25 @@ nexus_s3_endpoint: "http://172.18.0.4:9000"
 nexus_admin_username: admin
 nexus_admin_password: changeme
 nexus_enable_pro_version: true
+
 nexus_config_maven: true
+nexus_config_docker: false
+nexus_config_gitlfs: false
+nexus_config_npm: false
+nexus_config_pypi: false
+nexus_config_conda: false
+nexus_config_helm: false
+nexus_config_r: false
+nexus_config_nuget: false
+nexus_config_apt: false
+nexus_config_yum: false
+nexus_config_raw: false
+nexus_config_p2: false
+nexus_config_cocoapods: false
+nexus_config_conan: false
+nexus_config_go: false
+nexus_config_cargo: false
+nexus_config_rubygems: false
 
 ldap_connections:
   - name: Mock ldap server STATIC # Required
