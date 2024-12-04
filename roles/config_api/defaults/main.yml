@@ -955,24 +955,17 @@ global_defaults:
   online: true
   storage:
     blobStoreName: default
-    strictContentTypeValidation: false
   cleanup:
     policyNames: []
   httpClient:
     blocked: false
     autoBlock: true
-    connection:
-      retries: 0
-      timeout: 60
-      enableCircularRedirects: false
-      enableCookies: false
-      useTrustStore: false
 
 # Type-Specific Defaults
 type_defaults:
   proxy:
     proxy:
-      contentMaxAge: 1440
+      contentMaxAge: -1
       metadataMaxAge: 1440
     negativeCache:
       enabled: true
@@ -980,10 +973,12 @@ type_defaults:
 # Format-Specific Defaults
 format_defaults:
   maven:
+    storage:
+      blobStoreName: "{{ nexus_blob_names.mvn.blob | default('default') }}"
     maven:
-      versionPolicy: "MIXED"
-      layoutPolicy: "STRICT"
-      contentDisposition: "ATTACHMENT"
+      versionPolicy: RELEASE
+      layoutPolicy: STRICT
+  pypi:
 # Legacy Field Map
 legacy_field_map:
   blob_store: "storage.blobStoreName"

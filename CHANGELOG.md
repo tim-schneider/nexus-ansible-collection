@@ -5,6 +5,8 @@
   `nexus_api_availability_delay: 10`
   `nexus_api_availability_retries: 30`
 
+## Fixed
+- Use defaults from `_nexus_repos_maven_defaults` for normalizing maven repos.
 ## [1.11.1] - 2024-12-02
 
 ## Changed
