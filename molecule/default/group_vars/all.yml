@@ -1769,67 +1769,89 @@ nexus_repos_maven_hosted:
         - maven_cleanup
 
 nexus_repos_maven_proxy:
-  - name: maven-central
+  # Minimal new format
+  - name: minimal-new-format
     proxy:
-      remoteUrl: https://repo1.maven.org/maven2/
-      contentMaxAge: -1
-      metadataMaxAge: 1440
-    negativeCache:
-      enabled: true
-      timeToLive: 1440
-    httpClient:
-      blocked: false
-      autoBlock: true
-      connection:
-        useTrustStore: true
-  - name: maven-proxy-2
-    proxy:
-      remoteUrl: https://repo1.maven.org/maven2/
-      contentMaxAge: -1
-      metadataMaxAge: 1440
-    routingRule: routing-rule-allow-all
-  - name: maven-proxy-3
-    proxy:
-      remoteUrl: https://repo1.maven.org/maven2/
-      contentMaxAge: -1
-      metadataMaxAge: 1440
-    negativeCache:
-      enabled: true
-      timeToLive: 1440
-    httpClient:
-      blocked: false
-      autoBlock: true
-  - name: maven-proxy-legacy
-    remote_url: "https://repo.maven.apache.org/maven2"
-    maven:
-      versionPolicy: "MIXED"
-      layoutPolicy: "STRICT"
-      contentDisposition: "ATTACHMENT"
-  - name: maven-proxy-legacy-http-authentication
+      remoteUrl: "https://repo1.maven.org/maven2/"
+
+  # Minimal legacy format
+  - name: legacy-minimal-format
     remote_url: "https://repo1.maven.org/maven2/"
-    layout_policy: "permissive"
-    remote_username: "admin"
-    remote_password: "admin123"
-    blob_store: "default"
-    strict_content_validation: true
-    version_policy: "release"
-    write_policy: "allow_once"
-    maximum_component_age: -1
+
+  # Legacy format with equivalent nested attributes
+  - name: legacy-format-nested-attributes
+    remote_url: "https://repo.legacy.maven.org/maven2/"
     maximum_metadata_age: 1440
+    maximum_component_age: -1
     negative_cache_enabled: true
-    negative_cache_ttl: 1440
-  - name: "maven-repo-ntlm-auth"
-    remote_url: "https://repo2.maven.org/maven2/"
+    negative_cache_ttl: 720
+
+  # Legacy format with authentication
+  - name: legacy-format-basic-auth
+    remote_url: "https://repo.auth.maven.org/maven2/"
+    remote_username: "basic-user"
+    remote_password: "basic-pass"
+
+  # NTLM Authentication (new format)
+  - name: new-format-ntlm-auth
+    proxy:
+      remoteUrl: "https://repo.ntlm.maven.org/maven2/"
     httpClient:
-      blocked: false
-      autoBlock: true
       authentication:
         type: ntlm
-        username: "user"
-        password: "password"
-        ntlmDomain: "domain"
-        ntlmHost: "host"
-        preemptive: false
+        username: "ntlm-user"
+        password: "ntlm-pass"
+        ntlmDomain: "ntlm-domain"
+        ntlmHost: "ntlm-host"
+        preemptive: true
+
+  # Mixed format
+  - name: mixed-format
+    remote_url: "https://repo.mixed.maven.org/maven2/"
+    proxy:
+      contentMaxAge: 1440
+    storage:
+      blobStoreName: default
+
+  # Fully complete new format
+  - name: fully-complete-new-format
+    online: true
+    proxy:
+      remoteUrl: "https://repo.complete.maven.org/maven2/"
+      contentMaxAge: 1
+      metadataMaxAge: 1
+    storage:
+      blobStoreName: default
+      strictContentTypeValidation: true
+    cleanup:
+      policyNames:
+        - maven_cleanup_config_api
+        - mvn_cleanup_legacy_format
+    negativeCache:
+      enabled: true
+      timeToLive: 300
+    httpClient:
+      blocked: true
+      autoBlock: true
+      authentication:
+        type: username
+        username: "full-ntlm-userr"
+        password: "full-ntlm-pass"
+        ntlmDomain: "full-ntlm-domain"
+        ntlmHost: "full-ntlm-host"
+        preemptive: true
+      connection:
+        retries: 5
+        timeout: 60
+        useTrustStore: true
+        enableCircularRedirects: true
+        enableCookies: true
+        userAgentSuffix: full-some-sufifx
+    maven:
+      versionPolicy: RELEASE
+      layoutPolicy: PERMISSIVE
+      contentDisposition: INLINE
+    routingRule: routing-rule-block-nmap
 
 nexus_repos_maven_group:
   - name: maven-group
