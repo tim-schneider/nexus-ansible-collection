@@ -831,46 +831,6 @@ __nexus_repos_maven_hosted_defaults:
     versionPolicy: MIXED
     layoutPolicy: STRICT
     contentDisposition: INLINE
-
-__nexus_repos_maven_proxy_defaults:
-  format: maven2
-  type: proxy
-  online: true
-  storage:
-    blobStoreName: default
-    strictContentTypeValidation: true
-  cleanup:
-    policyNames: []
-  proxy:
-    remoteUrl: https://remote.repository.com
-    contentMaxAge: 1440
-    metadataMaxAge: 1440
-  negativeCache:
-    enabled: true
-    timeToLive: 1440
-  httpClient:
-    blocked: false
-    autoBlock: true
-    connection:
-      retries: 0
-      userAgentSuffix: string
-      timeout: 60
-      enableCircularRedirects: false
-      enableCookies: false
-      useTrustStore: false
-    # authentication:
-    #   type:
-    #   username:
-    #   preemptive:
-    #   ntlmHost:
-    #   ntlmDomain:
-  routingRule:
-  replication:
-  maven:
-    versionPolicy: MIXED
-    layoutPolicy: STRICT
-    contentDisposition: ATTACHMENT
-
 nexus_repos_rubygems_hosted: []
 
 nexus_repos_rubygems_proxy: []
@@ -989,3 +949,50 @@ nexus_roles:
     roles: []
 
 nexus_content_selectors: []
+
+# Global Defaults
+global_defaults:
+  online: true
+  storage:
+    blobStoreName: default
+    strictContentTypeValidation: false
+  cleanup:
+    policyNames: []
+  httpClient:
+    blocked: false
+    autoBlock: true
+    connection:
+      retries: 0
+      timeout: 60
+      enableCircularRedirects: false
+      enableCookies: false
+      useTrustStore: false
+
+# Type-Specific Defaults
+type_defaults:
+  proxy:
+    proxy:
+      contentMaxAge: 1440
+      metadataMaxAge: 1440
+    negativeCache:
+      enabled: true
+      timeToLive: 1440
+# Format-Specific Defaults
+format_defaults:
+  maven:
+    maven:
+      versionPolicy: "MIXED"
+      layoutPolicy: "STRICT"
+      contentDisposition: "ATTACHMENT"
+# Legacy Field Map
+legacy_field_map:
+  blob_store: "storage.blobStoreName"
+  strict_content_validation: "storage.strictContentTypeValidation"
+  maximum_metadata_age: "proxy.metadataMaxAge"
+  negative_cache_enabled: "negativeCache.enabled"
+  negative_cache_ttl: "negativeCache.timeToLive"
+  remote_username: "httpClient.authentication.username"
+  remote_password: "httpClient.authentication.password"
+  layout_policy: "maven.layoutPolicy"
+  version_policy: "maven.versionPolicy"
+  remote_url: "proxy.remoteUrl"

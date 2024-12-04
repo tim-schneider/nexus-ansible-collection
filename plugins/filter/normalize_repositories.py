@@ -1,3 +1,6 @@
+import copy
+
+
 def get_nested_value(data, key_path, default=None):
     """
     Retrieve a nested value from a dictionary using a dotted key path.
@@ -23,98 +26,103 @@ def set_nested_value(data, key_path, value):
     data[keys[-1]] = value
 
 
-def normalize_repositories(repo_data, repo_type, repo_format, schemas):
+def merge_dict(source, destination):
     """
-    Normalize repository configurations into API-compatible format.
-    Handles mixed formats by merging legacy and normalized entries.
-
-    Why this approach:
-    - Ensures compatibility with the Nexus API by transforming input data into the required schema.
-    - Supports legacy formats (method A) while allowing already normalized (method B) configurations.
-    - Handles both flat and nested attributes dynamically using schema definitions.
-    - Provides default values and validates required fields to avoid runtime API errors.
-
-    Parameters:
-    - repo_data: List of repository configurations (mixed formats supported).
-    - repo_type: Type of repository (e.g., 'proxy', 'hosted', 'group').
-    - repo_format: Format of the repository (e.g., 'maven', 'docker', 'npm').
-    - schemas: Dictionary containing field mappings, default values, and required attributes.
-
-    Returns:
-    - A list of normalized repositories, ready for API consumption.
+    Recursively merge `source` dictionary into `destination`.
     """
-    # Validate that the schema exists for the given repo type and format
-    if repo_type not in schemas or repo_format not in schemas[repo_type]:
-        raise ValueError(
-            f"No schema defined for repository type '{
-                repo_type}' and format '{repo_format}'"
+    for key, value in source.items():
+        if isinstance(value, dict) and key in destination and isinstance(destination[key], dict):
+            merge_dict(value, destination[key])
+        else:
+            destination[key] = value
+    return destination
+
+
+def merge_defaults(repo, global_defaults, type_defaults, format_defaults, repo_type, repo_format, legacy_field_map):
+    """
+    Merge hierarchical defaults and normalize a repository configuration.
+    """
+    # Step 1: Start with global defaults
+    normalized = copy.deepcopy(global_defaults)
+
+    # Step 2: Add type-specific defaults
+    normalized = merge_dict(copy.deepcopy(
+        type_defaults.get(repo_type, {})), normalized)
+
+    # Step 3: Add format-specific defaults
+    normalized = merge_dict(copy.deepcopy(
+        format_defaults.get(repo_format, {})), normalized)
+
+    # Step 4: Normalize legacy attributes
+    for legacy_key, normalized_key in legacy_field_map.items():
+        value = get_nested_value(repo, legacy_key)
+        if value is not None:
+            set_nested_value(normalized, normalized_key, value)
+
+    # Step 5: Add repository-specific attributes
+    normalized = merge_dict(repo, normalized)
+
+    # Step 6: Set authentication type based on defined attributes
+    auth_block = get_nested_value(normalized, "httpClient.authentication", {})
+    if auth_block:
+        ntlm_host = auth_block.get("ntlmHost")
+        ntlm_domain = auth_block.get("ntlmDomain")
+        username = auth_block.get("username")
+        password = auth_block.get("password")
+
+        if ntlm_host and ntlm_domain and username and password:
+            # Configure NTLM only if all required fields are present
+            auth_block["type"] = "ntlm"
+        elif username and password:
+            # Configure username-based authentication if NTLM is incomplete
+            auth_block["type"] = "username"
+        elif ntlm_host or ntlm_domain:
+            raise ValueError(
+                f"Repository '{
+                    repo.get('name', 'unknown')}' has incomplete NTLM authentication settings. "
+                "username, password, ntlmHost, and ntlmDomain are all required for NTLM."
+            )
+        set_nested_value(normalized, "httpClient.authentication", auth_block)
+
+    return normalized
+
+
+def enhanced_cleanup_legacy_attributes(repo, legacy_field_map):
+    """
+    Explicitly remove legacy attributes from the repository data after normalization.
+    """
+    cleaned_repo = repo.copy()  # Work on a copy to avoid mutating the input directly
+    for legacy_key in legacy_field_map.keys():
+        if '.' in legacy_key:
+            # Remove nested keys
+            parent, child = legacy_key.rsplit('.', 1)
+            nested_parent = get_nested_value(cleaned_repo, parent, {})
+            if isinstance(nested_parent, dict) and child in nested_parent:
+                nested_parent.pop(child, None)
+        elif legacy_key in cleaned_repo:
+            # Remove top-level keys
+            cleaned_repo.pop(legacy_key, None)
+    return cleaned_repo
+
+
+def normalize_and_clean_repositories_with_explicit_cleanup(
+    repo_data, global_defaults, type_defaults, format_defaults, repo_type, repo_format, legacy_field_map
+):
+    """
+    Normalize repositories and ensure explicit removal of all legacy attributes.
+    """
+    normalized_repos = []
+    for repo in repo_data:
+        # Normalize the repository
+        normalized = merge_defaults(
+            repo, global_defaults, type_defaults, format_defaults, repo_type, repo_format, legacy_field_map
         )
 
-    # Load the schema for this repository type and format
-    schema = schemas[repo_type][repo_format]
-    normalized_repos = []  # Output list of normalized repositories
+        # Explicitly clean up all legacy attributes from the normalized repository
+        normalized = enhanced_cleanup_legacy_attributes(
+            normalized, legacy_field_map)
 
-    for repo in repo_data:
-        normalized = {}  # Start with an empty dictionary for the normalized repository
-
-        # Map fields from source to target based on the schema
-        for src_field, target_field in schema.get("field_map", {}).items():
-            value = get_nested_value(repo, src_field)
-            if value is not None:
-                set_nested_value(normalized, target_field, value)
-
-        # Merge existing nested structures (e.g., 'proxy', 'negativeCache') with defaults
-        for key in ["proxy", "negativeCache", "httpClient", "storage", "maven"]:
-            if key in repo:
-                # Merge input structure with defaults (if any)
-                normalized.setdefault(key, {}).update(repo[key])
-
-        # Add default values for missing attributes
-        for key, default_value in schema.get("default_values", {}).items():
-            if get_nested_value(normalized, key) is None:
-                set_nested_value(normalized, key, default_value)
-
-        # Normalize httpClient.authentication.type
-        auth_block = get_nested_value(
-            normalized, "httpClient.authentication", {})
-        if auth_block:
-            username = auth_block.get("username")
-            password = auth_block.get("password")
-            ntlm_host = auth_block.get("ntlmHost")
-            ntlm_domain = auth_block.get("ntlmDomain")
-
-            if ntlm_host or ntlm_domain:
-                # NTLM authentication requires all related fields
-                if not (username and password and ntlm_host and ntlm_domain):
-                    raise ValueError(
-                        f"Repository '{
-                            repo.get('name', 'unknown')}' is missing required fields "
-                        "for NTLM authentication (username, password, ntlmHost, ntlmDomain)."
-                    )
-                auth_block["type"] = "ntlm"
-            elif username or password:
-                # Username-based authentication
-                if not (username and password):
-                    raise ValueError(
-                        f"Repository '{
-                            repo.get('name', 'unknown')}' is missing required fields "
-                        "for username authentication (username and password)."
-                    )
-                auth_block["type"] = "username"
-
-            # Update the normalized dictionary with the modified auth_block
-            set_nested_value(
-                normalized, "httpClient.authentication", auth_block)
-
-        # Validate required attributes after processing
-        for required_key in schema.get("required_fields", []):
-            if get_nested_value(normalized, required_key) is None:
-                raise ValueError(
-                    f"Missing required field: {required_key} in repository '{
-                        repo.get('name', 'unknown')}'"
-                )
-
-        # Append the fully normalized repository to the output list
+        # Append the cleaned, normalized repository to the list
         normalized_repos.append(normalized)
 
     return normalized_repos
@@ -127,5 +135,5 @@ class FilterModule:
         Registers the 'normalize_repositories' filter for use in playbooks.
         """
         return {
-            "normalize_repositories": normalize_repositories
+            "normalize_repositories": normalize_and_clean_repositories_with_explicit_cleanup
         }
