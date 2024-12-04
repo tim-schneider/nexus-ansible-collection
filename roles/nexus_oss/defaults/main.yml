@@ -112,6 +112,10 @@ nexus_api_validate_certs: "{{ nexus_api_scheme == 'https' }}"
 nexus_api_context_path: "{{ nexus_default_context_path }}"
 nexus_api_port: "{{ nexus_default_port }}"
 nexus_api_timeout: 60
+# Before API calls are executed, Nexus needs to be started. On large instances it can take a few minutes to start.
+# How long should we wait before we start checking the API is available?
+nexus_api_availability_delay: 10 # wait for 10 seconds between retries
+nexus_api_availability_retries: 30 # retry 30 times, effectively waiting 5 minutes. (10*30 = 300 seconds / 60 = 5 minutes)
 
 # security realms
 nexus_nuget_api_key_realm: false

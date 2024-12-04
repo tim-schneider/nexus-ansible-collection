@@ -1,4 +1,10 @@
 # Changelog
+## [1.11.2] - 2024-12-03
+## Added
+- **nexus_oss** Introduced variables to control waiting time for nexus to startup.
+  `nexus_api_availability_delay: 10`
+  `nexus_api_availability_retries: 30`
+
 ## [1.11.1] - 2024-12-02
 
 ## Changed

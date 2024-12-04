@@ -532,6 +532,18 @@
     recurse: false
   with_items: "{{ nexus_app_dir_settings_dirs }}"
 
+- name: Wait for Nexus writable API endpoint to be available
+  ansible.builtin.uri:
+    url: "{{ nexus_api_scheme }}://{{ nexus_api_hostname }}:{{ nexus_api_port }}{{ nexus_api_context_path }}{{ nexus_rest_api_endpoint }}"
+    method: GET
+    validate_certs: "{{ nexus_api_validate_certs }}"
+    status_code: 200
+    timeout: "{{ nexus_api_timeout }}"
+    register: __nexus_writable__
+    until: __nexus_writable__.status == 200
+    retries: "{{ nexus_api_availability_retries }}"
+    delay: "{{ nexus_api_availability_delay }}"
+
 - name: Access scripts API endpoint with defined admin password
   ansible.builtin.uri:
     url: "{{ nexus_api_scheme }}://{{ nexus_api_hostname }}:{{ nexus_api_port }}{{ nexus_api_context_path }}{{ nexus_rest_api_endpoint }}"
@@ -543,6 +555,7 @@
     validate_certs: "{{ nexus_api_validate_certs }}"
   register: nexus_api_head_with_defined_password
   check_mode: false
+  when: __nexus_writable__.status == 200
 
 - name: Register defined admin password for next operations
   ansible.builtin.set_fact:
