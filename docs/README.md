@@ -1,6 +1,6 @@
 When using this in a 'desired-state' kind of way, renaming repositories is not supported. This has to do with the fact when you rename a repository, it will be considered a new repo and the old one will be deleted since its not in the list of 'desired repos' anymore.
 
-Unfortunatly repos do not have an unique identifier that's returned by the Nexus API, therefore we can not use that to update a new of a repo.
+Unfortunatly repos do not have an unique identifier that's returned by the Nexus API, therefore we can not use that to update the name of a repo.
 
 ## FAQ
 
@@ -19,6 +19,7 @@ The order of the group_vars is important since the dictionaries will be passed t
 - setting content disposition on maven groups
 - setting layout policy on maven groups
 - setting version policy on maven groups
+- httpclient.authentication.password cant be fetched through API
 - create cleanup policy for format 'all'
 - allow anonymous docker pull
 - useTrustStoreForIndexAccess docker proxy
@@ -32,6 +33,7 @@ The order of the group_vars is important since the dictionaries will be passed t
 - File blob store PUT endpoint
 - S3 Blob store PUT endpoint
 - Group Blob store PUT endpoit
+- Update httpClient.authentication attributes
 
 - HTTPS System settings
 - IQ Repo Firewall
