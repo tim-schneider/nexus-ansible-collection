@@ -8,6 +8,7 @@ nexus_s3_endpoint: "http://172.18.0.4:9000"
 nexus_admin_username: admin
 nexus_admin_password: changeme
 nexus_enable_pro_version: true
+nexus_config_maven: true
 
 ldap_connections:
   - name: Mock ldap server STATIC # Required
