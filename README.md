@@ -19,34 +19,10 @@
 
 ### Running desired-state configurations
 
-This is work in progress and is not -yet- compatible with the `nexus_repos_*_*` format used in the nexus_oss role.
+This is work in progress and is not -yet- compatible with all the `nexus_repos_*_*` format used in the nexus_oss role.
 
-For example, it won't work when your maven proxy repos are defined like the following, because that format is not compatible with the Nexus API.
-```yaml
-nexus_repos_maven_proxy:
-  - name: maven-central
-    remote_url: https://repo1.maven.org/maven2/
-```
-
-You can rewrite your repo definitions like this:
-```yaml
-nexus_repos_maven_proxy:
-  - name: maven-central
-    proxy:
-      remoteUrl: https://repo1.maven.org/maven2/
-      contentMaxAge: -1
-      metadataMaxAge: 1440
-    negativeCache:
-      enabled: true
-      timeToLive: 1440
-    httpClient:
-      blocked: false
-      autoBlock: true
-      connection:
-        useTrustStore: true
-```
-
-Or you wait a bit for us to release a custom filter that would transform and normalize the nexus_oss format of `nexus_repos_*_*` to an API compatible format. Expected mid Dec 2024.
+#### Important note on repository defaults
+The `config_api` role uses a different approach to set defaults. If you override the `_nexus_repos_maven_defaults` variable for example, make sure you apply the same defaults to the `nexus_repos_global_defaults`, `nexus_repos_type_defaults` and `nexus_repos_format_defaults` dictionaries! See role defaults for the full dictionaries.
 
 
 Once you have a working Nexus instance, you can also execute configuration tasks without rebooting your Nexus instance:
@@ -75,3 +51,31 @@ You can also use both roles in one play:
     - role: cloudkrafter.nexus.nexus_oss # Still ensuring the Nexus server configs
     - role: cloudkrafter.nexus.config_api # Creating, updating or deleting assets such as LDAP servers
 ```
+
+### Using tags for a execution strategy
+
+All tasks are tagged to allow certain parts to be executed.
+
+available tags:
+- license
+- security-anonymous-access
+- user-tokens
+- ssl-truststore
+- ldap
+- security-realms
+- cleanup-policies
+- routing-rules
+- content-selectors
+- blobstores
+- roles (depends on repositories)
+- users (depends on roles)
+- repositories (always needed when using with repo specific tags)
+- maven-hosted
+- maven-proxy
+- maven (will execute tasks for all type maven repos)
+**Note:** there are no `*-group` tags! Groups are always depending on either hosted or proxy repos. Therefore group repos can be configured using the format tag of tour group, for example `maven`.
+
+#### Examples for execution strategies
+```bash
+# Only configure cleanup policies
+ansible-playbook -i all --tags cleanup-policies playbook.yml

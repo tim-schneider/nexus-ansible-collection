@@ -188,6 +188,12 @@ nexus_blobstores:
     softQuota:
       type: spaceUsedQuota
       limit: 209715200
+  - name: maven-legacy-blobstore
+    type: File
+    path: maven-legacy
+    softQuota:
+      type: spaceRemainingQuota
+      limit: 104857600
   - name: s3-blob-1
     type: S3
     softQuota:
@@ -1682,6 +1688,17 @@ nexus_repos_docker_proxy:
       timeToLive: 1440
 
 nexus_repos_maven_hosted:
+  - name: minimal-repo-using-all-defaults-maven-hosted
+  - name: full-legacy-format-maven-hosted
+    blob_store: maven-legacy-blobstore
+    strict_content_validation: true
+    proprietary_components: true
+    cleanup_policies:
+      - mvn_cleanup_legacy_format
+    layout_policy: PERMISSIVE
+    version_policy: mixed
+    write_policy: allow # one of "allow", "allow_once" or "deny"
+    content_disposition: INLINE
   - name: repo-1
     online: true
     storage:
@@ -1770,16 +1787,16 @@ nexus_repos_maven_hosted:
 
 nexus_repos_maven_proxy:
   # Minimal new format
-  - name: minimal-new-format
+  - name: minimal-new-format-maven-proxy
     proxy:
       remoteUrl: "https://repo1.maven.org/maven2/"
 
   # Minimal legacy format
-  - name: legacy-minimal-format
+  - name: legacy-minimal-format-maven-proxy
     remote_url: "https://repo1.maven.org/maven2/"
 
   # Legacy format with equivalent nested attributes
-  - name: legacy-format-nested-attributes
+  - name: legacy-format-nested-attributes-maven-proxy
     remote_url: "https://repo.legacy.maven.org/maven2/"
     maximum_metadata_age: 1440
     maximum_component_age: -1
@@ -1787,13 +1804,13 @@ nexus_repos_maven_proxy:
     negative_cache_ttl: 720
 
   # Legacy format with authentication
-  - name: legacy-format-basic-auth
+  - name: legacy-format-basic-auth-maven-proxy
     remote_url: "https://repo.auth.maven.org/maven2/"
     remote_username: "basic-user"
     remote_password: "basic-pass"
 
   # NTLM Authentication (new format)
-  - name: new-format-ntlm-auth
+  - name: new-format-ntlm-auth-maven-proxy
     proxy:
       remoteUrl: "https://repo.ntlm.maven.org/maven2/"
     httpClient:
@@ -1806,7 +1823,7 @@ nexus_repos_maven_proxy:
         preemptive: true
 
   # Mixed format
-  - name: mixed-format
+  - name: mixed-format-maven-proxy
     remote_url: "https://repo.mixed.maven.org/maven2/"
     proxy:
       contentMaxAge: 1440
@@ -1814,7 +1831,7 @@ nexus_repos_maven_proxy:
       blobStoreName: default
 
   # Fully complete new format
-  - name: fully-complete-new-format
+  - name: fully-complete-new-format-maven-proxy
     online: true
     proxy:
       remoteUrl: "https://repo.complete.maven.org/maven2/"
@@ -1854,26 +1871,42 @@ nexus_repos_maven_proxy:
     routingRule: routing-rule-block-nmap
 
 nexus_repos_maven_group:
-  - name: maven-group
+  - name: minimal-legacy-format-maven-group
+    member_repos:
+      - legacy-minimal-format-maven-proxy
+  - name: minimal-legacy-format-mixed-maven-group
+    member_repos:
+      - legacy-minimal-format-maven-proxy
+      - minimal-repo-using-all-defaults-maven-hosted
+  - name: full-legacy-format-maven-group
+    blob_store: maven-legacy-blobstore
+    member_repos:
+      - new-format-ntlm-auth-maven-proxy
+      - mixed-format-maven-proxy
+    layout_policy: PERMISSIVE
+    version_policy: MIXED
+    content_disposition: INLINE
+    strict_content_validation: false
+  - name: full-new-format-maven-group
     online: true
     storage:
       blobStoreName: default
       strictContentTypeValidation: true
     group:
       memberNames:
-        - maven-central
-        - maven-proxy-2
-        - maven-proxy-3
-  - name: maven-group-reverse-group-order
+        - legacy-minimal-format-maven-proxy
+        - new-format-ntlm-auth-maven-proxy
+        - mixed-format-maven-proxy
+  - name: full-new-format-maven-group-reverse-group-order
     online: false
     storage:
       blobStoreName: default
       strictContentTypeValidation: false
     group:
       memberNames:
-        - maven-proxy-3
-        - maven-proxy-2
-        - maven-central
+        - mixed-format-maven-proxy
+        - new-format-ntlm-auth-maven-proxy
+        - legacy-minimal-format-maven-proxy
 
 nexus_repos_routing_rules:
   - name: routing-rule-block-nmap

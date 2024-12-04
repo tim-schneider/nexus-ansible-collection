@@ -1,12 +1,21 @@
 # Changelog
-## [1.11.2] - 2024-12-03
+## [1.11.2] - 2024-12-04
 ## Added
 - **nexus_oss** Introduced variables to control waiting time for nexus to startup.
   `nexus_api_availability_delay: 10`
   `nexus_api_availability_retries: 30`
+- **config_api** Added support to normalize all maven type repositories.
+  you can now use your `nexus_repos_maven_hosted`, `nexus_repos_maven_proxy` and `nexus_repos_maven_group` definitions with the `config_api` role without reformatting the dictionary.
+
+#### Important note on repository defaults
+The `config_api` role uses a different approach to set defaults. If you override the `_nexus_repos_maven_defaults` variable, make sure you apply the same defaults to the `nexus_repos_global_defaults`, `nexus_repos_type_defaults` and `nexus_repos_format_defaults` dictionaries! See role defaults for the full dictionaries.
 
 ## Fixed
-- Use defaults from `_nexus_repos_maven_defaults` for normalizing maven repos.
+- **config_api** Use defaults from `_nexus_repos_maven_defaults` for normalizing maven repos.
+
+idea: if _nexus_repos_maven_defaults is defined, map attributes to new format
+idea 2: copy defaults of _nexus_repos_maven_defaults to new type_defaults, global_defaults, format_defaults
+
 ## [1.11.1] - 2024-12-02
 
 ## Changed

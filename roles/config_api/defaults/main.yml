@@ -804,33 +804,6 @@ __nexus_repos_docker_proxy_defaults:
     indexUrl: https://index.docker.io
     cacheForeignLayers: false
     foreignLayerUrlWhitelist: []
-
-__nexus_repos_maven_group_defaults:
-  online: true
-  format: maven2
-  type: group
-  storage:
-    blobStoreName: default
-    strictContentTypeValidation: false
-  group:
-    memberNames: []
-
-__nexus_repos_maven_hosted_defaults:
-  online: true
-  format: maven2
-  type: hosted
-  storage:
-    blobStoreName: default
-    strictContentTypeValidation: false
-    writePolicy: allow_once
-  cleanup:
-    policyNames: []
-  component:
-    proprietaryComponents: false
-  maven:
-    versionPolicy: MIXED
-    layoutPolicy: STRICT
-    contentDisposition: INLINE
 nexus_repos_rubygems_hosted: []
 
 nexus_repos_rubygems_proxy: []
@@ -951,35 +924,60 @@ nexus_roles:
 nexus_content_selectors: []
 
 # Global Defaults
-global_defaults:
+nexus_repos_global_defaults:
   online: true
   storage:
     blobStoreName: default
-  cleanup:
-    policyNames: []
-  httpClient:
-    blocked: false
-    autoBlock: true
+    strictContentTypeValidation: true
+
+# TODO: Add support for hierachical cleanup policy defaults
+# Cleanup Policies defined at global level will be applied to all repositories
+# Policies applied at the repository level will be additional to the global policies etc..
 
 # Type-Specific Defaults
-type_defaults:
+nexus_repos_type_defaults:
   proxy:
+    cleanup:
+      policyNames: []
+    httpClient:
+      blocked: false
+      autoBlock: true
+      connection:
+        retries: 0
+        timeout: # Left blank on purpose to use the http global value
+        enableCircularRedirects: false
+        enableCookies: false
+        useTrustStore: false
+      authentication: # Left blank on purpose to return null for the API
     proxy:
       contentMaxAge: -1
       metadataMaxAge: 1440
     negativeCache:
       enabled: true
       timeToLive: 1440
+  hosted:
+    storage:
+      writePolicy: allow_once
+    component:
+      proprietaryComponents: false
+    cleanup:
+      policyNames: []
+  group:
+    group:
+      memberNames: []
+
 # Format-Specific Defaults
-format_defaults:
+nexus_repos_format_defaults:
   maven:
     storage:
       blobStoreName: "{{ nexus_blob_names.mvn.blob | default('default') }}"
     maven:
       versionPolicy: RELEASE
       layoutPolicy: STRICT
+      contentDisposition: ATTACHMENT
   pypi:
 # Legacy Field Map
+# Legacy Field Mapping to API attributes
 legacy_field_map:
   blob_store: "storage.blobStoreName"
   strict_content_validation: "storage.strictContentTypeValidation"
@@ -990,4 +988,9 @@ legacy_field_map:
   remote_password: "httpClient.authentication.password"
   layout_policy: "maven.layoutPolicy"
   version_policy: "maven.versionPolicy"
+  content_disposition: "maven.contentDisposition"
+  write_policy: "storage.writePolicy"
   remote_url: "proxy.remoteUrl"
+  proprietary_components: "component.proprietaryComponents"
+  cleanup_policies: "cleanup.policyNames"
+  member_repos: "group.memberNames"
