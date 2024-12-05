@@ -4,20 +4,14 @@
 - **nexus_oss** Introduced variables to control waiting time for nexus to startup.
   `nexus_api_availability_delay: 10`
   `nexus_api_availability_retries: 30`
-- **config_api** Added support to normalize all maven type repositories.
-  you can now use your `nexus_repos_maven_hosted`, `nexus_repos_maven_proxy` and `nexus_repos_maven_group` definitions with the `config_api` role without reformatting the dictionary.
-- **config_api** Added support to normalize all docker type repositories.
-  you can now use your `nexus_repos_docker_hosted`, `nexus_repos_docker_proxy` and `nexus_repos_docker_group` definitions with the `config_api` role without reformatting the dictionary.
-- **config_api** Added support to normalize gitlfs repositories.
-  you can now use your `nexus_repos_gitlfs_hosted` definitions with the `config_api` role without reformatting the dictionary.
-- **config_api** Added support to normalize conda repositories.
-  you can now use your `nexus_repos_conda_proxy` definitions with the `config_api` role without reformatting the dictionary.
+- **config_api** Added support to normalize the following repositories types/formats.
+  you can now use your `nexus_repos_maven_hosted`, `nexus_repos_maven_proxy`, `nexus_repos_maven_group`, `nexus_repos_docker_hosted`, `nexus_repos_docker_proxy`,`nexus_repos_docker_group`, `nexus_repos_gitlfs_hosted`, `nexus_repos_conda_proxy`, `nexus_repos_p2_proxy` and `nexus_repos_cocoapods_proxy` definitions with the `config_api` role without reformatting the dictionary.
 
 #### Important note on repository defaults
-The `config_api` role uses a different approach to set defaults. If you override the `_nexus_repos_maven_defaults` variable, make sure you apply the same defaults to the `nexus_repos_global_defaults`, `nexus_repos_type_defaults` and `nexus_repos_format_defaults` dictionaries! See role defaults for the full dictionaries.
+The `config_api` role uses a different approach to set defaults. If , for example, you override the `_nexus_repos_maven_defaults` variable, make sure you apply the same defaults to the `nexus_repos_global_defaults`, `nexus_repos_type_defaults` and `nexus_repos_format_defaults` dictionaries! See role defaults for the full dictionaries.
 
 ## Fixed
-- **config_api** Use defaults from `_nexus_repos_maven_defaults` for normalizing maven repos.
+- **config_api** Use defaults from `_nexus_repos_<format>_defaults` for normalizing repos.
 - **nexus_oss** Fixed attribute `allow_redeploy_latest` for docker repos
 
 ## Changed

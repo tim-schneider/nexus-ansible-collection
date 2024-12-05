@@ -21,8 +21,8 @@ nexus_config_nuget: false
 nexus_config_apt: false
 nexus_config_yum: false
 nexus_config_raw: false
-nexus_config_p2: false
-nexus_config_cocoapods: false
+nexus_config_p2: true
+nexus_config_cocoapods: true
 nexus_config_conan: false
 nexus_config_go: false
 nexus_config_cargo: false
@@ -977,9 +977,42 @@ nexus_repos_conan_proxy:
       timeToLive: 1440
 
 nexus_repos_cocoapods_proxy:
-  - name: cocoa-proxy-1
+  - name: new-format-minimal-cocoapods-proxy
     proxy:
-      remoteUrl: https://cocoapods-specs
+      remoteUrl: https://repo.cocoapods.com/pkgs/main
+  - name: legacy-format-minimal-cocoapods-proxy
+    blob_store: default
+    strict_content_validation: true
+    remote_url: https://repo.cocoapods.com/pkgs/main
+  - name: legacy-format-cleanup-cocoapods-proxy
+    cleanup_policies:
+      - cocoapods_cleanup_nexus_oss
+      - cocoapods_cleanup_config_api
+    remote_url: https://repo.cocoapods.com/pkgs/main
+  - name: new-format-cleanup-reverse-order-cocoapods-proxy
+    cleanup:
+      policyNames:
+        - cocoapods_cleanup_config_api
+        - cocoapods_cleanup_nexus_oss
+    remote_url: https://repo.cocoapods.com/pkgs/main
+  - name: mixed-format-cocoapods-proxy
+    blob_store: legacy-minimal-blobstore
+    storage:
+      strictContentTypeValidation: false
+    cleanup_policies:
+      - cocoapods_cleanup_nexus_oss
+    remote_url: https://repo.cocoapods.com/pkgs/main
+  - name: full-new-format-cocoapods-proxy
+    online: true
+    storage:
+      blobStoreName: default
+      strictContentTypeValidation: true
+    cleanup:
+      policyNames:
+        - cocoapods_cleanup_config_api
+        - cocoapods_cleanup_nexus_oss
+    proxy:
+      remoteUrl: https://repo.cocoapods.com/pkgs/main
       contentMaxAge: 1440
       metadataMaxAge: 1440
     negativeCache:
@@ -990,25 +1023,78 @@ nexus_repos_cocoapods_proxy:
       autoBlock: true
       connection:
         useTrustStore: true
-  - name: cocoa-proxy-2
-    proxy:
-      remoteUrl: https://cocoapods-specs
-      contentMaxAge: 1440
-      metadataMaxAge: 1440
+        retries: 3
+        timeout: 60
+        userAgentSuffix: "Nexus/3.20.1-01 (OSS)"
+        enableCircularRedirects: true
+        enableCookies: true
+      authentication:
+        type: username
+        username: "full-auth-user"
+        password: "full-auth-pass"
     routingRule: routing-rule-allow-all
-  - name: cocoa-proxy-3
-    proxy:
-      remoteUrl: https://cocoapods-specs
-      contentMaxAge: 1440
-      metadataMaxAge: 1440
-    negativeCache:
-      enabled: true
-      timeToLive: 1440
+  - name: full-legacy-format-cocoapods-proxy
+    blob_store: legacy-minimal-blobstore
+    strict_content_validation: true
+    cleanup_policies:
+      - cocoapods_cleanup_config_api
+      - cocoapods_cleanup_nexus_oss
+    remote_url: https://repo.cocoapods.com/pkgs/main
+    maximum_component_age: 1440
+    maximum_metadata_age: 1440
+    negative_cache_enabled: true
+    negative_cache_ttl: 1440
+    blocked: false
+    auto_block: true
+    use_trust_store: true
+    connection_retries: 3
+    connection_timeout: 60
+    user_agent_suffix: "Nexus/3.20.1-01 (OSS)"
+    enable_circular_redirects: true
+    enable_cookies: true
+    remote_username: "full-auth-user"
+    remote_password: "full-auth-pass"
+    ntlm_domain: "full-ntlm-domain"
+    ntlm_host: "full-ntlm-host"
+    routing_rules: routing-rule-allow-all
 
 nexus_repos_p2_proxy:
-  - name: p2-proxy-1
+  - name: new-format-minimal-p2-proxy
     proxy:
-      remoteUrl: http://download.eclipse.org/releases/2019-06
+      remoteUrl: https://repo.p2.com/pkgs/main
+  - name: legacy-format-minimal-p2-proxy
+    blob_store: default
+    strict_content_validation: true
+    remote_url: https://repo.p2.com/pkgs/main
+  - name: legacy-format-cleanup-p2-proxy
+    cleanup_policies:
+      - p2_cleanup_nexus_oss
+      - p2_cleanup_config_api
+    remote_url: https://repo.p2.com/pkgs/main
+  - name: new-format-cleanup-reverse-order-p2-proxy
+    cleanup:
+      policyNames:
+        - p2_cleanup_config_api
+        - p2_cleanup_nexus_oss
+    remote_url: https://repo.p2.com/pkgs/main
+  - name: mixed-format-p2-proxy
+    blob_store: legacy-minimal-blobstore
+    storage:
+      strictContentTypeValidation: false
+    cleanup_policies:
+      - p2_cleanup_nexus_oss
+    remote_url: https://repo.p2.com/pkgs/main
+  - name: full-new-format-p2-proxy
+    online: true
+    storage:
+      blobStoreName: default
+      strictContentTypeValidation: true
+    cleanup:
+      policyNames:
+        - p2_cleanup_config_api
+        - p2_cleanup_nexus_oss
+    proxy:
+      remoteUrl: https://repo.p2.com/pkgs/main
       contentMaxAge: 1440
       metadataMaxAge: 1440
     negativeCache:
@@ -1018,21 +1104,41 @@ nexus_repos_p2_proxy:
       blocked: false
       autoBlock: true
       connection:
-        useTrustStore: false
-  - name: p2-proxy-2
-    proxy:
-      remoteUrl: http://download.eclipse.org/releases/2019-06
-      contentMaxAge: 1440
-      metadataMaxAge: 1440
+        useTrustStore: true
+        retries: 3
+        timeout: 60
+        userAgentSuffix: "Nexus/3.20.1-01 (OSS)"
+        enableCircularRedirects: true
+        enableCookies: true
+      authentication:
+        type: username
+        username: "full-auth-user"
+        password: "full-auth-pass"
     routingRule: routing-rule-allow-all
-  - name: p2-proxy-3
-    proxy:
-      remoteUrl: http://download.eclipse.org/releases/2019-06
-      contentMaxAge: 1440
-      metadataMaxAge: 1440
-    negativeCache:
-      enabled: true
-      timeToLive: 1440
+  - name: full-legacy-format-p2-proxy
+    blob_store: legacy-minimal-blobstore
+    strict_content_validation: true
+    cleanup_policies:
+      - p2_cleanup_config_api
+      - p2_cleanup_nexus_oss
+    remote_url: https://repo.p2.com/pkgs/main
+    maximum_component_age: 1440
+    maximum_metadata_age: 1440
+    negative_cache_enabled: true
+    negative_cache_ttl: 1440
+    blocked: false
+    auto_block: true
+    use_trust_store: true
+    connection_retries: 3
+    connection_timeout: 60
+    user_agent_suffix: "Nexus/3.20.1-01 (OSS)"
+    enable_circular_redirects: true
+    enable_cookies: true
+    remote_username: "full-auth-user"
+    remote_password: "full-auth-pass"
+    ntlm_domain: "full-ntlm-domain"
+    ntlm_host: "full-ntlm-host"
+    routing_rules: routing-rule-allow-all
 
 nexus_repos_raw_hosted:
   - name: raw-hosted-1

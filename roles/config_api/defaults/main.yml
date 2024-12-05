@@ -55,8 +55,8 @@ nexus_config_nuget: false
 nexus_config_apt: false
 nexus_config_yum: false
 nexus_config_raw: false
-nexus_config_p2: false
-nexus_config_cocoapods: false
+nexus_config_p2: true
+nexus_config_cocoapods: true
 nexus_config_conan: false
 nexus_config_go: false
 nexus_config_cargo: false
@@ -256,9 +256,15 @@ nexus_repos_format_defaults:
   gitlfs:
     storage:
       blobStoreName: "{{ nexus_blob_names.gitlfs.blob | default('default') }}"
+  p2:
+    storage:
+      blobStoreName: "{{ nexus_blob_names.p2.blob | default('default') }}"
   conda:
     storage:
       blobStoreName: "{{ nexus_blob_names.conda.blob | default('default') }}"
+  cocoapods:
+    storage:
+      blobStoreName: "{{ nexus_blob_names.cocoapods.blob | default('default') }}"
 
 # Legacy Field Mapping to API attributes
 legacy_field_map:
