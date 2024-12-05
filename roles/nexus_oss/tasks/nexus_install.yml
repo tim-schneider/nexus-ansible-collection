@@ -540,9 +540,9 @@
     status_code: 200
     timeout: "{{ nexus_api_timeout }}"
     register: __nexus_writable__
-    until: __nexus_writable__.status == 200
-    retries: "{{ nexus_api_availability_retries }}"
-    delay: "{{ nexus_api_availability_delay }}"
+  until: __nexus_writable__.status == 200
+  retries: "{{ nexus_api_availability_retries }}"
+  delay: "{{ nexus_api_availability_delay }}"
 
 - name: Access scripts API endpoint with defined admin password
   ansible.builtin.uri:
