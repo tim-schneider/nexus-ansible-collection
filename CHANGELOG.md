@@ -5,7 +5,19 @@
   `nexus_api_availability_delay: 10`
   `nexus_api_availability_retries: 30`
 - **config_api** Added support to normalize the following repositories types/formats.
-  you can now use your `nexus_repos_maven_hosted`, `nexus_repos_maven_proxy`, `nexus_repos_maven_group`, `nexus_repos_docker_hosted`, `nexus_repos_docker_proxy`,`nexus_repos_docker_group`, `nexus_repos_gitlfs_hosted`, `nexus_repos_conda_proxy`, `nexus_repos_p2_proxy` and `nexus_repos_cocoapods_proxy` definitions with the `config_api` role without reformatting the dictionary.
+  you can now use your
+  - `nexus_repos_maven_hosted`, `nexus_repos_maven_proxy`, `nexus_repos_maven_group`
+  - `nexus_repos_docker_hosted`, `nexus_repos_docker_proxy`, `nexus_repos_docker_group`
+  - `nexus_repos_rubygems_hosted`, `nexus_repos_rubygems_proxy`, `nexus_repos_rubygems_group`
+  - `nexus_repos_r_hosted`, `nexus_repos_r_proxy`, `nexus_repos_r_group`
+  - `nexus_repos_cargo_hosted`, `nexus_repos_cargo_proxy`, `nexus_repos_cargo_group`
+  - `nexus_repos_nuget_hosted`, `nexus_repos_nuget_proxy`, `nexus_repos_nuget_group`
+  - `nexus_repos_go_proxy`, `nexus_repos_go_group`
+  - `nexus_repos_helm_hosted`, `nexus_repos_helm_proxy`
+  - `nexus_repos_gitlfs_hosted`
+  - `nexus_repos_conda_proxy`
+  - `nexus_repos_p2_proxy`
+  and `nexus_repos_cocoapods_proxy` definitions with the `config_api` role without reformatting the dictionary.
 
 #### Important note on repository defaults
 The `config_api` role uses a different approach to set defaults. If , for example, you override the `_nexus_repos_maven_defaults` variable, make sure you apply the same defaults to the `nexus_repos_global_defaults`, `nexus_repos_type_defaults` and `nexus_repos_format_defaults` dictionaries! See role defaults for the full dictionaries.

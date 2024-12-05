@@ -15,18 +15,18 @@ nexus_config_gitlfs: true
 nexus_config_npm: false
 nexus_config_pypi: false
 nexus_config_conda: true
-nexus_config_helm: false
-nexus_config_r: false
-nexus_config_nuget: false
+nexus_config_helm: true
+nexus_config_r: true
+nexus_config_nuget: true
 nexus_config_apt: false
 nexus_config_yum: false
 nexus_config_raw: false
 nexus_config_p2: true
 nexus_config_cocoapods: true
 nexus_config_conan: false
-nexus_config_go: false
-nexus_config_cargo: false
-nexus_config_rubygems: false
+nexus_config_go: true
+nexus_config_cargo: true
+nexus_config_rubygems: true
 
 ldap_connections:
   - name: Mock ldap server STATIC # Required
@@ -795,86 +795,43 @@ nexus_repos_cleanup_policies:
       lastDownloaded: 120
       regexKey: "beta-*"
 
-nexus_repos_rubygems_hosted:
-  - name: rubygems-hosted-1
-    online: true
-    storage:
-      blobStoreName: default
-      strictContentTypeValidation: true
-    cleanup:
-      policyNames: []
-  - name: rubygems-hosted-2
-    online: true
-    storage:
-      blobStoreName: default
-      strictContentTypeValidation: false
-    cleanup:
-      policyNames: []
-  - name: rubygems-hosted-offline
-    online: false
-    storage:
-      blobStoreName: default
-      strictContentTypeValidation: false
+nexus_repos_go_proxy:
+  - name: new-format-minimal-go-proxy
+    proxy:
+      remoteUrl: https://repo.go.com/pkgs/main
+  - name: legacy-format-minimal-go-proxy
+    blob_store: default
+    strict_content_validation: true
+    remote_url: https://repo.go.com/pkgs/main
+  - name: legacy-format-cleanup-go-proxy
+    cleanup_policies:
+      - go_cleanup_nexus_oss
+      - go_cleanup_config_api
+    remote_url: https://repo.go.com/pkgs/main
+  - name: new-format-cleanup-reverse-order-go-proxy
     cleanup:
       policyNames:
-        - rubygems_cleanup
-
-nexus_repos_rubygems_proxy:
-  - name: rubygems-proxy-1
-    proxy:
-      remoteUrl: https://rubygems.org
-      contentMaxAge: 1440
-      metadataMaxAge: 1440
-    negativeCache:
-      enabled: true
-      timeToLive: 1440
-    httpClient:
-      blocked: false
-      autoBlock: true
-      connection:
-        useTrustStore: true
-  - name: rubygems-proxy-2
-    proxy:
-      remoteUrl: https://rubygems.org
-      contentMaxAge: 1440
-      metadataMaxAge: 1440
-    routingRule: routing-rule-allow-all
-  - name: rubygems-proxy-3
-    proxy:
-      remoteUrl: https://rubygems.org
-      contentMaxAge: 1440
-      metadataMaxAge: 1440
-    negativeCache:
-      enabled: true
-      timeToLive: 1440
-
-nexus_repos_rubygems_group:
-  - name: rubygems-group
+        - go_cleanup_config_api
+        - go_cleanup_nexus_oss
+    remote_url: https://repo.go.com/pkgs/main
+  - name: mixed-format-go-proxy
+    blob_store: legacy-minimal-blobstore
+    storage:
+      strictContentTypeValidation: false
+    cleanup_policies:
+      - go_cleanup_nexus_oss
+    remote_url: https://repo.go.com/pkgs/main
+  - name: full-new-format-go-proxy
     online: true
     storage:
       blobStoreName: default
       strictContentTypeValidation: true
-    group:
-      memberNames:
-        - rubygems-proxy-1
-        - rubygems-proxy-2
-        - rubygems-proxy-3
-    routingRule: routing-rule-allow-all
-  - name: rubygems-group-reverse-group-order
-    online: false
-    storage:
-      blobStoreName: default
-      strictContentTypeValidation: false
-    group:
-      memberNames:
-        - rubygems-proxy-3
-        - rubygems-proxy-2
-        - rubygems-proxy-1
-
-nexus_repos_go_proxy:
-  - name: go-proxy-1
+    cleanup:
+      policyNames:
+        - go_cleanup_config_api
+        - go_cleanup_nexus_oss
     proxy:
-      remoteUrl: https://gocenter.io
+      remoteUrl: https://repo.go.com/pkgs/main
       contentMaxAge: 1440
       metadataMaxAge: 1440
     negativeCache:
@@ -885,67 +842,522 @@ nexus_repos_go_proxy:
       autoBlock: true
       connection:
         useTrustStore: true
-  - name: go-proxy-2
-    proxy:
-      remoteUrl: https://gocenter.io
-      contentMaxAge: 1440
-      metadataMaxAge: 1440
+        retries: 3
+        timeout: 60
+        userAgentSuffix: "Nexus/3.20.1-01 (OSS)"
+        enableCircularRedirects: true
+        enableCookies: true
+      authentication:
+        type: username
+        username: "full-auth-user"
+        password: "full-auth-pass"
     routingRule: routing-rule-allow-all
-  - name: go-proxy-3
-    proxy:
-      remoteUrl: https://gocenter.io
-      contentMaxAge: 1440
-      metadataMaxAge: 1440
-    negativeCache:
-      enabled: true
-      timeToLive: 1440
+  - name: full-legacy-format-go-proxy
+    blob_store: legacy-minimal-blobstore
+    strict_content_validation: true
+    cleanup_policies:
+      - go_cleanup_config_api
+      - go_cleanup_nexus_oss
+    remote_url: https://repo.go.com/pkgs/main
+    maximum_component_age: 1440
+    maximum_metadata_age: 1440
+    negative_cache_enabled: true
+    negative_cache_ttl: 1440
+    blocked: false
+    auto_block: true
+    use_trust_store: true
+    connection_retries: 3
+    connection_timeout: 60
+    user_agent_suffix: "Nexus/3.20.1-01 (OSS)"
+    enable_circular_redirects: true
+    enable_cookies: true
+    remote_username: "full-auth-user"
+    remote_password: "full-auth-pass"
+    ntlm_domain: "full-ntlm-domain"
+    ntlm_host: "full-ntlm-host"
+    routing_rules: routing-rule-allow-all
 
 nexus_repos_go_group:
-  - name: go-group
-    online: true
-    storage:
-      blobStoreName: default
-      strictContentTypeValidation: true
+  # Minimal new format
+  - name: new-format-minimal-go-group
     group:
       memberNames:
-        - go-proxy-1
-        - go-proxy-2
-        - go-proxy-3
-    routingRule: routing-rule-allow-all
-  - name: go-group-reverse-group-order
-    online: false
-    storage:
-      blobStoreName: default
-      strictContentTypeValidation: false
-    group:
-      memberNames:
-        - go-proxy-3
-        - go-proxy-2
-        - go-proxy-1
+        - new-format-minimal-go-proxy
 
-nexus_repos_conan_hosted:
-  - name: conan-hosted-1
+  # Minimal legacy format
+  - name: legacy-format-minimal-go-group
+    member_repos:
+      - legacy-format-minimal-go-proxy
+
+  # Legacy format with both hosted and proxy members
+  - name: legacy-format-hosted-proxy-go-group
+    member_repos:
+      - new-format-minimal-go-proxy
+      - legacy-format-minimal-go-proxy
+
+  # New format with both hosted and proxy members
+  - name: new-format-hosted-proxy-go-group
+    group:
+      memberNames:
+        - new-format-minimal-go-proxy
+        - legacy-format-minimal-go-proxy
+
+  # New format with both hosted and proxy members (reversed order)
+  - name: new-format-hosted-proxy-go-group-reversed
+    group:
+      memberNames:
+        - legacy-format-minimal-go-proxy
+        - new-format-minimal-go-proxy
+
+  # Mixed format with a combination of legacy and new format members
+  - name: mixed-format-go-group
+    storage:
+      strictContentTypeValidation: true
+    member_repos:
+      - legacy-format-minimal-go-proxy
+      - new-format-minimal-go-proxy
+
+  # Fully complete new format
+  - name: full-new-format-go-group
     online: true
     storage:
       blobStoreName: default
       strictContentTypeValidation: true
-    cleanup:
-      policyNames: []
-  - name: conan-hosted-2
-    online: true
-    storage:
-      blobStoreName: default
-      strictContentTypeValidation: false
-    cleanup:
-      policyNames: []
-  - name: conan-hosted-offline
-    online: false
-    storage:
-      blobStoreName: default
-      strictContentTypeValidation: false
     cleanup:
       policyNames:
-        - conan_cleanup
+        - go_cleanup_config_api
+        - mvn_cleanup_legacy_format
+    group:
+      memberNames:
+        - full-legacy-format-go-proxy
+        - full-new-format-go-proxy
+
+  # Fully complete legacy format
+  - name: full-legacy-format-go-group
+    blob_store: legacy-minimal-blobstore
+    strict_content_validation: false
+    cleanup_policies:
+      - mvn_cleanup_legacy_format
+    member_repos:
+      - full-legacy-format-go-proxy
+      - full-new-format-go-proxy
+
+nexus_repos_cargo_hosted:
+  - name: new-format-minimal-cargo-hosted
+  - name: legacy-format-minimal-cargo-hosted
+    blob_store: default
+    strict_content_validation: true
+  - name: legacy-format-cleanup-cargo-hosted
+    cleanup_policies:
+      - cargo_cleanup_nexus_oss
+      - cargo_cleanup_config_api
+  - name: new-format-cleanup-reverse-order-cargo-hosted
+    cleanup:
+      policyNames:
+        - cargo_cleanup_config_api
+        - cargo_cleanup_nexus_oss
+  - name: mixed-format-cargo-hosted
+    blob_store: legacy-blobstore-complete
+    storage:
+      strictContentTypeValidation: false
+    cleanup_policies:
+      - cargo_cleanup_nexus_oss
+  - name: full-new-format-cargo-hosted
+    online: true
+    storage:
+      blobStoreName: default
+      strictContentTypeValidation: true
+      writePolicy: ALLOW
+    cleanup:
+      policyNames:
+        - cargo_cleanup_config_api
+        - cargo_cleanup_nexus_oss
+    component:
+      proprietaryComponents: true
+  - name: full-legacy-format-cargo-hosted
+    blob_store: legacy-blobstore-complete
+    strict_content_validation: true
+    cleanup_policies:
+      - cargo_cleanup_nexus_oss
+      - cargo_cleanup_config_api
+    write_policy: ALLOW
+    proprietary_components: true
+
+nexus_repos_cargo_proxy:
+  - name: new-format-minimal-cargo-proxy
+    proxy:
+      remoteUrl: https://repo.cargo.com/pkgs/main
+  - name: legacy-format-minimal-cargo-proxy
+    blob_store: default
+    strict_content_validation: true
+    remote_url: https://repo.cargo.com/pkgs/main
+  - name: legacy-format-cleanup-cargo-proxy
+    cleanup_policies:
+      - cargo_cleanup_nexus_oss
+      - cargo_cleanup_config_api
+    remote_url: https://repo.cargo.com/pkgs/main
+  - name: new-format-cleanup-reverse-order-cargo-proxy
+    cleanup:
+      policyNames:
+        - cargo_cleanup_config_api
+        - cargo_cleanup_nexus_oss
+    remote_url: https://repo.cargo.com/pkgs/main
+  - name: mixed-format-cargo-proxy
+    blob_store: legacy-minimal-blobstore
+    storage:
+      strictContentTypeValidation: false
+    cleanup_policies:
+      - cargo_cleanup_nexus_oss
+    remote_url: https://repo.cargo.com/pkgs/main
+  - name: full-new-format-cargo-proxy
+    online: true
+    storage:
+      blobStoreName: default
+      strictContentTypeValidation: true
+    cleanup:
+      policyNames:
+        - cargo_cleanup_config_api
+        - cargo_cleanup_nexus_oss
+    proxy:
+      remoteUrl: https://repo.cargo.com/pkgs/main
+      contentMaxAge: 1440
+      metadataMaxAge: 1440
+    negativeCache:
+      enabled: true
+      timeToLive: 1440
+    httpClient:
+      blocked: false
+      autoBlock: true
+      connection:
+        useTrustStore: true
+        retries: 3
+        timeout: 60
+        userAgentSuffix: "Nexus/3.20.1-01 (OSS)"
+        enableCircularRedirects: true
+        enableCookies: true
+      authentication:
+        type: username
+        username: "full-auth-user"
+        password: "full-auth-pass"
+    routingRule: routing-rule-allow-all
+  - name: full-legacy-format-cargo-proxy
+    blob_store: legacy-minimal-blobstore
+    strict_content_validation: true
+    cleanup_policies:
+      - cargo_cleanup_config_api
+      - cargo_cleanup_nexus_oss
+    remote_url: https://repo.cargo.com/pkgs/main
+    maximum_component_age: 1440
+    maximum_metadata_age: 1440
+    negative_cache_enabled: true
+    negative_cache_ttl: 1440
+    blocked: false
+    auto_block: true
+    use_trust_store: true
+    connection_retries: 3
+    connection_timeout: 60
+    user_agent_suffix: "Nexus/3.20.1-01 (OSS)"
+    enable_circular_redirects: true
+    enable_cookies: true
+    remote_username: "full-auth-user"
+    remote_password: "full-auth-pass"
+    ntlm_domain: "full-ntlm-domain"
+    ntlm_host: "full-ntlm-host"
+    routing_rules: routing-rule-allow-all
+
+nexus_repos_cargo_group:
+  # Minimal new format
+  - name: new-format-minimal-cargo-group
+    group:
+      memberNames:
+        - new-format-minimal-cargo-hosted
+
+  # Minimal legacy format
+  - name: legacy-format-minimal-cargo-group
+    member_repos:
+      - legacy-format-minimal-cargo-hosted
+
+  # Legacy format with both hosted and proxy members
+  - name: legacy-format-hosted-proxy-cargo-group
+    member_repos:
+      - legacy-format-minimal-cargo-hosted
+      - legacy-format-minimal-cargo-proxy
+
+  # New format with both hosted and proxy members
+  - name: new-format-hosted-proxy-cargo-group
+    group:
+      memberNames:
+        - new-format-minimal-cargo-hosted
+        - new-format-minimal-cargo-proxy
+
+  # New format with both hosted and proxy members (reversed order)
+  - name: new-format-hosted-proxy-cargo-group-reversed
+    group:
+      memberNames:
+        - new-format-minimal-cargo-proxy
+        - new-format-minimal-cargo-hosted
+
+  # Mixed format with a combination of legacy and new format members
+  - name: mixed-format-cargo-group
+    storage:
+      strictContentTypeValidation: true
+    member_repos:
+      - legacy-format-minimal-cargo-hosted
+      - new-format-minimal-cargo-proxy
+
+  # Fully complete new format
+  - name: full-new-format-cargo-group
+    online: true
+    storage:
+      blobStoreName: default
+      strictContentTypeValidation: true
+    cleanup:
+      policyNames:
+        - cargo_cleanup_config_api
+        - mvn_cleanup_legacy_format
+    group:
+      memberNames:
+        - full-new-format-cargo-hosted
+        - full-new-format-cargo-proxy
+
+  # Fully complete legacy format
+  - name: full-legacy-format-cargo-group
+    blob_store: legacy-minimal-blobstore
+    strict_content_validation: false
+    cleanup_policies:
+      - mvn_cleanup_legacy_format
+    member_repos:
+      - full-legacy-format-cargo-hosted
+      - full-legacy-format-cargo-proxy
+
+nexus_repos_rubygems_hosted:
+  - name: new-format-minimal-rubygems-hosted
+  - name: legacy-format-minimal-rubygems-hosted
+    blob_store: default
+    strict_content_validation: true
+  - name: legacy-format-cleanup-rubygems-hosted
+    cleanup_policies:
+      - rubygems_cleanup_nexus_oss
+      - rubygems_cleanup_config_api
+  - name: new-format-cleanup-reverse-order-rubygems-hosted
+    cleanup:
+      policyNames:
+        - rubygems_cleanup_config_api
+        - rubygems_cleanup_nexus_oss
+  - name: mixed-format-rubygems-hosted
+    blob_store: legacy-blobstore-complete
+    storage:
+      strictContentTypeValidation: false
+    cleanup_policies:
+      - rubygems_cleanup_nexus_oss
+  - name: full-new-format-rubygems-hosted
+    online: true
+    storage:
+      blobStoreName: default
+      strictContentTypeValidation: true
+      writePolicy: ALLOW
+    cleanup:
+      policyNames:
+        - rubygems_cleanup_config_api
+        - rubygems_cleanup_nexus_oss
+    component:
+      proprietaryComponents: true
+  - name: full-legacy-format-rubygems-hosted
+    blob_store: legacy-blobstore-complete
+    strict_content_validation: true
+    cleanup_policies:
+      - rubygems_cleanup_nexus_oss
+      - rubygems_cleanup_config_api
+    write_policy: ALLOW
+    proprietary_components: true
+
+nexus_repos_rubygems_proxy:
+  - name: new-format-minimal-rubygems-proxy
+    proxy:
+      remoteUrl: https://repo.rubygems.com/pkgs/main
+  - name: legacy-format-minimal-rubygems-proxy
+    blob_store: default
+    strict_content_validation: true
+    remote_url: https://repo.rubygems.com/pkgs/main
+  - name: legacy-format-cleanup-rubygems-proxy
+    cleanup_policies:
+      - rubygems_cleanup_nexus_oss
+      - rubygems_cleanup_config_api
+    remote_url: https://repo.rubygems.com/pkgs/main
+  - name: new-format-cleanup-reverse-order-rubygems-proxy
+    cleanup:
+      policyNames:
+        - rubygems_cleanup_config_api
+        - rubygems_cleanup_nexus_oss
+    remote_url: https://repo.rubygems.com/pkgs/main
+  - name: mixed-format-rubygems-proxy
+    blob_store: legacy-minimal-blobstore
+    storage:
+      strictContentTypeValidation: false
+    cleanup_policies:
+      - rubygems_cleanup_nexus_oss
+    remote_url: https://repo.rubygems.com/pkgs/main
+  - name: full-new-format-rubygems-proxy
+    online: true
+    storage:
+      blobStoreName: default
+      strictContentTypeValidation: true
+    cleanup:
+      policyNames:
+        - rubygems_cleanup_config_api
+        - rubygems_cleanup_nexus_oss
+    proxy:
+      remoteUrl: https://repo.rubygems.com/pkgs/main
+      contentMaxAge: 1440
+      metadataMaxAge: 1440
+    negativeCache:
+      enabled: true
+      timeToLive: 1440
+    httpClient:
+      blocked: false
+      autoBlock: true
+      connection:
+        useTrustStore: true
+        retries: 3
+        timeout: 60
+        userAgentSuffix: "Nexus/3.20.1-01 (OSS)"
+        enableCircularRedirects: true
+        enableCookies: true
+      authentication:
+        type: username
+        username: "full-auth-user"
+        password: "full-auth-pass"
+    routingRule: routing-rule-allow-all
+  - name: full-legacy-format-rubygems-proxy
+    blob_store: legacy-minimal-blobstore
+    strict_content_validation: true
+    cleanup_policies:
+      - rubygems_cleanup_config_api
+      - rubygems_cleanup_nexus_oss
+    remote_url: https://repo.rubygems.com/pkgs/main
+    maximum_component_age: 1440
+    maximum_metadata_age: 1440
+    negative_cache_enabled: true
+    negative_cache_ttl: 1440
+    blocked: false
+    auto_block: true
+    use_trust_store: true
+    connection_retries: 3
+    connection_timeout: 60
+    user_agent_suffix: "Nexus/3.20.1-01 (OSS)"
+    enable_circular_redirects: true
+    enable_cookies: true
+    remote_username: "full-auth-user"
+    remote_password: "full-auth-pass"
+    ntlm_domain: "full-ntlm-domain"
+    ntlm_host: "full-ntlm-host"
+    routing_rules: routing-rule-allow-all
+
+nexus_repos_rubygems_group:
+  # Minimal new format
+  - name: new-format-minimal-rubygems-group
+    group:
+      memberNames:
+        - new-format-minimal-rubygems-hosted
+
+  # Minimal legacy format
+  - name: legacy-format-minimal-rubygems-group
+    member_repos:
+      - legacy-format-minimal-rubygems-hosted
+
+  # Legacy format with both hosted and proxy members
+  - name: legacy-format-hosted-proxy-rubygems-group
+    member_repos:
+      - legacy-format-minimal-rubygems-hosted
+      - legacy-format-minimal-rubygems-proxy
+
+  # New format with both hosted and proxy members
+  - name: new-format-hosted-proxy-rubygems-group
+    group:
+      memberNames:
+        - new-format-minimal-rubygems-hosted
+        - new-format-minimal-rubygems-proxy
+
+  # New format with both hosted and proxy members (reversed order)
+  - name: new-format-hosted-proxy-rubygems-group-reversed
+    group:
+      memberNames:
+        - new-format-minimal-rubygems-proxy
+        - new-format-minimal-rubygems-hosted
+
+  # Mixed format with a combination of legacy and new format members
+  - name: mixed-format-rubygems-group
+    storage:
+      strictContentTypeValidation: true
+    member_repos:
+      - legacy-format-minimal-rubygems-hosted
+      - new-format-minimal-rubygems-proxy
+
+  # Fully complete new format
+  - name: full-new-format-rubygems-group
+    online: true
+    storage:
+      blobStoreName: default
+      strictContentTypeValidation: true
+    cleanup:
+      policyNames:
+        - rubygems_cleanup_config_api
+        - mvn_cleanup_legacy_format
+    group:
+      memberNames:
+        - full-new-format-rubygems-hosted
+        - full-new-format-rubygems-proxy
+
+  # Fully complete legacy format
+  - name: full-legacy-format-rubygems-group
+    blob_store: legacy-minimal-blobstore
+    strict_content_validation: false
+    cleanup_policies:
+      - mvn_cleanup_legacy_format
+    member_repos:
+      - full-legacy-format-rubygems-hosted
+      - full-legacy-format-rubygems-proxy
+
+nexus_repos_conan_hosted:
+  - name: new-format-minimal-conan-hosted
+  - name: legacy-format-minimal-conan-hosted
+    blob_store: default
+    strict_content_validation: true
+  - name: legacy-format-cleanup-conan-hosted
+    cleanup_policies:
+      - conan_cleanup_nexus_oss
+      - conan_cleanup_config_api
+  - name: new-format-cleanup-reverse-order-conan-hosted
+    cleanup:
+      policyNames:
+        - conan_cleanup_config_api
+        - conan_cleanup_nexus_oss
+  - name: mixed-format-conan-hosted
+    blob_store: legacy-blobstore-complete
+    storage:
+      strictContentTypeValidation: false
+    cleanup_policies:
+      - conan_cleanup_nexus_oss
+  - name: full-new-format-conan-hosted
+    online: true
+    storage:
+      blobStoreName: default
+      strictContentTypeValidation: true
+      writePolicy: ALLOW
+    cleanup:
+      policyNames:
+        - conan_cleanup_config_api
+        - conan_cleanup_nexus_oss
+    component:
+      proprietaryComponents: true
+  - name: full-legacy-format-conan-hosted
+    blob_store: legacy-blobstore-complete
+    strict_content_validation: true
+    cleanup_policies:
+      - conan_cleanup_nexus_oss
+      - conan_cleanup_config_api
+    write_policy: ALLOW
+    proprietary_components: true
 
 nexus_repos_conan_proxy:
   - name: conan-proxy-1
@@ -1369,39 +1781,83 @@ nexus_repos_apt_proxy:
       flat: true
 
 nexus_repos_nuget_hosted:
-  - name: nuget-hosted-1
+  - name: new-format-minimal-nuget-hosted
+  - name: legacy-format-minimal-nuget-hosted
+    blob_store: default
+    strict_content_validation: true
+  - name: legacy-format-cleanup-nuget-hosted
+    cleanup_policies:
+      - nuget_cleanup_nexus_oss
+      - nuget_cleanup_config_api
+  - name: new-format-cleanup-reverse-order-nuget-hosted
+    cleanup:
+      policyNames:
+        - nuget_cleanup_config_api
+        - nuget_cleanup_nexus_oss
+  - name: mixed-format-nuget-hosted
+    blob_store: legacy-blobstore-complete
+    storage:
+      strictContentTypeValidation: false
+    cleanup_policies:
+      - nuget_cleanup_nexus_oss
+  - name: full-new-format-nuget-hosted
     online: true
     storage:
       blobStoreName: default
       strictContentTypeValidation: true
-    cleanup:
-      policyNames: []
-    component:
-      proprietaryComponents: true
-  - name: nuget-hosted-2
-    online: true
-    storage:
-      blobStoreName: default
-      strictContentTypeValidation: false
-    cleanup:
-      policyNames: []
-    component:
-      proprietaryComponents: false
-  - name: nuget-hosted-offline
-    online: false
-    storage:
-      blobStoreName: default
-      strictContentTypeValidation: false
+      writePolicy: ALLOW
     cleanup:
       policyNames:
-        - nuget_cleanup
+        - nuget_cleanup_config_api
+        - nuget_cleanup_nexus_oss
     component:
-      proprietaryComponents: false
+      proprietaryComponents: true
+  - name: full-legacy-format-nuget-hosted
+    blob_store: legacy-blobstore-complete
+    strict_content_validation: true
+    cleanup_policies:
+      - nuget_cleanup_nexus_oss
+      - nuget_cleanup_config_api
+    write_policy: ALLOW
+    proprietary_components: true
 
 nexus_repos_nuget_proxy:
-  - name: nuget-proxy-1
+  - name: new-format-minimal-nuget-proxy
     proxy:
-      remoteUrl: https://api.nuget.org/v3/index.json
+      remoteUrl: https://repo.nuget.com/pkgs/main
+  - name: legacy-format-minimal-nuget-proxy
+    blob_store: default
+    strict_content_validation: true
+    remote_url: https://repo.nuget.com/pkgs/main
+  - name: legacy-format-cleanup-nuget-proxy
+    cleanup_policies:
+      - nuget_cleanup_nexus_oss
+      - nuget_cleanup_config_api
+    remote_url: https://repo.nuget.com/pkgs/main
+  - name: new-format-cleanup-reverse-order-nuget-proxy
+    cleanup:
+      policyNames:
+        - nuget_cleanup_config_api
+        - nuget_cleanup_nexus_oss
+    remote_url: https://repo.nuget.com/pkgs/main
+  - name: mixed-format-nuget-proxy
+    blob_store: legacy-minimal-blobstore
+    storage:
+      strictContentTypeValidation: false
+    cleanup_policies:
+      - nuget_cleanup_nexus_oss
+    remote_url: https://repo.nuget.com/pkgs/main
+  - name: full-new-format-nuget-proxy
+    online: true
+    storage:
+      blobStoreName: default
+      strictContentTypeValidation: true
+    cleanup:
+      policyNames:
+        - nuget_cleanup_config_api
+        - nuget_cleanup_nexus_oss
+    proxy:
+      remoteUrl: https://repo.nuget.com/pkgs/main
       contentMaxAge: 1440
       metadataMaxAge: 1440
     negativeCache:
@@ -1412,164 +1868,189 @@ nexus_repos_nuget_proxy:
       autoBlock: true
       connection:
         useTrustStore: true
-  - name: nuget-proxy-2
-    proxy:
-      remoteUrl: https://api.nuget.org/v3/index.json
-      contentMaxAge: 1440
-      metadataMaxAge: 1440
+        retries: 3
+        timeout: 60
+        userAgentSuffix: "Nexus/3.20.1-01 (OSS)"
+        enableCircularRedirects: true
+        enableCookies: true
+      authentication:
+        type: username
+        username: "full-auth-user"
+        password: "full-auth-pass"
     routingRule: routing-rule-allow-all
-  - name: nuget-proxy-v2
-    proxy:
-      remoteUrl: https://api.nuget.org/v3/index.json
-      contentMaxAge: 1440
-      metadataMaxAge: 1440
-    negativeCache:
-      enabled: true
-      timeToLive: 1440
     nugetProxy:
+      queryCacheItemMaxAge: 1440
       nugetVersion: V2
+  - name: full-legacy-format-nuget-proxy
+    blob_store: legacy-minimal-blobstore
+    strict_content_validation: true
+    cleanup_policies:
+      - nuget_cleanup_config_api
+      - nuget_cleanup_nexus_oss
+    remote_url: https://repo.nuget.com/pkgs/main
+    maximum_component_age: 1440
+    maximum_metadata_age: 1440
+    negative_cache_enabled: true
+    negative_cache_ttl: 1440
+    blocked: false
+    auto_block: true
+    use_trust_store: true
+    connection_retries: 3
+    connection_timeout: 60
+    user_agent_suffix: "Nexus/3.20.1-01 (OSS)"
+    enable_circular_redirects: true
+    enable_cookies: true
+    remote_username: "full-auth-user"
+    remote_password: "full-auth-pass"
+    ntlm_domain: "full-ntlm-domain"
+    ntlm_host: "full-ntlm-host"
+    routing_rules: routing-rule-allow-all
+    nuget_version: V2
+    query_cache_item_max_age: 1440
 
 nexus_repos_nuget_group:
-  - name: nuget-group
+  # Minimal new format
+  - name: new-format-minimal-nuget-group
+    group:
+      memberNames:
+        - new-format-minimal-nuget-hosted
+
+  # Minimal legacy format
+  - name: legacy-format-minimal-nuget-group
+    member_repos:
+      - legacy-format-minimal-nuget-hosted
+
+  # Legacy format with both hosted and proxy members
+  - name: legacy-format-hosted-proxy-nuget-group
+    member_repos:
+      - legacy-format-minimal-nuget-hosted
+      - legacy-format-minimal-nuget-proxy
+
+  # New format with both hosted and proxy members
+  - name: new-format-hosted-proxy-nuget-group
+    group:
+      memberNames:
+        - new-format-minimal-nuget-hosted
+        - new-format-minimal-nuget-proxy
+
+  # New format with both hosted and proxy members (reversed order)
+  - name: new-format-hosted-proxy-nuget-group-reversed
+    group:
+      memberNames:
+        - new-format-minimal-nuget-proxy
+        - new-format-minimal-nuget-hosted
+
+  # Mixed format with a combination of legacy and new format members
+  - name: mixed-format-nuget-group
+    storage:
+      strictContentTypeValidation: true
+    member_repos:
+      - legacy-format-minimal-nuget-hosted
+      - new-format-minimal-nuget-proxy
+
+  # Fully complete new format
+  - name: full-new-format-nuget-group
     online: true
     storage:
       blobStoreName: default
       strictContentTypeValidation: true
+    cleanup:
+      policyNames:
+        - nuget_cleanup_config_api
+        - mvn_cleanup_legacy_format
     group:
       memberNames:
-        - nuget-proxy-1
-        - nuget-proxy-2
-        - nuget-proxy-v2
-        - nuget-hosted-1
-  - name: nuget-group-reverse-group-order
-    online: false
-    storage:
-      blobStoreName: default
-      strictContentTypeValidation: false
-    group:
-      memberNames:
-        - nuget-proxy-v2
-        - nuget-proxy-2
-        - nuget-proxy-1
-        - nuget-hosted-1
+        - full-new-format-nuget-hosted
+        - full-new-format-nuget-proxy
+
+  # Fully complete legacy format
+  - name: full-legacy-format-nuget-group
+    blob_store: legacy-minimal-blobstore
+    strict_content_validation: false
+    cleanup_policies:
+      - mvn_cleanup_legacy_format
+    member_repos:
+      - full-legacy-format-nuget-hosted
+      - full-legacy-format-nuget-proxy
 
 nexus_repos_r_hosted:
-  - name: r-hosted-1
+  - name: new-format-minimal-r-hosted
+  - name: legacy-format-minimal-r-hosted
+    blob_store: default
+    strict_content_validation: true
+  - name: legacy-format-cleanup-r-hosted
+    cleanup_policies:
+      - r_cleanup_nexus_oss
+      - r_cleanup_config_api
+  - name: new-format-cleanup-reverse-order-r-hosted
+    cleanup:
+      policyNames:
+        - r_cleanup_config_api
+        - r_cleanup_nexus_oss
+  - name: mixed-format-r-hosted
+    blob_store: legacy-blobstore-complete
+    storage:
+      strictContentTypeValidation: false
+    cleanup_policies:
+      - r_cleanup_nexus_oss
+  - name: full-new-format-r-hosted
     online: true
     storage:
       blobStoreName: default
       strictContentTypeValidation: true
-    cleanup:
-      policyNames: []
-    component:
-      proprietaryComponents: true
-  - name: r-hosted-2
-    online: true
-    storage:
-      blobStoreName: default
-      strictContentTypeValidation: false
-    cleanup:
-      policyNames: []
-    component:
-      proprietaryComponents: false
-  - name: r-hosted-offline
-    online: false
-    storage:
-      blobStoreName: default
-      strictContentTypeValidation: false
+      writePolicy: ALLOW
     cleanup:
       policyNames:
-        - r_cleanup
+        - r_cleanup_config_api
+        - r_cleanup_nexus_oss
     component:
-      proprietaryComponents: false
+      proprietaryComponents: true
+  - name: full-legacy-format-r-hosted
+    blob_store: legacy-blobstore-complete
+    strict_content_validation: true
+    cleanup_policies:
+      - r_cleanup_nexus_oss
+      - r_cleanup_config_api
+    write_policy: ALLOW
+    proprietary_components: true
 
 nexus_repos_r_proxy:
-  - name: r-proxy-1
+  - name: new-format-minimal-r-proxy
     proxy:
-      remoteUrl: https://cloud.r-project.org
-      contentMaxAge: 1440
-      metadataMaxAge: 1440
-    negativeCache:
-      enabled: true
-      timeToLive: 1440
-    httpClient:
-      blocked: false
-      autoBlock: true
-      connection:
-        useTrustStore: true
-  - name: r-proxy-2
-    proxy:
-      remoteUrl: https://cloud.r-project.org
-      contentMaxAge: 1440
-      metadataMaxAge: 1440
-    routingRule: routing-rule-allow-all
-  - name: r-proxy-3
-    proxy:
-      remoteUrl: https://cloud.r-project.org
-      contentMaxAge: 1440
-      metadataMaxAge: 1440
-    negativeCache:
-      enabled: true
-      timeToLive: 1440
-
-nexus_repos_r_group:
-  - name: r-group
-    online: true
-    storage:
-      blobStoreName: default
-      strictContentTypeValidation: true
-    group:
-      memberNames:
-        - r-proxy-1
-        - r-proxy-2
-        - r-proxy-3
-        - r-hosted-1
-  - name: r-group-reverse-group-order
-    online: false
-    storage:
-      blobStoreName: default
-      strictContentTypeValidation: false
-    group:
-      memberNames:
-        - r-proxy-3
-        - r-proxy-2
-        - r-proxy-1
-        - r-hosted-1
-
-nexus_repos_helm_hosted:
-  - name: helm-hosted-1
-    online: true
-    storage:
-      blobStoreName: default
-      strictContentTypeValidation: true
-    cleanup:
-      policyNames: []
-    component:
-      proprietaryComponents: true
-  - name: helm-hosted-2
-    online: true
-    storage:
-      blobStoreName: default
-      strictContentTypeValidation: false
-    cleanup:
-      policyNames: []
-    component:
-      proprietaryComponents: false
-  - name: helm-hosted-offline
-    online: false
-    storage:
-      blobStoreName: default
-      strictContentTypeValidation: false
+      remoteUrl: https://repo.r.com/pkgs/main
+  - name: legacy-format-minimal-r-proxy
+    blob_store: default
+    strict_content_validation: true
+    remote_url: https://repo.r.com/pkgs/main
+  - name: legacy-format-cleanup-r-proxy
+    cleanup_policies:
+      - r_cleanup_nexus_oss
+      - r_cleanup_config_api
+    remote_url: https://repo.r.com/pkgs/main
+  - name: new-format-cleanup-reverse-order-r-proxy
     cleanup:
       policyNames:
-        - helm_cleanup
-    component:
-      proprietaryComponents: false
-
-nexus_repos_helm_proxy:
-  - name: helm-proxy-1
+        - r_cleanup_config_api
+        - r_cleanup_nexus_oss
+    remote_url: https://repo.r.com/pkgs/main
+  - name: mixed-format-r-proxy
+    blob_store: legacy-minimal-blobstore
+    storage:
+      strictContentTypeValidation: false
+    cleanup_policies:
+      - r_cleanup_nexus_oss
+    remote_url: https://repo.r.com/pkgs/main
+  - name: full-new-format-r-proxy
+    online: true
+    storage:
+      blobStoreName: default
+      strictContentTypeValidation: true
+    cleanup:
+      policyNames:
+        - r_cleanup_config_api
+        - r_cleanup_nexus_oss
     proxy:
-      remoteUrl: https://kubernetes-charts.storage.googleapis.com
+      remoteUrl: https://repo.r.com/pkgs/main
       contentMaxAge: 1440
       metadataMaxAge: 1440
     negativeCache:
@@ -1580,20 +2061,228 @@ nexus_repos_helm_proxy:
       autoBlock: true
       connection:
         useTrustStore: true
-  - name: helm-proxy-2
-    proxy:
-      remoteUrl: https://kubernetes-charts.storage.googleapis.com
-      contentMaxAge: 1440
-      metadataMaxAge: 1440
+        retries: 3
+        timeout: 60
+        userAgentSuffix: "Nexus/3.20.1-01 (OSS)"
+        enableCircularRedirects: true
+        enableCookies: true
+      authentication:
+        type: username
+        username: "full-auth-user"
+        password: "full-auth-pass"
     routingRule: routing-rule-allow-all
-  - name: helm-proxy-3
+  - name: full-legacy-format-r-proxy
+    blob_store: legacy-minimal-blobstore
+    strict_content_validation: true
+    cleanup_policies:
+      - r_cleanup_config_api
+      - r_cleanup_nexus_oss
+    remote_url: https://repo.r.com/pkgs/main
+    maximum_component_age: 1440
+    maximum_metadata_age: 1440
+    negative_cache_enabled: true
+    negative_cache_ttl: 1440
+    blocked: false
+    auto_block: true
+    use_trust_store: true
+    connection_retries: 3
+    connection_timeout: 60
+    user_agent_suffix: "Nexus/3.20.1-01 (OSS)"
+    enable_circular_redirects: true
+    enable_cookies: true
+    remote_username: "full-auth-user"
+    remote_password: "full-auth-pass"
+    ntlm_domain: "full-ntlm-domain"
+    ntlm_host: "full-ntlm-host"
+    routing_rules: routing-rule-allow-all
+
+nexus_repos_r_group:
+  # Minimal new format
+  - name: new-format-minimal-r-group
+    group:
+      memberNames:
+        - new-format-minimal-r-hosted
+
+  # Minimal legacy format
+  - name: legacy-format-minimal-r-group
+    member_repos:
+      - legacy-format-minimal-r-hosted
+
+  # Legacy format with both hosted and proxy members
+  - name: legacy-format-hosted-proxy-r-group
+    member_repos:
+      - legacy-format-minimal-r-hosted
+      - legacy-format-minimal-r-proxy
+
+  # New format with both hosted and proxy members
+  - name: new-format-hosted-proxy-r-group
+    group:
+      memberNames:
+        - new-format-minimal-r-hosted
+        - new-format-minimal-r-proxy
+
+  # New format with both hosted and proxy members (reversed order)
+  - name: new-format-hosted-proxy-r-group-reversed
+    group:
+      memberNames:
+        - new-format-minimal-r-proxy
+        - new-format-minimal-r-hosted
+
+  # Mixed format with a combination of legacy and new format members
+  - name: mixed-format-r-group
+    storage:
+      strictContentTypeValidation: true
+    member_repos:
+      - legacy-format-minimal-r-hosted
+      - new-format-minimal-r-proxy
+
+  # Fully complete new format
+  - name: full-new-format-r-group
+    online: true
+    storage:
+      blobStoreName: default
+      strictContentTypeValidation: true
+    cleanup:
+      policyNames:
+        - r_cleanup_config_api
+        - mvn_cleanup_legacy_format
+    group:
+      memberNames:
+        - full-new-format-r-hosted
+        - full-new-format-r-proxy
+
+  # Fully complete legacy format
+  - name: full-legacy-format-r-group
+    blob_store: legacy-minimal-blobstore
+    strict_content_validation: false
+    cleanup_policies:
+      - mvn_cleanup_legacy_format
+    member_repos:
+      - full-legacy-format-r-hosted
+      - full-legacy-format-r-proxy
+
+nexus_repos_helm_hosted:
+  - name: new-format-minimal-helm-hosted
+  - name: legacy-format-minimal-helm-hosted
+    blob_store: default
+    strict_content_validation: true
+  - name: legacy-format-cleanup-helm-hosted
+    cleanup_policies:
+      - helm_cleanup_nexus_oss
+      - helm_cleanup_config_api
+  - name: new-format-cleanup-reverse-order-helm-hosted
+    cleanup:
+      policyNames:
+        - helm_cleanup_config_api
+        - helm_cleanup_nexus_oss
+  - name: mixed-format-helm-hosted
+    blob_store: legacy-blobstore-complete
+    storage:
+      strictContentTypeValidation: false
+    cleanup_policies:
+      - helm_cleanup_nexus_oss
+  - name: full-new-format-helm-hosted
+    online: true
+    storage:
+      blobStoreName: default
+      strictContentTypeValidation: true
+      writePolicy: ALLOW
+    cleanup:
+      policyNames:
+        - helm_cleanup_config_api
+        - helm_cleanup_nexus_oss
+    component:
+      proprietaryComponents: true
+  - name: full-legacy-format-helm-hosted
+    blob_store: legacy-blobstore-complete
+    strict_content_validation: true
+    cleanup_policies:
+      - helm_cleanup_nexus_oss
+      - helm_cleanup_config_api
+    write_policy: ALLOW
+    proprietary_components: true
+
+nexus_repos_helm_proxy:
+  - name: new-format-minimal-helm-proxy
     proxy:
-      remoteUrl: https://kubernetes-charts.storage.googleapis.com
+      remoteUrl: https://repo.helm.com/pkgs/main
+  - name: legacy-format-minimal-helm-proxy
+    blob_store: default
+    strict_content_validation: true
+    remote_url: https://repo.helm.com/pkgs/main
+  - name: legacy-format-cleanup-helm-proxy
+    cleanup_policies:
+      - helm_cleanup_nexus_oss
+      - helm_cleanup_config_api
+    remote_url: https://repo.helm.com/pkgs/main
+  - name: new-format-cleanup-reverse-order-helm-proxy
+    cleanup:
+      policyNames:
+        - helm_cleanup_config_api
+        - helm_cleanup_nexus_oss
+    remote_url: https://repo.helm.com/pkgs/main
+  - name: mixed-format-helm-proxy
+    blob_store: legacy-minimal-blobstore
+    storage:
+      strictContentTypeValidation: false
+    cleanup_policies:
+      - helm_cleanup_nexus_oss
+    remote_url: https://repo.helm.com/pkgs/main
+  - name: full-new-format-helm-proxy
+    online: true
+    storage:
+      blobStoreName: default
+      strictContentTypeValidation: true
+    cleanup:
+      policyNames:
+        - helm_cleanup_config_api
+        - helm_cleanup_nexus_oss
+    proxy:
+      remoteUrl: https://repo.helm.com/pkgs/main
       contentMaxAge: 1440
       metadataMaxAge: 1440
     negativeCache:
       enabled: true
       timeToLive: 1440
+    httpClient:
+      blocked: false
+      autoBlock: true
+      connection:
+        useTrustStore: true
+        retries: 3
+        timeout: 60
+        userAgentSuffix: "Nexus/3.20.1-01 (OSS)"
+        enableCircularRedirects: true
+        enableCookies: true
+      authentication:
+        type: username
+        username: "full-auth-user"
+        password: "full-auth-pass"
+    routingRule: routing-rule-allow-all
+  - name: full-legacy-format-helm-proxy
+    blob_store: legacy-minimal-blobstore
+    strict_content_validation: true
+    cleanup_policies:
+      - helm_cleanup_config_api
+      - helm_cleanup_nexus_oss
+    remote_url: https://repo.helm.com/pkgs/main
+    maximum_component_age: 1440
+    maximum_metadata_age: 1440
+    negative_cache_enabled: true
+    negative_cache_ttl: 1440
+    blocked: false
+    auto_block: true
+    use_trust_store: true
+    connection_retries: 3
+    connection_timeout: 60
+    user_agent_suffix: "Nexus/3.20.1-01 (OSS)"
+    enable_circular_redirects: true
+    enable_cookies: true
+    remote_username: "full-auth-user"
+    remote_password: "full-auth-pass"
+    ntlm_domain: "full-ntlm-domain"
+    ntlm_host: "full-ntlm-host"
+    routing_rules: routing-rule-allow-all
 
 nexus_repos_conda_proxy:
   - name: new-format-minimal-conda-proxy

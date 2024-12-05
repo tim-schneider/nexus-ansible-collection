@@ -49,18 +49,18 @@ nexus_config_gitlfs: true
 nexus_config_npm: false
 nexus_config_pypi: false
 nexus_config_conda: true
-nexus_config_helm: false
-nexus_config_r: false
-nexus_config_nuget: false
+nexus_config_helm: true
+nexus_config_r: true
+nexus_config_nuget: true
 nexus_config_apt: false
 nexus_config_yum: false
 nexus_config_raw: false
 nexus_config_p2: true
 nexus_config_cocoapods: true
 nexus_config_conan: false
-nexus_config_go: false
-nexus_config_cargo: false
-nexus_config_rubygems: false
+nexus_config_go: true
+nexus_config_cargo: true
+nexus_config_rubygems: true
 
 nexus_repos_rubygems_hosted: []
 
@@ -248,23 +248,38 @@ nexus_repos_format_defaults:
       indexType: HUB
       cacheForeignLayers: false
       foreignLayerUrlWhitelist: []
+  rubygems:
+    storage:
+      blobStoreName: "{{ nexus_blob_names.rubygems.blob | default('default') }}"
     yum:
       repodataDepth: 0
   nuget:
-    nuget:
-      version: "v3"
+    storage:
+      blobStoreName: "{{ nexus_blob_names.nuget.blob | default('default') }}"
+    nugetProxy:
+      nugetVersion: V3
+      # queryCacheItemMaxAge: 3600
   gitlfs:
     storage:
       blobStoreName: "{{ nexus_blob_names.gitlfs.blob | default('default') }}"
+  helm:
+    storage:
+      blobStoreName: "{{ nexus_blob_names.helm.blob | default('default') }}"
   p2:
     storage:
       blobStoreName: "{{ nexus_blob_names.p2.blob | default('default') }}"
   conda:
     storage:
       blobStoreName: "{{ nexus_blob_names.conda.blob | default('default') }}"
+  go:
+    storage:
+      blobStoreName: "{{ nexus_blob_names.go.blob | default('default') }}"
   cocoapods:
     storage:
       blobStoreName: "{{ nexus_blob_names.cocoapods.blob | default('default') }}"
+  r:
+    storage:
+      blobStoreName: "{{ nexus_blob_names.r.blob | default('default') }}"
 
 # Legacy Field Mapping to API attributes
 legacy_field_map:
@@ -296,6 +311,8 @@ legacy_field_map:
   cache_foreign_layers: "dockerProxy.cacheForeignLayers"
   use_nexus_certificates_to_access_index: "dockerProxy.useTrustStoreForIndexAccess"
   foreign_layer_url_whitelist: "dockerProxy.foreignLayerUrlWhitelist"
+  nuget_version: "nugetProxy.nugetVersion"
+  query_cache_item_max_age: "nugetProxy.queryCacheItemMaxAge"
   connection_retries: "httpClient.connection.retries"
   connection_timeout: "httpClient.connection.timeout"
   enable_cookies: "httpClient.connection.enableCookies"
