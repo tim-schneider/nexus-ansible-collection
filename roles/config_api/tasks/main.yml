@@ -1,5 +1,4 @@
 ---
-# include tasks from license-api.yml
 - name: Include license-api
   ansible.builtin.include_tasks: license-api.yml
   tags:
@@ -47,8 +46,6 @@
 - name: Include repositories-tasks
   ansible.builtin.include_tasks: repositories-tasks.yml
   tags: repositories
-
-
 
 # Roles always need to be created after the repositories
 # This is because the roles can have privileges that are created when repositories are created

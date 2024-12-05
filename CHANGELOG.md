@@ -1,9 +1,34 @@
 # Changelog
-## [1.11.2] - 2024-12-03
+## [1.12.0] - 2024-12-04
 ## Added
 - **nexus_oss** Introduced variables to control waiting time for nexus to startup.
   `nexus_api_availability_delay: 10`
   `nexus_api_availability_retries: 30`
+- **config_api** Added support to normalize the following repositories types/formats.
+  you can now use your
+  - `nexus_repos_maven_hosted`, `nexus_repos_maven_proxy`, `nexus_repos_maven_group`
+  - `nexus_repos_docker_hosted`, `nexus_repos_docker_proxy`, `nexus_repos_docker_group`
+  - `nexus_repos_rubygems_hosted`, `nexus_repos_rubygems_proxy`, `nexus_repos_rubygems_group`
+  - `nexus_repos_r_hosted`, `nexus_repos_r_proxy`, `nexus_repos_r_group`
+  - `nexus_repos_cargo_hosted`, `nexus_repos_cargo_proxy`, `nexus_repos_cargo_group`
+  - `nexus_repos_nuget_hosted`, `nexus_repos_nuget_proxy`, `nexus_repos_nuget_group`
+  - `nexus_repos_go_proxy`, `nexus_repos_go_group`
+  - `nexus_repos_helm_hosted`, `nexus_repos_helm_proxy`
+  - `nexus_repos_gitlfs_hosted`
+  - `nexus_repos_conda_proxy`
+  - `nexus_repos_p2_proxy`
+  and `nexus_repos_cocoapods_proxy` definitions with the `config_api` role without reformatting the dictionary.
+
+#### Important note on repository defaults
+The `config_api` role uses a different approach to set defaults. If , for example, you override the `_nexus_repos_maven_defaults` variable, make sure you apply the same defaults to the `nexus_repos_global_defaults`, `nexus_repos_type_defaults` and `nexus_repos_format_defaults` dictionaries! See role defaults for the full dictionaries.
+
+## Fixed
+- **config_api** Use defaults from `_nexus_repos_<format>_defaults` for normalizing repos.
+- **nexus_oss** Fixed attribute `allow_redeploy_latest` for docker repos
+
+## Changed
+- **nexus_oss** Renamed `layout_policy` to `deploy_policy` for yum repos
+
 
 ## [1.11.1] - 2024-12-02
 

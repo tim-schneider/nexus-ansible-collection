@@ -46,830 +46,21 @@ nexus_repos_cleanup_policies: []
 nexus_config_maven: true
 nexus_config_docker: true
 nexus_config_gitlfs: true
-nexus_config_npm: true
-nexus_config_pypi: true
+nexus_config_npm: false
+nexus_config_pypi: false
 nexus_config_conda: true
 nexus_config_helm: true
 nexus_config_r: true
 nexus_config_nuget: true
-nexus_config_apt: true
-nexus_config_yum: true
-nexus_config_raw: true
+nexus_config_apt: false
+nexus_config_yum: false
+nexus_config_raw: false
 nexus_config_p2: true
 nexus_config_cocoapods: true
-nexus_config_conan: true
+nexus_config_conan: false
 nexus_config_go: true
 nexus_config_cargo: true
 nexus_config_rubygems: true
-
-__nexus_repos_rubygems_hosted_defaults:
-  online: true
-  format: rubygems
-  type: hosted
-  storage:
-    blobStoreName: default
-    strictContentTypeValidation: false
-    writePolicy: allow_once
-  cleanup:
-    policyNames: []
-  component:
-    proprietaryComponents: false
-
-__nexus_repos_rubygems_proxy_defaults:
-  format: rubygems
-  type: proxy
-  online: true
-  storage:
-    blobStoreName: default
-    strictContentTypeValidation: true
-  cleanup:
-    policyNames: []
-  proxy:
-    remoteUrl: https://remote.repository.com
-    contentMaxAge: 1440
-    metadataMaxAge: 1440
-  negativeCache:
-    enabled: true
-    timeToLive: 1440
-  httpClient:
-    blocked: false
-    autoBlock: true
-    connection:
-      retries: 0
-      userAgentSuffix: string
-      timeout: 60
-      enableCircularRedirects: false
-      enableCookies: false
-      useTrustStore: false
-
-__nexus_repos_rubygems_group_defaults:
-  online: true
-  format: rubygems
-  type: group
-  storage:
-    blobStoreName: default
-    strictContentTypeValidation: false
-  group:
-    memberNames: []
-
-__nexus_repos_cargo_hosted_defaults:
-  online: true
-  format: cargo
-  type: hosted
-  storage:
-    blobStoreName: default
-    strictContentTypeValidation: false
-    writePolicy: allow_once
-  cleanup:
-    policyNames: []
-  component:
-    proprietaryComponents: false
-
-__nexus_repos_cargo_proxy_defaults:
-  format: cargo
-  type: proxy
-  online: true
-  storage:
-    blobStoreName: default
-    strictContentTypeValidation: true
-  cleanup:
-    policyNames: []
-  proxy:
-    remoteUrl: https://remote.repository.com
-    contentMaxAge: 1440
-    metadataMaxAge: 1440
-  negativeCache:
-    enabled: true
-    timeToLive: 1440
-  httpClient:
-    blocked: false
-    autoBlock: true
-    connection:
-      retries: 0
-      userAgentSuffix: string
-      timeout: 60
-      enableCircularRedirects: false
-      enableCookies: false
-      useTrustStore: false
-
-__nexus_repos_cargo_group_defaults:
-  online: true
-  format: cargo
-  type: group
-  storage:
-    blobStoreName: default
-    strictContentTypeValidation: false
-  group:
-    memberNames: []
-
-__nexus_repos_go_proxy_defaults:
-  format: go
-  type: proxy
-  online: true
-  storage:
-    blobStoreName: default
-    strictContentTypeValidation: true
-  cleanup:
-    policyNames: []
-  proxy:
-    remoteUrl: https://remote.repository.com
-    contentMaxAge: 1440
-    metadataMaxAge: 1440
-  negativeCache:
-    enabled: true
-    timeToLive: 1440
-  httpClient:
-    blocked: false
-    autoBlock: true
-    connection:
-      retries: 0
-      userAgentSuffix: string
-      timeout: 60
-      enableCircularRedirects: false
-      enableCookies: false
-      useTrustStore: false
-
-__nexus_repos_go_group_defaults:
-  online: true
-  format: go
-  type: group
-  storage:
-    blobStoreName: default
-    strictContentTypeValidation: false
-  group:
-    memberNames: []
-
-__nexus_repos_cocoapods_proxy_defaults:
-  format: cocoapods
-  type: proxy
-  online: true
-  storage:
-    blobStoreName: default
-    strictContentTypeValidation: true
-  cleanup:
-    policyNames: []
-  proxy:
-    remoteUrl: https://remote.repository.com
-    contentMaxAge: 1440
-    metadataMaxAge: 1440
-  negativeCache:
-    enabled: true
-    timeToLive: 1440
-  httpClient:
-    blocked: false
-    autoBlock: true
-    connection:
-      retries: 0
-      userAgentSuffix: string
-      timeout: 60
-      enableCircularRedirects: false
-      enableCookies: false
-      useTrustStore: false
-
-__nexus_repos_p2_proxy_defaults:
-  format: p2
-  type: proxy
-  online: true
-  storage:
-    blobStoreName: default
-    strictContentTypeValidation: true
-  cleanup:
-    policyNames: []
-  proxy:
-    remoteUrl: https://remote.repository.com
-    contentMaxAge: 1440
-    metadataMaxAge: 1440
-  negativeCache:
-    enabled: true
-    timeToLive: 1440
-  httpClient:
-    blocked: false
-    autoBlock: true
-    connection:
-      retries: 0
-      userAgentSuffix: string
-      timeout: 60
-      enableCircularRedirects: false
-      enableCookies: false
-      useTrustStore: false
-
-__nexus_repos_raw_hosted_defaults:
-  online: true
-  format: raw
-  type: hosted
-  storage:
-    blobStoreName: default
-    strictContentTypeValidation: false
-    writePolicy: allow_once
-  cleanup:
-    policyNames: []
-  component:
-    proprietaryComponents: false
-
-__nexus_repos_raw_proxy_defaults:
-  format: raw
-  type: proxy
-  online: true
-  storage:
-    blobStoreName: default
-    strictContentTypeValidation: true
-  cleanup:
-    policyNames: []
-  proxy:
-    remoteUrl: https://remote.repository.com
-    contentMaxAge: 1440
-    metadataMaxAge: 1440
-  negativeCache:
-    enabled: true
-    timeToLive: 1440
-  httpClient:
-    blocked: false
-    autoBlock: true
-    connection:
-      retries: 0
-      userAgentSuffix: string
-      timeout: 60
-      enableCircularRedirects: false
-      enableCookies: false
-      useTrustStore: false
-
-__nexus_repos_raw_group_defaults:
-  online: true
-  format: raw
-  type: group
-  storage:
-    blobStoreName: default
-    strictContentTypeValidation: false
-  group:
-    memberNames: []
-
-__nexus_repos_yum_hosted_defaults:
-  online: true
-  format: yum
-  type: hosted
-  storage:
-    blobStoreName: default
-    strictContentTypeValidation: false
-    writePolicy: allow_once
-  cleanup:
-    policyNames: []
-  component:
-    proprietaryComponents: false
-  yum:
-    repodataDepth: 5
-    deployPolicy: STRICT
-
-__nexus_repos_yum_proxy_defaults:
-  format: yum
-  type: proxy
-  online: true
-  storage:
-    blobStoreName: default
-    strictContentTypeValidation: true
-  cleanup:
-    policyNames: []
-  proxy:
-    remoteUrl: https://remote.repository.com
-    contentMaxAge: 1440
-    metadataMaxAge: 1440
-  negativeCache:
-    enabled: true
-    timeToLive: 1440
-  httpClient:
-    blocked: false
-    autoBlock: true
-    connection:
-      retries: 0
-      userAgentSuffix: string
-      timeout: 60
-      enableCircularRedirects: false
-      enableCookies: false
-      useTrustStore: false
-  yumSigning:
-    keypair: default
-
-__nexus_repos_yum_group_defaults:
-  online: true
-  format: yum
-  type: group
-  storage:
-    blobStoreName: default
-    strictContentTypeValidation: false
-  group:
-    memberNames: []
-  yumSigning:
-    keypair: default
-
-__nexus_repos_apt_hosted_defaults:
-  online: true
-  format: apt
-  type: hosted
-  storage:
-    blobStoreName: default
-    strictContentTypeValidation: false
-    writePolicy: allow_once
-  cleanup:
-    policyNames: []
-  component:
-    proprietaryComponents: false
-  apt:
-    distribution: bionic
-  aptSigning:
-    keypair: default
-
-__nexus_repos_apt_proxy_defaults:
-  format: apt
-  type: proxy
-  online: true
-  storage:
-    blobStoreName: default
-    strictContentTypeValidation: true
-  cleanup:
-    policyNames: []
-  proxy:
-    remoteUrl: https://remote.repository.com
-    contentMaxAge: 1440
-    metadataMaxAge: 1440
-  negativeCache:
-    enabled: true
-    timeToLive: 1440
-  httpClient:
-    blocked: false
-    autoBlock: true
-    connection:
-      retries: 0
-      userAgentSuffix: string
-      timeout: 60
-      enableCircularRedirects: false
-      enableCookies: false
-      useTrustStore: false
-  apt:
-    distribution: bionic
-    flat: false
-
-__nexus_repos_nuget_hosted_defaults:
-  online: true
-  format: nuget
-  type: hosted
-  storage:
-    blobStoreName: default
-    strictContentTypeValidation: false
-    writePolicy: allow_once
-  cleanup:
-    policyNames: []
-  component:
-    proprietaryComponents: false
-
-__nexus_repos_nuget_proxy_defaults:
-  format: nuget
-  type: proxy
-  online: true
-  storage:
-    blobStoreName: default
-    strictContentTypeValidation: true
-  cleanup:
-    policyNames: []
-  proxy:
-    remoteUrl: https://remote.repository.com
-    contentMaxAge: 1440
-    metadataMaxAge: 1440
-  negativeCache:
-    enabled: true
-    timeToLive: 1440
-  httpClient:
-    blocked: false
-    autoBlock: true
-    connection:
-      retries: 0
-      userAgentSuffix: string
-      timeout: 60
-      enableCircularRedirects: false
-      enableCookies: false
-      useTrustStore: false
-  nugetProxy:
-    queryCacheItemMaxAge: 3600
-    nugetVersion: V3
-
-__nexus_repos_nuget_group_defaults:
-  online: true
-  format: nuget
-  type: group
-  storage:
-    blobStoreName: default
-    strictContentTypeValidation: false
-  group:
-    memberNames: []
-
-__nexus_repos_r_hosted_defaults:
-  online: true
-  format: r
-  type: hosted
-  storage:
-    blobStoreName: default
-    strictContentTypeValidation: false
-    writePolicy: allow_once
-  cleanup:
-    policyNames: []
-  component:
-    proprietaryComponents: false
-
-__nexus_repos_r_proxy_defaults:
-  format: r
-  type: proxy
-  online: true
-  storage:
-    blobStoreName: default
-    strictContentTypeValidation: true
-  cleanup:
-    policyNames: []
-  proxy:
-    remoteUrl: https://remote.repository.com
-    contentMaxAge: 1440
-    metadataMaxAge: 1440
-  negativeCache:
-    enabled: true
-    timeToLive: 1440
-  httpClient:
-    blocked: false
-    autoBlock: true
-    connection:
-      retries: 0
-      userAgentSuffix: string
-      timeout: 60
-      enableCircularRedirects: false
-      enableCookies: false
-      useTrustStore: false
-
-__nexus_repos_r_group_defaults:
-  online: true
-  format: r
-  type: group
-  storage:
-    blobStoreName: default
-    strictContentTypeValidation: false
-  group:
-    memberNames: []
-
-__nexus_repos_helm_hosted_defaults:
-  online: true
-  format: helm
-  type: hosted
-  storage:
-    blobStoreName: default
-    strictContentTypeValidation: false
-    writePolicy: allow_once
-  cleanup:
-    policyNames: []
-  component:
-    proprietaryComponents: false
-
-__nexus_repos_helm_proxy_defaults:
-  format: helm
-  type: proxy
-  online: true
-  storage:
-    blobStoreName: default
-    strictContentTypeValidation: true
-  cleanup:
-    policyNames: []
-  proxy:
-    remoteUrl: https://remote.repository.com
-    contentMaxAge: 1440
-    metadataMaxAge: 1440
-  negativeCache:
-    enabled: true
-    timeToLive: 1440
-  httpClient:
-    blocked: false
-    autoBlock: true
-    connection:
-      retries: 0
-      userAgentSuffix: string
-      timeout: 60
-      enableCircularRedirects: false
-      enableCookies: false
-      useTrustStore: false
-
-__nexus_repos_conan_hosted_defaults:
-  online: true
-  format: conan
-  type: hosted
-  storage:
-    blobStoreName: default
-    strictContentTypeValidation: false
-    writePolicy: allow_once
-  cleanup:
-    policyNames: []
-  component:
-    proprietaryComponents: false
-
-__nexus_repos_conan_proxy_defaults:
-  format: conan
-  type: proxy
-  online: true
-  storage:
-    blobStoreName: default
-    strictContentTypeValidation: true
-  cleanup:
-    policyNames: []
-  proxy:
-    remoteUrl: https://remote.repository.com
-    contentMaxAge: 1440
-    metadataMaxAge: 1440
-  negativeCache:
-    enabled: true
-    timeToLive: 1440
-  httpClient:
-    blocked: false
-    autoBlock: true
-    connection:
-      retries: 0
-      userAgentSuffix: string
-      timeout: 60
-      enableCircularRedirects: false
-      enableCookies: false
-      useTrustStore: false
-  conanProxy:
-    conanVersion: V1
-
-__nexus_repos_conda_proxy_defaults:
-  format: conda
-  type: proxy
-  online: true
-  storage:
-    blobStoreName: default
-    strictContentTypeValidation: true
-  cleanup:
-    policyNames: []
-  proxy:
-    remoteUrl: https://remote.repository.com
-    contentMaxAge: 1440
-    metadataMaxAge: 1440
-  negativeCache:
-    enabled: true
-    timeToLive: 1440
-  httpClient:
-    blocked: false
-    autoBlock: true
-    connection:
-      retries: 0
-      userAgentSuffix: string
-      timeout: 60
-      enableCircularRedirects: false
-      enableCookies: false
-      useTrustStore: false
-
-__nexus_repos_pypi_hosted_defaults:
-  online: true
-  format: pypi
-  type: hosted
-  storage:
-    blobStoreName: default
-    strictContentTypeValidation: false
-    writePolicy: allow_once
-  cleanup:
-    policyNames: []
-  component:
-    proprietaryComponents: false
-
-__nexus_repos_pypi_proxy_defaults:
-  format: pypi
-  type: proxy
-  online: true
-  storage:
-    blobStoreName: default
-    strictContentTypeValidation: true
-  cleanup:
-    policyNames: []
-  proxy:
-    remoteUrl: https://remote.repository.com
-    contentMaxAge: 1440
-    metadataMaxAge: 1440
-  negativeCache:
-    enabled: true
-    timeToLive: 1440
-  httpClient:
-    blocked: false
-    autoBlock: true
-    connection:
-      retries: 0
-      userAgentSuffix: string
-      timeout: 60
-      enableCircularRedirects: false
-      enableCookies: false
-      useTrustStore: false
-  pypi:
-    removeQuarantined: false
-
-__nexus_repos_pypi_group_defaults:
-  online: true
-  format: pypi
-  type: group
-  storage:
-    blobStoreName: default
-    strictContentTypeValidation: false
-  group:
-    memberNames: []
-
-__nexus_repos_npm_hosted_defaults:
-  online: true
-  format: npm
-  type: hosted
-  storage:
-    blobStoreName: default
-    strictContentTypeValidation: false
-    writePolicy: allow_once
-  cleanup:
-    policyNames: []
-  component:
-    proprietaryComponents: false
-
-__nexus_repos_npm_proxy_defaults:
-  format: npm
-  type: proxy
-  online: true
-  storage:
-    blobStoreName: default
-    strictContentTypeValidation: true
-  cleanup:
-    policyNames: []
-  proxy:
-    remoteUrl: https://remote.repository.com
-    contentMaxAge: 1440
-    metadataMaxAge: 1440
-  negativeCache:
-    enabled: true
-    timeToLive: 1440
-  httpClient:
-    blocked: false
-    autoBlock: true
-    connection:
-      retries: 0
-      userAgentSuffix: string
-      timeout: 60
-      enableCircularRedirects: false
-      enableCookies: false
-      useTrustStore: false
-  npm:
-    removeQuarantined: false
-
-__nexus_repos_npm_group_defaults:
-  online: true
-  format: npm
-  type: group
-  storage:
-    blobStoreName: default
-    strictContentTypeValidation: false
-  group:
-    memberNames: []
-
-__nexus_repos_gitlfs_hosted_defaults:
-  online: true
-  format: gitlfs
-  type: hosted
-  storage:
-    blobStoreName: default
-    strictContentTypeValidation: false
-    writePolicy: allow_once
-  cleanup:
-    policyNames: []
-  component:
-    proprietaryComponents: false
-
-__nexus_repos_docker_group_defaults:
-  online: true
-  format: docker
-  type: group
-  storage:
-    blobStoreName: default
-    strictContentTypeValidation: false
-  group:
-    memberNames: []
-    writableMember:
-  docker:
-    v1Enabled: false
-    forceBasicAuth: false
-
-__nexus_repos_docker_hosted_defaults:
-  online: true
-  format: docker
-  type: hosted
-  storage:
-    blobStoreName: default
-    strictContentTypeValidation: false
-    writePolicy: allow_once
-    latestPolicy: true
-  cleanup:
-    policyNames: []
-  component:
-    proprietaryComponents: false
-  docker:
-    v1Enabled: false
-    forceBasicAuth: false
-    httpPort: 10000
-    httpsPort: 10001
-    subdomain:
-
-__nexus_repos_docker_proxy_defaults:
-  format: docker
-  type: proxy
-  online: true
-  storage:
-    blobStoreName: default
-    strictContentTypeValidation: true
-  cleanup:
-    policyNames: []
-  proxy:
-    remoteUrl: https://remote.repository.com
-    contentMaxAge: 1440
-    metadataMaxAge: 1440
-  negativeCache:
-    enabled: true
-    timeToLive: 1440
-  httpClient:
-    blocked: false
-    autoBlock: true
-    connection:
-      retries: 0
-      userAgentSuffix: string
-      timeout: 60
-      enableCircularRedirects: false
-      enableCookies: false
-      useTrustStore: false
-  docker:
-    v1Enabled: false
-    forceBasicAuth: false
-  dockerProxy:
-    indexType: HUB # HUB, REGISTRY or CUSTOM
-    indexUrl: https://index.docker.io
-    cacheForeignLayers: false
-    foreignLayerUrlWhitelist: []
-
-__nexus_repos_maven_group_defaults:
-  online: true
-  format: maven2
-  type: group
-  storage:
-    blobStoreName: default
-    strictContentTypeValidation: false
-  group:
-    memberNames: []
-
-__nexus_repos_maven_hosted_defaults:
-  online: true
-  format: maven2
-  type: hosted
-  storage:
-    blobStoreName: default
-    strictContentTypeValidation: false
-    writePolicy: allow_once
-  cleanup:
-    policyNames: []
-  component:
-    proprietaryComponents: false
-  maven:
-    versionPolicy: MIXED
-    layoutPolicy: STRICT
-    contentDisposition: INLINE
-
-__nexus_repos_maven_proxy_defaults:
-  format: maven2
-  type: proxy
-  online: true
-  storage:
-    blobStoreName: default
-    strictContentTypeValidation: true
-  cleanup:
-    policyNames: []
-  proxy:
-    remoteUrl: https://remote.repository.com
-    contentMaxAge: 1440
-    metadataMaxAge: 1440
-  negativeCache:
-    enabled: true
-    timeToLive: 1440
-  httpClient:
-    blocked: false
-    autoBlock: true
-    connection:
-      retries: 0
-      userAgentSuffix: string
-      timeout: 60
-      enableCircularRedirects: false
-      enableCookies: false
-      useTrustStore: false
-    # authentication:
-    #   type:
-    #   username:
-    #   preemptive:
-    #   ntlmHost:
-    #   ntlmDomain:
-  routingRule:
-  replication:
-  maven:
-    versionPolicy: MIXED
-    layoutPolicy: STRICT
-    contentDisposition: ATTACHMENT
 
 nexus_repos_rubygems_hosted: []
 
@@ -989,3 +180,154 @@ nexus_roles:
     roles: []
 
 nexus_content_selectors: []
+
+# Global Defaults
+nexus_repos_global_defaults:
+  online: true
+  storage:
+    blobStoreName: default
+    strictContentTypeValidation: true
+
+# TODO: Add support for hierachical cleanup policy defaults
+# Cleanup Policies defined at global level will be applied to all repositories
+# Policies applied at the repository level will be additional to the global policies etc..
+
+# Type-Specific Defaults
+nexus_repos_type_defaults:
+  proxy:
+    cleanup:
+      policyNames: []
+    httpClient:
+      blocked: false
+      autoBlock: true
+      connection:
+        retries: 0
+        timeout: # Left blank on purpose to use the http global value
+        enableCircularRedirects: false
+        enableCookies: false
+        useTrustStore: false
+      authentication: # Left blank on purpose to return null for the API
+    proxy:
+      contentMaxAge: -1
+      metadataMaxAge: 1440
+    negativeCache:
+      enabled: true
+      timeToLive: 1440
+  hosted:
+    storage:
+      writePolicy: allow_once
+    component:
+      proprietaryComponents: false
+    cleanup:
+      policyNames: []
+  group:
+    group:
+      memberNames: []
+
+# Format-Specific Defaults
+nexus_repos_format_defaults:
+  maven:
+    storage:
+      blobStoreName: "{{ nexus_blob_names.mvn.blob | default('default') }}"
+    maven:
+      versionPolicy: RELEASE
+      layoutPolicy: STRICT
+      contentDisposition: ATTACHMENT
+  pypi:
+    storage:
+      blobStoreName: "{{ nexus_blob_names.pypi.blob | default('default') }}"
+    pypi:
+      removeQuarantined: true
+  docker:
+    storage:
+      blobStoreName: "{{ nexus_blob_names.docker.blob | default('default') }}"
+    docker:
+      forceBasicAuth: true
+      v1Enabled: false
+    dockerProxy:
+      indexType: HUB
+      cacheForeignLayers: false
+      foreignLayerUrlWhitelist: []
+  rubygems:
+    storage:
+      blobStoreName: "{{ nexus_blob_names.rubygems.blob | default('default') }}"
+    yum:
+      repodataDepth: 0
+  nuget:
+    storage:
+      blobStoreName: "{{ nexus_blob_names.nuget.blob | default('default') }}"
+    nugetProxy:
+      nugetVersion: V3
+      # queryCacheItemMaxAge: 3600
+  gitlfs:
+    storage:
+      blobStoreName: "{{ nexus_blob_names.gitlfs.blob | default('default') }}"
+  helm:
+    storage:
+      blobStoreName: "{{ nexus_blob_names.helm.blob | default('default') }}"
+  p2:
+    storage:
+      blobStoreName: "{{ nexus_blob_names.p2.blob | default('default') }}"
+  conda:
+    storage:
+      blobStoreName: "{{ nexus_blob_names.conda.blob | default('default') }}"
+  go:
+    storage:
+      blobStoreName: "{{ nexus_blob_names.go.blob | default('default') }}"
+  cocoapods:
+    storage:
+      blobStoreName: "{{ nexus_blob_names.cocoapods.blob | default('default') }}"
+  r:
+    storage:
+      blobStoreName: "{{ nexus_blob_names.r.blob | default('default') }}"
+
+# Legacy Field Mapping to API attributes
+legacy_field_map:
+  blob_store: "storage.blobStoreName"
+  strict_content_validation: "storage.strictContentTypeValidation"
+  maximum_metadata_age: "proxy.metadataMaxAge"
+  maximum_component_age: "proxy.contentMaxAge"
+  negative_cache_enabled: "negativeCache.enabled"
+  negative_cache_ttl: "negativeCache.timeToLive"
+  remote_username: "httpClient.authentication.username"
+  remote_password: "httpClient.authentication.password"
+  layout_policy: "maven.layoutPolicy"
+  version_policy: "maven.versionPolicy"
+  content_disposition: "maven.contentDisposition"
+  write_policy: "storage.writePolicy"
+  remote_url: "proxy.remoteUrl"
+  proprietary_components: "component.proprietaryComponents"
+  cleanup_policies: "cleanup.policyNames"
+  member_repos: "group.memberNames"
+  writable_member_repo: "group.writableMember"
+  http_port: "docker.httpPort"
+  https_port: "docker.httpsPort"
+  sub_domain: "docker.subdomain"
+  v1_enabled: "docker.v1Enabled"
+  force_basic_auth: "docker.forceBasicAuth"
+  index_type: "dockerProxy.indexType"
+  index_url: "dockerProxy.indexUrl"
+  allow_redeploy_latest: "docker.latestPolicy"
+  cache_foreign_layers: "dockerProxy.cacheForeignLayers"
+  use_nexus_certificates_to_access_index: "dockerProxy.useTrustStoreForIndexAccess"
+  foreign_layer_url_whitelist: "dockerProxy.foreignLayerUrlWhitelist"
+  nuget_version: "nugetProxy.nugetVersion"
+  query_cache_item_max_age: "nugetProxy.queryCacheItemMaxAge"
+  connection_retries: "httpClient.connection.retries"
+  connection_timeout: "httpClient.connection.timeout"
+  enable_cookies: "httpClient.connection.enableCookies"
+  enable_circular_redirects: "httpClient.connection.enableCircularRedirects"
+  user_agent_suffix: "httpClient.connection.userAgentSuffix"
+  use_trust_store: "httpClient.connection.useTrustStore"
+  auto_block: "httpClient.autoBlock"
+  blocked: "httpClient.blocked"
+  routing_rules: "routingRule"
+  ntlm_domain: "httpClient.authentication.ntlmDomain"
+  ntlm_host: "httpClient.authentication.ntlmHost"
+  preemptive: "httpClient.authentication.preemptive"
+  remote_auth_type: "httpClient.authentication.type"
+  bearerToken: "httpClient.authentication.bearerToken"
+  # replication_preemptive_pull: "replication.pullReplication"
+  # replication_asset_path_regex: "replication.assetPathRegex"
+  # removeQuarantined can be set on pypi and npm
+  # removeQuarantined: "npm.removeQuarantined"

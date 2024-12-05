@@ -63,6 +63,8 @@ nexus_anonymous_access:
   realmName: NexusAuthorizingRealm
 ```
 
+Anonymous Docker pulls are handled by the DockerToken realm. You need to enable this and then ensure the `docker.forceBasicAuth` attribute is set to `false`.
+
 #### Security Realms
 
 Each realm will be activated and configured in the same order as you listed.

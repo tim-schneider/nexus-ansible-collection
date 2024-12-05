@@ -256,7 +256,7 @@
                 'blobStoreName': combined_repo.blob_store | default('default'),
                 'strictContentTypeValidation': combined_repo.strict_content_validation | default(true),
                 'writePolicy': combined_repo.write_policy | default('ALLOW_ONCE') | upper,
-                'latestPolicy': combined_repo.lallow_redeploy_latest | default(omit)
+                'latestPolicy': combined_repo.allow_redeploy_latest | default(omit)
               },
               'cleanup': {
                 'policyNames': combined_repo.cleanup_policies | default([])
@@ -1385,7 +1385,7 @@
               },
               'yum': {
                 'repodataDepth': combined_repo.repodata_depth | default(omit),
-                'deployPolicy': combined_repo.layout_policy | default('STRICT') | upper
+                'deployPolicy': combined_repo.deploy_policy | default('STRICT') | upper
               }
             } -%}
             {%- if use_api -%}
