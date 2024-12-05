@@ -101,14 +101,14 @@
 
 - name: Register nexus package name
   ansible.builtin.set_fact:
-      nexus_package: >-
-        {{
-          'nexus-' + nexus_version
-          + '-java' + nexus_java_version | string
-          + '-unix.tar.gz'
-          if nexus_version is version_compare('3.67.1-01', '>=') and nexus_version is version_compare('3.70.1-02', '<=')
-          else 'nexus-' + nexus_version + '-unix.tar.gz'
-        }}
+    nexus_package: >-
+      {{
+        'nexus-' + nexus_version
+        + '-java' + nexus_java_version | string
+        + '-unix.tar.gz'
+        if nexus_version is version_compare('3.67.1-01', '>=') and nexus_version is version_compare('3.70.1-02', '<=')
+        else 'nexus-' + nexus_version + '-unix.tar.gz'
+      }}
 
 - name: Download nexus_package
   ansible.builtin.get_url:
@@ -534,13 +534,13 @@
 
 - name: Wait for Nexus writable API endpoint to be available
   ansible.builtin.uri:
-    url: "{{ nexus_api_scheme }}://{{ nexus_api_hostname }}:{{ nexus_api_port }}{{ nexus_api_context_path }}{{ nexus_rest_api_endpoint }}"
+    url: "{{ nexus_api_scheme }}://{{ nexus_api_hostname }}:{{ nexus_api_port }}/service/rest/v1/status/writable"
     method: GET
     validate_certs: "{{ nexus_api_validate_certs }}"
     status_code: 200
     timeout: "{{ nexus_api_timeout }}"
   register: __nexus_writable__
-  until: __nexus_writable__.status in [200, 403]
+  until: __nexus_writable__.status == 200
   retries: "{{ nexus_api_availability_retries }}"
   delay: "{{ nexus_api_availability_delay }}"
 
