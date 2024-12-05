@@ -105,7 +105,7 @@
     (__nxs_crnt_npm_grp__ | selectattr('name', 'equalto', item.name) | first).storage.blobStoreName | default(omit) != item.storage.blobStoreName | default(None) or
     (__nxs_crnt_npm_grp__ | selectattr('name', 'equalto', item.name) | first).storage.strictContentTypeValidation | default(false) != item.storage.strictContentTypeValidation | default(false) or
     (__nxs_crnt_npm_grp__ | selectattr('name', 'equalto', item.name) | first).group.memberNames | default([]) != item.group.memberNames | default([]) or
-    (__nxs_crnt_npm_grp__ | selectattr('name', 'equalto', item.name) | first).group.writableMember | default(omit) != item.group.writableMember | default(None)
+    (__nxs_crnt_npm_grp__ | selectattr('name', 'equalto', item.name) | first).group.writableMember | default(omit) != item.group.writableMember | default(omit)
 
 - name: Show nxs_create_npm_hosted_repos
   ansible.builtin.debug:
