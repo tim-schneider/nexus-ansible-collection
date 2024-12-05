@@ -11,7 +11,7 @@ nexus_enable_pro_version: true
 
 nexus_config_maven: true
 nexus_config_docker: true
-nexus_config_gitlfs: false
+nexus_config_gitlfs: true
 nexus_config_npm: false
 nexus_config_pypi: false
 nexus_config_conda: false
@@ -1656,27 +1656,45 @@ nexus_repos_npm_proxy:
       timeToLive: 1440
 
 nexus_repos_gitlfs_hosted:
-  - name: gitlfs-hosted-1
+  - name: new-format-minimal-gitlfs-hosted
+  - name: legacy-format-minimal-gitlfs-hosted
+    blob_store: default
+    strict_content_validation: true
+  - name: legacy-format-cleanup-gitlfs-hosted
+    cleanup_policies:
+      - gitlfs_cleanup_nexus_oss
+      - gitlfs_cleanup_config_api
+  - name: new-format-cleanup-reverse-order-gitlfs-hosted
+    cleanup:
+      policyNames:
+        - gitlfs_cleanup_config_api
+        - gitlfs_cleanup_nexus_oss
+  - name: mixed-format-gitlfs-hosted
+    blob_store: legacy-blobstore-complete
+    storage:
+      strictContentTypeValidation: false
+    cleanup_policies:
+      - gitlfs_cleanup_nexus_oss
+  - name: full-new-format-gitlfs-hosted
     online: true
     storage:
       blobStoreName: default
       strictContentTypeValidation: true
-      writePolicy: allow_once
-    cleanup:
-      policyNames: []
-    component:
-      proprietaryComponents: true
-  - name: gitlfs-hosted-offline-2
-    online: false
-    storage:
-      blobStoreName: default
-      strictContentTypeValidation: true
-      writePolicy: allow_once
+      writePolicy: ALLOW
     cleanup:
       policyNames:
-        - gitlfs_cleanup
+        - gitlfs_cleanup_config_api
+        - gitlfs_cleanup_nexus_oss
     component:
-      proprietaryComponents: false
+      proprietaryComponents: true
+  - name: full-legacy-format-gitlfs-hosted
+    blob_store: legacy-blobstore-complete
+    strict_content_validation: true
+    cleanup_policies:
+      - gitlfs_cleanup_nexus_oss
+      - gitlfs_cleanup_config_api
+    write_policy: ALLOW
+    proprietary_components: true
 
 nexus_repos_docker_hosted:
   # Minimal new format

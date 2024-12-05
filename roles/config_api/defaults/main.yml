@@ -45,7 +45,7 @@ nexus_repos_cleanup_policies: []
 
 nexus_config_maven: true
 nexus_config_docker: true
-nexus_config_gitlfs: false
+nexus_config_gitlfs: true
 nexus_config_npm: false
 nexus_config_pypi: false
 nexus_config_conda: false
@@ -253,6 +253,9 @@ nexus_repos_format_defaults:
   nuget:
     nuget:
       version: "v3"
+  gitlfs:
+    storage:
+      blobStoreName: "{{ nexus_blob_names.gitlfs.blob | default('default') }}"
 
 # Legacy Field Mapping to API attributes
 legacy_field_map:

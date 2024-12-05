@@ -8,6 +8,8 @@
   you can now use your `nexus_repos_maven_hosted`, `nexus_repos_maven_proxy` and `nexus_repos_maven_group` definitions with the `config_api` role without reformatting the dictionary.
 - **config_api** Added support to normalize all docker type repositories.
   you can now use your `nexus_repos_docker_hosted`, `nexus_repos_docker_proxy` and `nexus_repos_docker_group` definitions with the `config_api` role without reformatting the dictionary.
+- **config_api** Added support to normalize gitlfs repositories.
+  you can now use your `nexus_repos_gitlfs_hosted` definitions with the `config_api` role without reformatting the dictionary.
 
 #### Important note on repository defaults
 The `config_api` role uses a different approach to set defaults. If you override the `_nexus_repos_maven_defaults` variable, make sure you apply the same defaults to the `nexus_repos_global_defaults`, `nexus_repos_type_defaults` and `nexus_repos_format_defaults` dictionaries! See role defaults for the full dictionaries.
