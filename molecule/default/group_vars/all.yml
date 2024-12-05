@@ -191,25 +191,61 @@ nexus_blobstores:
       limit: 104857600
   - name: file-quota-100-remaining
     type: File
-    path: default-quota-100-remaining
+    path: file-quota-100-remaining
     softQuota:
       type: spaceRemainingQuota
       limit: 104857600
   - name: file-quota-100-used
     type: File
-    path: default-quota-100-used
+    path: file-quota-100-used
     softQuota:
       type: spaceUsedQuota
       limit: 104857600
   - name: file-quota-200-used
     type: File
-    path: default-quota-200-used
+    path: file-quota-200-used
     softQuota:
       type: spaceUsedQuota
       limit: 209715200
   - name: maven-legacy-blobstore
     type: File
-    path: maven-legacy
+    path: maven-legacy-blobstore
+    softQuota:
+      type: spaceRemainingQuota
+      limit: 104857600
+  - name: legacy-minimal-blobstore
+    type: File
+    path: legacy-minimal-blobstore
+    softQuota:
+      type: spaceRemainingQuota
+      limit: 104857600
+  - name: custom-blobstore-legacy
+    type: File
+    path: custom-blobstore-legacy
+    softQuota:
+      type: spaceRemainingQuota
+      limit: 104857600
+  - name: legacy-blobstore-complete
+    type: File
+    path: legacy-blobstore-complete
+    softQuota:
+      type: spaceRemainingQuota
+      limit: 104857600
+  - name: custom-blobstore-new
+    type: File
+    path: custom-blobstore-new
+    softQuota:
+      type: spaceRemainingQuota
+      limit: 104857600
+  - name: mixed-blobstore
+    type: File
+    path: mixed-blobstore
+    softQuota:
+      type: spaceRemainingQuota
+      limit: 104857600
+  - name: overridden-blobstore
+    type: File
+    path: overridden-blobstore
     softQuota:
       type: spaceRemainingQuota
       limit: 104857600
@@ -1643,6 +1679,7 @@ nexus_repos_gitlfs_hosted:
       proprietaryComponents: false
 
 nexus_repos_docker_hosted:
+  # TODO: Add more examples with legacy format, mixed format and minimal format
   - name: docker-hosted-1
     online: true
     storage:
@@ -1708,110 +1745,110 @@ nexus_repos_docker_proxy:
 
 nexus_repos_docker_group:
   - name: docker-group
-  - name: full-legacy-format-maven-hosted
-    blob_store: maven-legacy-blobstore
-    strict_content_validation: true
-    proprietary_components: true
-    cleanup_policies:
-      - mvn_cleanup_legacy_format
-    layout_policy: PERMISSIVE
-    version_policy: mixed
-    write_policy: allow # one of "allow", "allow_once" or "deny"
-    content_disposition: INLINE
-  - name: repo-1
     online: true
     storage:
+      blobStoreName: default
       strictContentTypeValidation: true
-      writePolicy: ALLOW_ONCE # Disable redeploy
-    cleanup:
-      policyNames:
-        - maven_cleanup
-    component:
-      proprietaryComponents: true
-    maven:
-      versionPolicy: RELEASE
-      layoutPolicy: STRICT
-      contentDisposition: INLINE
-  - name: repo-2
-    online: true
-    storage:
-      strictContentTypeValidation: false
-      writePolicy: ALLOW # Allow redeploy
-    cleanup:
-      policyNames: []
-    component:
-      proprietaryComponents: false
-    maven:
-      versionPolicy: SNAPSHOT
-      layoutPolicy: PERMISSIVE
-      contentDisposition: ATTACHMENT
-  - name: repo-3-offline
+    group:
+      memberNames:
+        - docker-proxy-1
+        - docker-proxy-2
+        - docker-proxy-3
+        - docker-hosted-1
+  - name: docker-group-reverse-group-order
     online: false
     storage:
+      blobStoreName: default
       strictContentTypeValidation: false
-      writePolicy: DENY # Read only
+    group:
+      memberNames:
+        - docker-proxy-3
+        - docker-proxy-2
+        - docker-proxy-1
+        - docker-hosted-1
+      writableMember: docker-hosted-1
+
+nexus_repos_maven_hosted:
+  # Minimal new format
+  - name: new-format-minimal-maven-hosted
+
+  # Minimal legacy format
+  - name: legacy-format-minimal-maven-hosted
+    blob_store: "legacy-minimal-blobstore"
+    strict_content_validation: true
+
+  # Legacy format with cleanup
+  - name: legacy-format-cleanup
+    blob_store: "custom-blobstore-legacy"
+    strict_content_validation: false
+    cleanup_policies:
+      - legacy_cleanup_policy_1
+      - legacy_cleanup_policy_2
+
+  # New format with cleanup in reverse order
+  - name: new-format-cleanup-reverse-order
+    online: false
+    storage:
+      blobStoreName: "custom-blobstore-new"
+      strictContentTypeValidation: false
     cleanup:
-      policyNames: []
+      policyNames:
+        - cleanup-policy-new-1
+        - cleanup-policy-new-2
+
+  # Mixed format
+  - name: mixed-format-maven-hosted
+    blob_store: "mixed-blobstore"
+    strict_content_validation: true
+    cleanup:
+      policyNames:
+        - cleanup-policy-mixed-1
+        - cleanup-policy-mixed-2
+    maximum_component_age: 720
+    storage:
+      blobStoreName: "overridden-blobstore"
+    maven:
+      versionPolicy: SNAPSHOT
+      layoutPolicy: PERMISSIVE
+      contentDisposition: INLINE
+
+  # Fully complete new format
+  - name: full-new-format-maven-hosted
+    online: true
+    storage:
+      blobStoreName: "default"
+      strictContentTypeValidation: true
+    cleanup:
+      policyNames:
+        - cleanup-policy-new-complete-1
+        - cleanup-policy-new-complete-2
+    maven:
+      versionPolicy: RELEASE
+      layoutPolicy: STRICT
+      contentDisposition: ATTACHMENT
     component:
       proprietaryComponents: false
-    maven:
-      versionPolicy:
-      layoutPolicy: PERMISSIVE
-      contentDisposition: ATTACHMENT
-  - name: maven-snapshots
-    online: true
-    storage:
-      strictContentTypeValidation: true
-      writePolicy: ALLOW_ONCE
-    cleanup:
-      policyNames:
-        - maven_cleanup
-    component:
-      proprietaryComponents: true
-    maven:
-      contentDisposition: INLINE
-      layoutPolicy: STRICT
-      versionPolicy: SNAPSHOT
-  - name: maven-releases
-    online: true
-    storage:
-      strictContentTypeValidation: true
-    cleanup:
-      policyNames:
-        - maven_cleanup
-    component:
-      proprietaryComponents: true
-    maven:
-      contentDisposition: INLINE
-      layoutPolicy: STRICT
-      versionPolicy: RELEASE
-  - name: repo-cleanup-order-1
-    cleanup:
-      policyNames:
-        - maven_cleanup
-        - maven_releases_cleanup
-        - maven_prereleases_cleanup
-  - name: repo-cleanup-order-2
-    cleanup:
-      policyNames:
-        - maven_releases_cleanup
-        - maven_cleanup
-        - maven_prereleases_cleanup
-  - name: repo-cleanup-order-3
-    cleanup:
-      policyNames:
-        - maven_prereleases_cleanup
-        - maven_releases_cleanup
-        - maven_cleanup
+
+  # Fully complete legacy format
+  - name: full-legacy-format-maven-hosted
+    blob_store: "legacy-blobstore-complete"
+    strict_content_validation: false
+    cleanup_policies:
+      - cleanup-policy-legacy-complete-1
+      - cleanup-policy-legacy-complete-2
+    version_policy: MIXED
+    layout_policy: STRICT
+    content_disposition: INLINE
+    proprietary_components: true
 
 nexus_repos_maven_proxy:
   # Minimal new format
-  - name: minimal-new-format-maven-proxy
+  - name: new-format-minimal-maven-proxy
     proxy:
       remoteUrl: "https://repo1.maven.org/maven2/"
 
   # Minimal legacy format
-  - name: legacy-minimal-format-maven-proxy
+  - name: legacy-format-minimal-maven-proxy
     remote_url: "https://repo1.maven.org/maven2/"
 
   # Legacy format with equivalent nested attributes
@@ -1822,13 +1859,13 @@ nexus_repos_maven_proxy:
     negative_cache_enabled: true
     negative_cache_ttl: 720
 
-  # Legacy format with authentication
+  # Legacy format with basic authentication
   - name: legacy-format-basic-auth-maven-proxy
     remote_url: "https://repo.auth.maven.org/maven2/"
     remote_username: "basic-user"
     remote_password: "basic-pass"
 
-  # NTLM Authentication (new format)
+  # New format with NTLM authentication
   - name: new-format-ntlm-auth-maven-proxy
     proxy:
       remoteUrl: "https://repo.ntlm.maven.org/maven2/"
@@ -1850,7 +1887,7 @@ nexus_repos_maven_proxy:
       blobStoreName: default
 
   # Fully complete new format
-  - name: fully-complete-new-format-maven-proxy
+  - name: full-new-format-maven-proxy
     online: true
     proxy:
       remoteUrl: "https://repo.complete.maven.org/maven2/"
@@ -1871,61 +1908,109 @@ nexus_repos_maven_proxy:
       autoBlock: true
       authentication:
         type: username
-        username: "full-ntlm-userr"
-        password: "full-ntlm-pass"
-        ntlmDomain: "full-ntlm-domain"
-        ntlmHost: "full-ntlm-host"
-        preemptive: true
+        username: "full-auth-user"
+        password: "full-auth-pass"
       connection:
         retries: 5
         timeout: 60
         useTrustStore: true
         enableCircularRedirects: true
         enableCookies: true
-        userAgentSuffix: full-some-sufifx
+        userAgentSuffix: full-user-agent
     maven:
       versionPolicy: RELEASE
       layoutPolicy: PERMISSIVE
       contentDisposition: INLINE
     routingRule: routing-rule-block-nmap
 
-nexus_repos_maven_group:
-  - name: minimal-legacy-format-maven-group
-    member_repos:
-      - legacy-minimal-format-maven-proxy
-  - name: minimal-legacy-format-mixed-maven-group
-    member_repos:
-      - legacy-minimal-format-maven-proxy
-      - minimal-repo-using-all-defaults-maven-hosted
-  - name: full-legacy-format-maven-group
+  # Fully complete legacy format
+  - name: full-legacy-format-maven-proxy
     blob_store: maven-legacy-blobstore
-    member_repos:
-      - new-format-ntlm-auth-maven-proxy
-      - mixed-format-maven-proxy
+    remote_url: "https://repo.complete.maven.org/maven2/"
+    maximum_metadata_age: 1
+    maximum_component_age: 1
+    negative_cache_enabled: true
+    negative_cache_ttl: 300
+    remote_username: "full-legacy-auth-user"
+    remote_password: "full-legacy-auth-pass"
+    ntlm_domain: "full-legacy-ntlm-domain"
+    ntlm_host: "full-legacy-ntlm-host"
+    preemptive: true
+    connection_retries: 5
+    connection_timeout: 60
+    use_trust_store: true
+    enable_circular_redirects: true
+    enable_cookies: true
+    user_agent_suffix: full-legacy-user-agent
+    version_policy: RELEASE
     layout_policy: PERMISSIVE
-    version_policy: MIXED
     content_disposition: INLINE
-    strict_content_validation: false
+    routing_rule: routing-rule-block-nmap
+
+nexus_repos_maven_group:
+  # Minimal new format
+  - name: new-format-minimal-maven-group
+    group:
+      memberNames:
+        - new-format-minimal-maven-hosted
+
+  # Minimal legacy format
+  - name: legacy-format-minimal-maven-group
+    member_repos:
+      - legacy-format-minimal-maven-hosted
+
+  # Legacy format with both hosted and proxy members
+  - name: legacy-format-hosted-proxy-maven-group
+    member_repos:
+      - legacy-format-minimal-maven-hosted
+      - legacy-format-minimal-maven-proxy
+
+  # New format with both hosted and proxy members
+  - name: new-format-hosted-proxy-maven-group
+    group:
+      memberNames:
+        - new-format-minimal-maven-hosted
+        - new-format-minimal-maven-proxy
+
+  # New format with both hosted and proxy members (reversed order)
+  - name: new-format-hosted-proxy-maven-group-reversed
+    group:
+      memberNames:
+        - new-format-minimal-maven-proxy
+        - new-format-minimal-maven-hosted
+
+  # Mixed format with a combination of legacy and new format members
+  - name: mixed-format-maven-group
+    storage:
+      strictContentTypeValidation: true
+    member_repos:
+      - legacy-format-minimal-maven-hosted
+      - new-format-minimal-maven-proxy
+
+  # Fully complete new format
   - name: full-new-format-maven-group
     online: true
     storage:
       blobStoreName: default
       strictContentTypeValidation: true
+    cleanup:
+      policyNames:
+        - maven_cleanup_config_api
+        - mvn_cleanup_legacy_format
     group:
       memberNames:
-        - legacy-minimal-format-maven-proxy
-        - new-format-ntlm-auth-maven-proxy
-        - mixed-format-maven-proxy
-  - name: full-new-format-maven-group-reverse-group-order
-    online: false
-    storage:
-      blobStoreName: default
-      strictContentTypeValidation: false
-    group:
-      memberNames:
-        - mixed-format-maven-proxy
-        - new-format-ntlm-auth-maven-proxy
-        - legacy-minimal-format-maven-proxy
+        - full-new-format-maven-hosted
+        - full-new-format-maven-proxy
+
+  # Fully complete legacy format
+  - name: full-legacy-format-maven-group
+    blob_store: legacy-minimal-blobstore
+    strict_content_validation: false
+    cleanup_policies:
+      - mvn_cleanup_legacy_format
+    member_repos:
+      - full-legacy-format-maven-hosted
+      - full-legacy-format-maven-proxy
 
 nexus_repos_routing_rules:
   - name: routing-rule-block-nmap
