@@ -46,18 +46,18 @@ nexus_repos_cleanup_policies: []
 nexus_config_maven: true
 nexus_config_docker: true
 nexus_config_gitlfs: true
-nexus_config_npm: false
-nexus_config_pypi: false
+nexus_config_npm: true
+nexus_config_pypi: true
 nexus_config_conda: true
 nexus_config_helm: true
 nexus_config_r: true
 nexus_config_nuget: true
-nexus_config_apt: false
-nexus_config_yum: false
-nexus_config_raw: false
+nexus_config_apt: true
+nexus_config_yum: true
+nexus_config_raw: true
 nexus_config_p2: true
 nexus_config_cocoapods: true
-nexus_config_conan: false
+nexus_config_conan: true
 nexus_config_go: true
 nexus_config_cargo: true
 nexus_config_rubygems: true
@@ -280,6 +280,24 @@ nexus_repos_format_defaults:
   r:
     storage:
       blobStoreName: "{{ nexus_blob_names.r.blob | default('default') }}"
+  cargo:
+    storage:
+      blobStoreName: "{{ nexus_blob_names.cargo.blob | default('default') }}"
+  apt:
+    storage:
+      blobStoreName: "{{ nexus_blob_names.apt.blob | default('default') }}"
+  yum:
+    storage:
+      blobStoreName: "{{ nexus_blob_names.yum.blob | default('default') }}"
+  raw:
+    storage:
+      blobStoreName: "{{ nexus_blob_names.raw.blob | default('default') }}"
+  npm:
+    storage:
+      blobStoreName: "{{ nexus_blob_names.npm.blob | default('default') }}"
+  conan:
+    storage:
+      blobStoreName: "{{ nexus_blob_names.conan.blob | default('default') }}"
 
 # Legacy Field Mapping to API attributes
 legacy_field_map:
@@ -293,6 +311,7 @@ legacy_field_map:
   remote_password: "httpClient.authentication.password"
   layout_policy: "maven.layoutPolicy"
   version_policy: "maven.versionPolicy"
+  # content_disposition is used for raw group, hosted and proxy and maven hosted and proxy repositories
   content_disposition: "maven.contentDisposition"
   write_policy: "storage.writePolicy"
   remote_url: "proxy.remoteUrl"
@@ -327,7 +346,16 @@ legacy_field_map:
   preemptive: "httpClient.authentication.preemptive"
   remote_auth_type: "httpClient.authentication.type"
   bearerToken: "httpClient.authentication.bearerToken"
+  conan_version: "conanProxy.conanVersion"
+  deploy_policy: "yum.deployPolicy"
+  repodata_depth: "yum.repodataDepth"
+  # passphrase can be set on yum proxy and groups and apt hosted
+  passphrase: "yumSigning.passphrase"
+  # keypair can be set on yum proxy and groups and apt hosted
+  keypair: "yumSigning.keypair"
+  distribution: "apt.distribution"
+  flat: "apt.flat"
   # replication_preemptive_pull: "replication.pullReplication"
   # replication_asset_path_regex: "replication.assetPathRegex"
-  # removeQuarantined can be set on pypi and npm
-  # removeQuarantined: "npm.removeQuarantined"
+  # removeQuarantined can be set on pypi and npm proxies
+  # remove_quarantined: "npm.removeQuarantined"
