@@ -48,7 +48,7 @@ nexus_config_docker: true
 nexus_config_gitlfs: true
 nexus_config_npm: false
 nexus_config_pypi: false
-nexus_config_conda: false
+nexus_config_conda: true
 nexus_config_helm: false
 nexus_config_r: false
 nexus_config_nuget: false
@@ -256,12 +256,16 @@ nexus_repos_format_defaults:
   gitlfs:
     storage:
       blobStoreName: "{{ nexus_blob_names.gitlfs.blob | default('default') }}"
+  conda:
+    storage:
+      blobStoreName: "{{ nexus_blob_names.conda.blob | default('default') }}"
 
 # Legacy Field Mapping to API attributes
 legacy_field_map:
   blob_store: "storage.blobStoreName"
   strict_content_validation: "storage.strictContentTypeValidation"
   maximum_metadata_age: "proxy.metadataMaxAge"
+  maximum_component_age: "proxy.contentMaxAge"
   negative_cache_enabled: "negativeCache.enabled"
   negative_cache_ttl: "negativeCache.timeToLive"
   remote_username: "httpClient.authentication.username"

@@ -14,7 +14,7 @@ nexus_config_docker: true
 nexus_config_gitlfs: true
 nexus_config_npm: false
 nexus_config_pypi: false
-nexus_config_conda: false
+nexus_config_conda: true
 nexus_config_helm: false
 nexus_config_r: false
 nexus_config_nuget: false
@@ -1490,7 +1490,40 @@ nexus_repos_helm_proxy:
       timeToLive: 1440
 
 nexus_repos_conda_proxy:
-  - name: conda-proxy-1
+  - name: new-format-minimal-conda-proxy
+    proxy:
+      remoteUrl: https://repo.anaconda.com/pkgs/main
+  - name: legacy-format-minimal-conda-proxy
+    blob_store: default
+    strict_content_validation: true
+    remote_url: https://repo.anaconda.com/pkgs/main
+  - name: legacy-format-cleanup-conda-proxy
+    cleanup_policies:
+      - conda_cleanup_nexus_oss
+      - conda_cleanup_config_api
+    remote_url: https://repo.anaconda.com/pkgs/main
+  - name: new-format-cleanup-reverse-order-conda-proxy
+    cleanup:
+      policyNames:
+        - conda_cleanup_config_api
+        - conda_cleanup_nexus_oss
+    remote_url: https://repo.anaconda.com/pkgs/main
+  - name: mixed-format-conda-proxy
+    blob_store: legacy-minimal-blobstore
+    storage:
+      strictContentTypeValidation: false
+    cleanup_policies:
+      - conda_cleanup_nexus_oss
+    remote_url: https://repo.anaconda.com/pkgs/main
+  - name: full-new-format-conda-proxy
+    online: true
+    storage:
+      blobStoreName: default
+      strictContentTypeValidation: true
+    cleanup:
+      policyNames:
+        - conda_cleanup_config_api
+        - conda_cleanup_nexus_oss
     proxy:
       remoteUrl: https://repo.anaconda.com/pkgs/main
       contentMaxAge: 1440
@@ -1503,21 +1536,40 @@ nexus_repos_conda_proxy:
       autoBlock: true
       connection:
         useTrustStore: true
-  - name: conda-proxy-2
-    proxy:
-      remoteUrl: https://repo.anaconda.com/pkgs/main
-      contentMaxAge: 1440
-      metadataMaxAge: 1440
+        retries: 3
+        timeout: 60
+        userAgentSuffix: "Nexus/3.20.1-01 (OSS)"
+        enableCircularRedirects: true
+        enableCookies: true
+      authentication:
+        type: username
+        username: "full-auth-user"
+        password: "full-auth-pass"
     routingRule: routing-rule-allow-all
-  - name: conda-proxy-3
-    proxy:
-      remoteUrl: https://repo.anaconda.com/pkgs/main
-      contentMaxAge: 1440
-      metadataMaxAge: 1440
-    negativeCache:
-      enabled: true
-      timeToLive: 1440
-
+  - name: full-legacy-format-conda-proxy
+    blob_store: legacy-minimal-blobstore
+    strict_content_validation: true
+    cleanup_policies:
+      - conda_cleanup_config_api
+      - conda_cleanup_nexus_oss
+    remote_url: https://repo.anaconda.com/pkgs/main
+    maximum_component_age: 1440
+    maximum_metadata_age: 1440
+    negative_cache_enabled: true
+    negative_cache_ttl: 1440
+    blocked: false
+    auto_block: true
+    use_trust_store: true
+    connection_retries: 3
+    connection_timeout: 60
+    user_agent_suffix: "Nexus/3.20.1-01 (OSS)"
+    enable_circular_redirects: true
+    enable_cookies: true
+    remote_username: "full-auth-user"
+    remote_password: "full-auth-pass"
+    ntlm_domain: "full-ntlm-domain"
+    ntlm_host: "full-ntlm-host"
+    routing_rules: routing-rule-allow-all
 nexus_repos_pypi_hosted:
   - name: pypi-hosted-1
     online: true
