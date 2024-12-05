@@ -21,7 +21,6 @@ The order of the group_vars is important since the dictionaries will be passed t
 - setting version policy on maven groups
 - httpclient.authentication.password cant be fetched through API
 - create cleanup policy for format 'all'
-- allow anonymous docker pull
 - useTrustStoreForIndexAccess docker proxy
 - yumsigning cant be fetched through the API
 - raw.contentdisposition cant be fetched through api

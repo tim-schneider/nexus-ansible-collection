@@ -242,11 +242,8 @@ nexus_repos_format_defaults:
     storage:
       blobStoreName: "{{ nexus_blob_names.docker.blob | default('default') }}"
     docker:
-      # httpPort: 5000
-      # httpsPort: 5001
       forceBasicAuth: true
       v1Enabled: false
-      # subdomain:
     dockerProxy:
       indexType: HUB
       cacheForeignLayers: false
@@ -274,11 +271,14 @@ legacy_field_map:
   proprietary_components: "component.proprietaryComponents"
   cleanup_policies: "cleanup.policyNames"
   member_repos: "group.memberNames"
+  writable_member_repo: "group.writableMember"
   http_port: "docker.httpPort"
   https_port: "docker.httpsPort"
   sub_domain: "docker.subdomain"
   v1_enabled: "docker.v1Enabled"
+  force_basic_auth: "docker.forceBasicAuth"
   index_type: "dockerProxy.indexType"
+  index_url: "dockerProxy.indexUrl"
   allow_redeploy_latest: "docker.latestPolicy"
   cache_foreign_layers: "dockerProxy.cacheForeignLayers"
   use_nexus_certificates_to_access_index: "dockerProxy.useTrustStoreForIndexAccess"

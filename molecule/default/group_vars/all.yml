@@ -1679,94 +1679,248 @@ nexus_repos_gitlfs_hosted:
       proprietaryComponents: false
 
 nexus_repos_docker_hosted:
-  # TODO: Add more examples with legacy format, mixed format and minimal format
-  - name: docker-hosted-1
-    online: true
-    storage:
-      blobStoreName: default
-      strictContentTypeValidation: true
-      writePolicy: allow_once
-      latestPolicy: true
-    cleanup:
-      policyNames: []
-    docker:
-      v1Enabled: false
-      forceBasicAuth: false
-      httpPort: 10000
-      httpsPort: 10001
+  # Minimal new format
+  - name: new-format-minimal-docker-hosted
 
-  - name: docker-hosted-offline
-    online: false
+  # Minimal legacy format
+  - name: legacy-format-minimal-docker-hosted
+    blob_store: default
+    strict_content_validation: true
+
+  # Legacy format with cleanup
+  - name: legacy-format-cleanup-docker-hosted
+    blob_store: default
+    strict_content_validation: true
+    cleanup_policies:
+      - docker_cleanup_nexus_oss
+
+  # New format with cleanup in reverse order
+  - name: new-format-cleanup-reverse-order-docker-hosted
     storage:
       blobStoreName: default
       strictContentTypeValidation: true
-      writePolicy: allow_once
-      latestPolicy: true
     cleanup:
       policyNames:
-        - docker_cleanup
-    component:
-      proprietaryComponents: true
-    docker:
-      v1Enabled: true
-      forceBasicAuth: true
-      httpPort: 10002
-      httpsPort: 10003
-      subdomain: docker-hosted-offline
+        - docker_cleanup_config_api
+        - docker_cleanup_nexus_oss
 
-nexus_repos_docker_proxy:
-  - name: docker-proxy-1
-    proxy:
-      remoteUrl: https://remote.repository.com
-      contentMaxAge: 1440
-      metadataMaxAge: 1440
-    negativeCache:
-      enabled: true
-      timeToLive: 1440
-    httpClient:
-      blocked: false
-      autoBlock: true
-      connection:
-        useTrustStore: true
-  - name: docker-proxy-2
-    proxy:
-      remoteUrl: https://remote.repository.com
-      contentMaxAge: 1440
-      metadataMaxAge: 1440
-    routingRule: routing-rule-allow-all
-  - name: docker-proxy-3
-    proxy:
-      remoteUrl: https://remote.repository.com
-      contentMaxAge: 1440
-      metadataMaxAge: 1440
-    negativeCache:
-      enabled: true
-      timeToLive: 1440
+  # Mixed format
+  - name: mixed-format-docker-hosted
+    blob_store: legacy-blobstore-complete
+    storage:
+      strictContentTypeValidation: false
+    cleanup_policies:
+      - docker_cleanup_nexus_oss
 
-nexus_repos_docker_group:
-  - name: docker-group
+  # Fully complete new format
+  - name: full-new-format-docker-hosted
     online: true
     storage:
       blobStoreName: default
       strictContentTypeValidation: true
-    group:
-      memberNames:
-        - docker-proxy-1
-        - docker-proxy-2
-        - docker-proxy-3
-        - docker-hosted-1
-  - name: docker-group-reverse-group-order
-    online: false
+    cleanup:
+      policyNames:
+        - docker_cleanup_config_api
+        - docker_cleanup_nexus_oss
+    docker:
+      httpPort: 5000
+      v1Enabled: false
+      forceBasicAuth: true
+
+  # Fully complete legacy format
+  - name: full-legacy-format-docker-hosted
+    blob_store: legacy-blobstore-complete
+    strict_content_validation: false
+    cleanup_policies:
+      - docker_cleanup_nexus_oss
+    http_port: 5001
+    v1_enabled: false
+    force_basic_auth: true
+
+nexus_repos_docker_proxy:
+  # Minimal new format
+  - name: new-format-minimal-docker-proxy
+    proxy:
+      remoteUrl: "https://registry-1.docker.io"
+
+  # Minimal legacy format
+  - name: legacy-format-minimal-docker-proxy
+    remote_url: "https://registry-1.docker.io"
+    blob_store: default
+    strict_content_validation: true
+
+  # Legacy format with authentication
+  - name: legacy-format-basic-auth-docker-proxy
+    remote_url: "https://secure-registry.docker.io"
+    remote_username: "docker-user"
+    remote_password: "docker-pass"
+
+  # New format with NTLM authentication
+  - name: new-format-ntlm-auth-docker-proxy
+    proxy:
+      remoteUrl: "https://ntlm-registry.docker.io"
+    httpClient:
+      authentication:
+        type: ntlm
+        username: "ntlm-user"
+        password: "ntlm-pass"
+        ntlmDomain: "ntlm-domain"
+        ntlmHost: "ntlm-host"
+
+  # Mixed format
+  - name: mixed-format-docker-proxy
+    remote_url: "https://registry.mixed.docker.io"
+    proxy:
+      contentMaxAge: 1440
+    storage:
+      blobStoreName: mixed-blobstore
+
+  # Fully complete new format
+  - name: full-new-format-docker-proxy
+    online: true
+    proxy:
+      remoteUrl: "https://secure-complete-registry.docker.io"
+      contentMaxAge: 60
+      metadataMaxAge: 30
     storage:
       blobStoreName: default
-      strictContentTypeValidation: false
+      strictContentTypeValidation: true
+    cleanup:
+      policyNames:
+        - docker_cleanup_config_api
+    negativeCache:
+      enabled: true
+      timeToLive: 300
+    httpClient:
+      blocked: true
+      autoBlock: true
+      authentication:
+        type: username
+        username: "docker-complete-user"
+        password: "docker-complete-pass"
+      connection:
+        retries: 5
+        timeout: 60
+        useTrustStore: true
+        enableCookies: true
+        enableCircularRedirects: true
+        userAgentSuffix: "nexus-repository-manager"
+    routingRule: "routing-rule-block-nmap"
+    dockerProxy:
+      indexType: CUSTOM
+      indexUrl: "https://index.docker.io/"
+      cacheForeignLayers: true
+      foreignLayerUrlWhitelist:
+        - "https://foreign-layer-1.docker.io"
+        - "https://foreign-layer-2.docker.io"
+    docker:
+      httpPort: 6000
+      httpsPort: 6001
+      v1Enabled: true
+      forceBasicAuth: false # setting this to true will block anonymous access
+      subdomain: "docker-complete"
+
+  # Fully complete legacy format
+  - name: full-legacy-format-docker-proxy
+    blob_store: mixed-blobstore
+    blocked: true
+    remote_url: "https://legacy-secure-registry.docker.io"
+    strict_content_validation: true
+    maximum_metadata_age: 30
+    negative_cache_enabled: true
+    negative_cache_ttl: 300
+    remote_username: "legacy-docker-user"
+    remote_password: "legacy-docker-pass"
+    connection_retries: 4
+    connection_timeout: 300
+    enable_cookies: true
+    enable_circular_redirects: true
+    user_agent_suffix: legacy-agent
+    use_trust_store: true
+    cleanup_policies:
+      - docker_cleanup_nexus_oss
+    routing_rules: "routing-rule-block-nmap"
+    http_port: 7000
+    https_port: 7001
+    sub_domain: "docker-legacy-subdomain"
+    v1_enabled: true
+    index_type: CUSTOM
+    index_url: "https://index.docker.io/"
+    force_basic_auth: false
+    cache_foreign_layers: true
+    foreign_layer_url_whitelist:
+      - "https://foreign-layer-1.docker.io"
+      - "https://foreign-layer-2.docker.io"
+
+nexus_repos_docker_group:
+  # Minimal new format
+  - name: new-format-minimal-docker-group
     group:
       memberNames:
-        - docker-proxy-3
-        - docker-proxy-2
-        - docker-proxy-1
-        - docker-hosted-1
-      writableMember: docker-hosted-1
+        - new-format-minimal-docker-hosted
+
+  # Minimal legacy format
+  - name: legacy-format-minimal-docker-group
+    member_repos:
+      - legacy-format-minimal-docker-hosted
+
+  # Legacy format with hosted and proxy members
+  - name: legacy-format-hosted-proxy-docker-group
+    member_repos:
+      - legacy-format-minimal-docker-hosted
+      - legacy-format-minimal-docker-proxy
+
+  # New format with hosted and proxy members
+  - name: new-format-hosted-proxy-docker-group
+    group:
+      memberNames:
+        - new-format-minimal-docker-hosted
+        - new-format-minimal-docker-proxy
+
+  # Mixed format
+  - name: mixed-format-docker-group
+    member_repos:
+      - legacy-format-minimal-docker-hosted
+    group:
+      memberNames:
+        - new-format-minimal-docker-proxy
+
+  # Fully complete new format
+  - name: full-new-format-docker-group
+    online: true
+    storage:
+      blobStoreName: default
+      strictContentTypeValidation: true
+    cleanup:
+      policyNames:
+        - docker_cleanup_config_api
+    group:
+      memberNames:
+        - full-new-format-docker-hosted
+        - full-new-format-docker-proxy
+      writableMember: full-new-format-docker-hosted
+    docker:
+      httpPort: 4000
+      httpsPort: 4001
+      subdomain: "docker-group-complete"
+      v1Enabled: true
+      forceBasicAuth: false
+
+  # Fully complete legacy format
+  - name: full-legacy-format-docker-group
+    blob_store: mixed-blobstore
+    strict_content_validation: true
+    cleanup_policies:
+      - docker_cleanup_nexus_oss
+    member_repos:
+      - full-legacy-format-docker-hosted
+      - full-legacy-format-docker-proxy
+    writable_member_repo: full-legacy-format-docker-hosted
+    http_port: 4002
+    https_port: 4003
+    sub_domain: "docker-legacy-group"
+    v1_enabled: true
+    force_basic_auth: false
 
 nexus_repos_maven_hosted:
   # Minimal new format
