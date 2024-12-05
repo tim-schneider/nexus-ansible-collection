@@ -10,7 +10,7 @@ nexus_admin_password: changeme
 nexus_enable_pro_version: true
 
 nexus_config_maven: true
-nexus_config_docker: false
+nexus_config_docker: true
 nexus_config_gitlfs: false
 nexus_config_npm: false
 nexus_config_pypi: false
@@ -1706,8 +1706,8 @@ nexus_repos_docker_proxy:
       enabled: true
       timeToLive: 1440
 
-nexus_repos_maven_hosted:
-  - name: minimal-repo-using-all-defaults-maven-hosted
+nexus_repos_docker_group:
+  - name: docker-group
   - name: full-legacy-format-maven-hosted
     blob_store: maven-legacy-blobstore
     strict_content_validation: true

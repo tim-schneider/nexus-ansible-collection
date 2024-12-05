@@ -1,34 +1,47 @@
-- name: Process definitions for docker
-  block:
-    - name: Apply defaults to docker hosted repos
-      ansible.builtin.set_fact:
-        nxs_desired_docker_hosted_repos: >-
-          {%- set result = [] -%}
-          {%- for repo in nexus_repos_docker_hosted -%}
-            {%- set combined_repo = __nexus_repos_docker_hosted_defaults | combine(repo, recursive=True) -%}
-              {{ result.append(combined_repo) }}
-          {%- endfor -%}
-          {{ result | to_json | from_json }}
+- name: Normalize Docker proxy repositories
+  ansible.builtin.set_fact:
+    nexus_repos_docker_proxy_normalized: >
+      {{ nexus_repos_docker_proxy | cloudkrafter.nexus.normalize_repositories(
+          nexus_repos_global_defaults,
+          nexus_repos_type_defaults,
+          nexus_repos_format_defaults,
+          'proxy',
+          'docker',
+          legacy_field_map
+        ) }}
+  tags:
+    - docker
+    - docker-proxy
 
-    - name: Apply defaults to docker proxy repos
-      ansible.builtin.set_fact:
-        nxs_desired_docker_proxy_repos: >-
-          {%- set result = [] -%}
-          {%- for repo in nexus_repos_docker_proxy -%}
-            {%- set combined_repo = __nexus_repos_docker_proxy_defaults | combine(repo, recursive=True) -%}
-              {{ result.append(combined_repo) }}
-          {%- endfor -%}
-          {{ result | to_json | from_json }}
+- name: Normalize Docker hosted repositories
+  ansible.builtin.set_fact:
+    nexus_repos_docker_hosted_normalized: >
+      {{ nexus_repos_docker_hosted | cloudkrafter.nexus.normalize_repositories(
+          nexus_repos_global_defaults,
+          nexus_repos_type_defaults,
+          nexus_repos_format_defaults,
+          'hosted',
+          'docker',
+          legacy_field_map
+        ) }}
+  tags:
+    - docker
+    - docker-hosted
 
-    - name: Apply defaults to docker group repos
-      ansible.builtin.set_fact:
-        nxs_desired_docker_group_repos: >-
-          {%- set result = [] -%}
-          {%- for repo in nexus_repos_docker_group -%}
-            {%- set combined_repo = __nexus_repos_docker_group_defaults | combine(repo) -%}
-              {{ result.append(combined_repo) }}
-          {%- endfor -%}
-          {{ result | to_json | from_json }}
+- name: Normalize Docker group repositories
+  ansible.builtin.set_fact:
+    nexus_repos_docker_group_normalized: >
+      {{ nexus_repos_docker_group | cloudkrafter.nexus.normalize_repositories(
+          nexus_repos_global_defaults,
+          nexus_repos_type_defaults,
+          nexus_repos_format_defaults,
+          'group',
+          'docker',
+          legacy_field_map
+        ) }}
+  tags:
+    - docker
+    - docker-group
 
 # Need filtered facts for existing repositories because the API has different endpoints for each type and format
 - name: Filter existing Docker repositories
@@ -36,23 +49,26 @@
     __nxs_crnt_docker_hstd__: "{{ __nxs_all_repos__.json | selectattr('format', 'equalto', 'docker') | selectattr('type', 'equalto', 'hosted') | list }}"
     __nxs_crnt_docker_prxy__: "{{ __nxs_all_repos__.json | selectattr('format', 'equalto', 'docker') | selectattr('type', 'equalto', 'proxy') | list }}"
     __nxs_crnt_docker_grp__: "{{ __nxs_all_repos__.json | selectattr('format', 'equalto', 'docker') | selectattr('type', 'equalto', 'group') | list }}"
+  tags: repositories
 
 - name: Determine Docker repositories to create
   ansible.builtin.set_fact:
-    nxs_create_docker_hosted_repos: "{{ nxs_desired_docker_hosted_repos | rejectattr('name', 'in', __nxs_crnt_docker_hstd__ | map(attribute='name') | list) | list }}"
-    nxs_create_docker_proxy_repos: "{{ nxs_desired_docker_proxy_repos | rejectattr('name', 'in', __nxs_crnt_docker_prxy__ | map(attribute='name') | list) | list }}"
-    nxs_create_docker_group_repos: "{{ nxs_desired_docker_group_repos | rejectattr('name', 'in', __nxs_crnt_docker_grp__ | map(attribute='name') | list) | list }}"
+    nxs_create_docker_hosted_repos: "{{ nexus_repos_docker_hosted_normalized | rejectattr('name', 'in', __nxs_crnt_docker_hstd__ | map(attribute='name') | list) | list }}"
+    nxs_create_docker_proxy_repos: "{{ nexus_repos_docker_proxy_normalized | rejectattr('name', 'in', __nxs_crnt_docker_prxy__ | map(attribute='name') | list) | list }}"
+    nxs_create_docker_group_repos: "{{ nexus_repos_docker_group_normalized | rejectattr('name', 'in', __nxs_crnt_docker_grp__ | map(attribute='name') | list) | list }}"
+  tags: repositories
 
 - name: Determine Docker repositories to delete
   ansible.builtin.set_fact:
-    nxs_delete_docker_hosted_repos: "{{ __nxs_crnt_docker_hstd__ | rejectattr('name', 'in', nxs_desired_docker_hosted_repos | map(attribute='name') | list) | list }}"
-    nxs_delete_docker_proxy_repos: "{{ __nxs_crnt_docker_prxy__ | rejectattr('name', 'in', nxs_desired_docker_proxy_repos | map(attribute='name') | list) | list }}"
-    nxs_delete_docker_group_repos: "{{ __nxs_crnt_docker_grp__ | rejectattr('name', 'in', nxs_desired_docker_group_repos | map(attribute='name') | list) | list }}"
+    nxs_delete_docker_hosted_repos: "{{ __nxs_crnt_docker_hstd__ | rejectattr('name', 'in', nexus_repos_docker_hosted_normalized | map(attribute='name') | list) | list }}"
+    nxs_delete_docker_proxy_repos: "{{ __nxs_crnt_docker_prxy__ | rejectattr('name', 'in', nexus_repos_docker_proxy_normalized | map(attribute='name') | list) | list }}"
+    nxs_delete_docker_group_repos: "{{ __nxs_crnt_docker_grp__ | rejectattr('name', 'in', nexus_repos_docker_group_normalized | map(attribute='name') | list) | list }}"
+  tags: repositories
 
 - name: Compare Docker hosted repositories for changes
   ansible.builtin.set_fact:
     nxs_update_docker_hosted_repos: "{{ nxs_update_docker_hosted_repos + [item] }}"
-  loop: "{{ nxs_desired_docker_hosted_repos | list }}"
+  loop: "{{ nexus_repos_docker_hosted_normalized | list }}"
   when: >
     (__nxs_crnt_docker_hstd__ | selectattr('name', 'equalto', item.name) | first) is not defined or
     (__nxs_crnt_docker_hstd__ | selectattr('name', 'equalto', item.name) | first).format | default('docker') != item.format | default('docker') or
@@ -69,11 +85,14 @@
     (__nxs_crnt_docker_hstd__ | selectattr('name', 'equalto', item.name) | first).docker.httpPort | default(omit) != item.docker.httpPort | default(None) or
     (__nxs_crnt_docker_hstd__ | selectattr('name', 'equalto', item.name) | first).docker.httpsPort | default(omit) != item.docker.httpsPort | default(None) or
     (__nxs_crnt_docker_hstd__ | selectattr('name', 'equalto', item.name) | first).docker.subdomain | default(omit) != item.docker.subdomain | default(None)
+  tags:
+    - docker
+    - docker-hosted
 
 - name: Compare Docker proxy repositories for changes
   ansible.builtin.set_fact:
     nxs_update_docker_proxy_repos: "{{ nxs_update_docker_proxy_repos + [item] }}"
-  loop: "{{ nxs_desired_docker_proxy_repos | list }}"
+  loop: "{{ nexus_repos_docker_proxy_normalized | list }}"
   # TODO: implement replication and authentication
   when: >
     (__nxs_crnt_docker_prxy__ | selectattr('name', 'equalto', item.name) | first) is not defined or
@@ -106,11 +125,14 @@
     (__nxs_crnt_docker_prxy__ | selectattr('name', 'equalto', item.name) | first).dockerProxy.cacheForeignLayers | default(false) != item.dockerProxy.cacheForeignLayers | default(false) or
     (__nxs_crnt_docker_prxy__ | selectattr('name', 'equalto', item.name) | first).dockerProxy.foreignLayerUrlWhitelist | default([]) != item.dockerProxy.foreignLayerUrlWhitelist | default([]) or
     (__nxs_crnt_docker_prxy__ | selectattr('name', 'equalto', item.name) | first).routingRuleName | default(omit) != item.routingRule | default(None)
+  tags:
+    - docker
+    - docker-proxy
 
 - name: Compare Docker group repositories for changes
   ansible.builtin.set_fact:
     nxs_update_docker_group_repos: "{{ nxs_update_docker_group_repos + [item] }}"
-  loop: "{{ nxs_desired_docker_group_repos | list }}"
+  loop: "{{ nexus_repos_docker_group_normalized | list }}"
   when: >
     (__nxs_crnt_docker_grp__ | selectattr('name', 'equalto', item.name) | first) is not defined or
     (__nxs_crnt_docker_grp__ | selectattr('name', 'equalto', item.name) | first).format | default('docker') != item.format | default('docker') or
@@ -125,42 +147,64 @@
     (__nxs_crnt_docker_grp__ | selectattr('name', 'equalto', item.name) | first).docker.httpPort | default(omit) != item.docker.httpPort | default(None) or
     (__nxs_crnt_docker_grp__ | selectattr('name', 'equalto', item.name) | first).docker.httpsPort | default(omit) != item.docker.httpsPort | default(None) or
     (__nxs_crnt_docker_grp__ | selectattr('name', 'equalto', item.name) | first).docker.subdomain | default(omit) != item.docker.subdomain | default(None)
+  tags: docker
 
 - name: Show nxs_create_docker_hosted_repos
   ansible.builtin.debug:
     var: nxs_create_docker_hosted_repos | length
+  tags:
+    - docker
+    - docker-hosted
 
 - name: Show nxs_update_docker_hosted_repos
   ansible.builtin.debug:
     var: nxs_update_docker_hosted_repos | length
+  tags:
+    - docker
+    - docker-hosted
 
 - name: Show nxs_delete_docker_hosted_repos
   ansible.builtin.debug:
     var: nxs_delete_docker_hosted_repos | length
+  tags:
+    - docker
+    - docker-hosted
 
 - name: Show nxs_create_docker_proxy_repos
   ansible.builtin.debug:
     var: nxs_create_docker_proxy_repos | length
+  tags:
+    - docker
+    - docker-proxy
 
 - name: Show nxs_update_docker_proxy_repos
   ansible.builtin.debug:
     var: nxs_update_docker_proxy_repos | length
+  tags:
+    - docker
+    - docker-proxy
 
 - name: Show nxs_delete_docker_proxy_repos
   ansible.builtin.debug:
     var: nxs_delete_docker_proxy_repos | length
+  tags:
+    - docker
+    - docker-proxy
 
 - name: Show nxs_create_docker_group_repos
   ansible.builtin.debug:
     var: nxs_create_docker_group_repos | length
+  tags: docker
 
 - name: Show nxs_update_docker_group_repos
   ansible.builtin.debug:
     var: nxs_update_docker_group_repos | length
+  tags: docker
 
 - name: Show nxs_delete_docker_group_repos
   ansible.builtin.debug:
     var: nxs_delete_docker_group_repos | length
+  tags: docker
 
 - name: Create configured Docker Hosted repositories using Nexus API
   ansible.builtin.include_tasks: repositories-api.yml
@@ -172,6 +216,9 @@
   with_items:
     - "{{ nxs_create_docker_hosted_repos | default([]) }}"
   when: nxs_create_docker_hosted_repos | length > 0
+  tags:
+    - docker
+    - docker-hosted
 
 - name: Create configured Docker Proxy repositories using Nexus API
   ansible.builtin.include_tasks: repositories-api.yml
@@ -183,6 +230,9 @@
   with_items:
     - "{{ nxs_create_docker_proxy_repos | default([]) }}"
   when: nxs_create_docker_proxy_repos | length > 0
+  tags:
+    - docker
+    - docker-proxy
 
 - name: Create configured Docker Group repositories using Nexus API
   ansible.builtin.include_tasks: repositories-api.yml
@@ -194,6 +244,7 @@
   with_items:
     - "{{ nxs_create_docker_group_repos | default([]) }}"
   when: nxs_create_docker_group_repos | length > 0
+  tags: docker
 
 - name: Update configured Docker Hosted repositories using Nexus API
   ansible.builtin.include_tasks: repositories-api.yml
@@ -205,6 +256,9 @@
   with_items:
     - "{{ nxs_update_docker_hosted_repos | default([]) }}"
   when: nxs_update_docker_hosted_repos | length > 0
+  tags:
+    - docker
+    - docker-hosted
 
 - name: Update configured Docker Proxy repositories using Nexus API
   ansible.builtin.include_tasks: repositories-api.yml
@@ -216,6 +270,9 @@
   with_items:
     - "{{ nxs_update_docker_proxy_repos | default([]) }}"
   when: nxs_update_docker_proxy_repos | length > 0
+  tags:
+    - docker
+    - docker-proxy
 
 - name: Update configured Docker Group repositories using Nexus API
   ansible.builtin.include_tasks: repositories-api.yml
@@ -227,6 +284,7 @@
   with_items:
     - "{{ nxs_update_docker_group_repos | default([]) }}"
   when: nxs_update_docker_group_repos | length > 0
+  tags: docker
 
 - name: Delete Docker Hosted repositories using Nexus API
   ansible.builtin.include_tasks: repositories-api.yml
@@ -238,6 +296,9 @@
   with_items:
     - "{{ nxs_delete_docker_hosted_repos | default([]) }}"
   when: nxs_delete_docker_hosted_repos | length > 0
+  tags:
+    - docker
+    - docker-hosted
 
 - name: Delete Docker Proxy repositories using Nexus API
   ansible.builtin.include_tasks: repositories-api.yml
@@ -249,6 +310,9 @@
   with_items:
     - "{{ nxs_delete_docker_proxy_repos | default([]) }}"
   when: nxs_delete_docker_proxy_repos | length > 0
+  tags:
+    - docker
+    - docker-proxy
 
 - name: Delete Docker Group repositories using Nexus API
   ansible.builtin.include_tasks: repositories-api.yml
@@ -260,3 +324,4 @@
   with_items:
     - "{{ nxs_delete_docker_group_repos | default([]) }}"
   when: nxs_delete_docker_group_repos | length > 0
+  tags: docker

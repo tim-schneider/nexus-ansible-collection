@@ -44,7 +44,7 @@ nexus_blobstores:
 nexus_repos_cleanup_policies: []
 
 nexus_config_maven: true
-nexus_config_docker: false
+nexus_config_docker: true
 nexus_config_gitlfs: false
 nexus_config_npm: false
 nexus_config_pypi: false
@@ -242,10 +242,15 @@ nexus_repos_format_defaults:
     storage:
       blobStoreName: "{{ nexus_blob_names.docker.blob | default('default') }}"
     docker:
-      httpPort: 5000
-      httpsPort: 5001
-      forceBasicAuth: false
-  yum:
+      # httpPort: 5000
+      # httpsPort: 5001
+      forceBasicAuth: true
+      v1Enabled: false
+      # subdomain:
+    dockerProxy:
+      indexType: HUB
+      cacheForeignLayers: false
+      foreignLayerUrlWhitelist: []
     yum:
       repodataDepth: 0
   nuget:
@@ -269,3 +274,30 @@ legacy_field_map:
   proprietary_components: "component.proprietaryComponents"
   cleanup_policies: "cleanup.policyNames"
   member_repos: "group.memberNames"
+  http_port: "docker.httpPort"
+  https_port: "docker.httpsPort"
+  sub_domain: "docker.subdomain"
+  v1_enabled: "docker.v1Enabled"
+  index_type: "dockerProxy.indexType"
+  allow_redeploy_latest: "docker.latestPolicy"
+  cache_foreign_layers: "dockerProxy.cacheForeignLayers"
+  use_nexus_certificates_to_access_index: "dockerProxy.useTrustStoreForIndexAccess"
+  foreign_layer_url_whitelist: "dockerProxy.foreignLayerUrlWhitelist"
+  connection_retries: "httpClient.connection.retries"
+  connection_timeout: "httpClient.connection.timeout"
+  enable_cookies: "httpClient.connection.enableCookies"
+  enable_circular_redirects: "httpClient.connection.enableCircularRedirects"
+  user_agent_suffix: "httpClient.connection.userAgentSuffix"
+  use_trust_store: "httpClient.connection.useTrustStore"
+  auto_block: "httpClient.autoBlock"
+  blocked: "httpClient.blocked"
+  routing_rules: "routingRule"
+  ntlm_domain: "httpClient.authentication.ntlmDomain"
+  ntlm_host: "httpClient.authentication.ntlmHost"
+  preemptive: "httpClient.authentication.preemptive"
+  remote_auth_type: "httpClient.authentication.type"
+  bearerToken: "httpClient.authentication.bearerToken"
+  # replication_preemptive_pull: "replication.pullReplication"
+  # replication_asset_path_regex: "replication.assetPathRegex"
+  # removeQuarantined can be set on pypi and npm
+  # removeQuarantined: "npm.removeQuarantined"
