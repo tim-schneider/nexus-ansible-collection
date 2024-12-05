@@ -1651,7 +1651,7 @@ nexus_repos_raw_hosted:
       - raw_cleanup_config_api
     write_policy: ALLOW
     proprietary_components: true
-    content_disposition: INLINE
+    content_disposition: ATTACHMENT
 
 nexus_repos_raw_proxy:
   - name: new-format-minimal-raw-proxy
@@ -1736,7 +1736,7 @@ nexus_repos_raw_proxy:
     ntlm_domain: "full-ntlm-domain"
     ntlm_host: "full-ntlm-host"
     routing_rules: routing-rule-allow-all
-    content_disposition: INLINE
+    content_disposition: ATTACHMENT
 
 nexus_repos_raw_group:
   # Minimal new format
@@ -1793,7 +1793,7 @@ nexus_repos_raw_group:
         - full-new-format-raw-hosted
         - full-new-format-raw-proxy
     raw:
-      contentDisposition: INLINE
+      contentDisposition: ATTACHMENT
 
   # Fully complete legacy format
   - name: full-legacy-format-raw-group
@@ -3440,7 +3440,7 @@ nexus_repos_maven_hosted:
     maven:
       versionPolicy: SNAPSHOT
       layoutPolicy: PERMISSIVE
-      contentDisposition: INLINE
+      contentDisposition: ATTACHMENT
 
   # Fully complete new format
   - name: full-new-format-maven-hosted
@@ -3550,7 +3550,7 @@ nexus_repos_maven_proxy:
     maven:
       versionPolicy: RELEASE
       layoutPolicy: PERMISSIVE
-      contentDisposition: INLINE
+      contentDisposition: ATTACHMENT
     routingRule: routing-rule-block-nmap
 
   # Fully complete legacy format
@@ -3574,7 +3574,7 @@ nexus_repos_maven_proxy:
     user_agent_suffix: full-legacy-user-agent
     version_policy: RELEASE
     layout_policy: PERMISSIVE
-    content_disposition: INLINE
+    content_disposition: ATTACHMENT
     routing_rule: routing-rule-block-nmap
 
 nexus_repos_maven_group:

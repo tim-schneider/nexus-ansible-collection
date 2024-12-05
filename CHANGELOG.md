@@ -1,4 +1,12 @@
 # Changelog
+## [1.13.0] - 2024-12-05
+## Added
+- **config_api** Added support to normalize the following repositories types/formats.
+  you can now use your
+  - `nexus_repos_raw_hosted`, `nexus_repos_raw_proxy`, `nexus_repos_raw_group`
+  definitions with the `config_api` role without reformatting the dictionary.
+
+
 ## [1.12.0] - 2024-12-04
 ## Added
 - **nexus_oss** Introduced variables to control waiting time for nexus to startup.

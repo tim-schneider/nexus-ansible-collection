@@ -64,9 +64,19 @@ def merge_defaults(repo, global_defaults, type_defaults, format_defaults, repo_t
 
         # Step 4: Normalize legacy attributes
         for legacy_key, normalized_key in legacy_field_map.items():
+            # Handle dynamic mappings for `content_disposition`
+            if legacy_key == "content_disposition" and isinstance(normalized_key, dict):
+                # Check if the format and type exist in the mapping
+                if repo_format in normalized_key and repo_type in normalized_key[repo_format]:
+                    target_field = normalized_key[repo_format][repo_type]
+                else:
+                    continue  # Skip if no valid mapping exists for this repo
+            else:
+                target_field = normalized_key
+
             value = get_nested_value(repo, legacy_key)
             if value is not None:
-                set_nested_value(normalized, normalized_key, value)
+                set_nested_value(normalized, target_field, value)
 
         # Step 5: Add repository-specific attributes
         normalized = merge_dict(repo, normalized)

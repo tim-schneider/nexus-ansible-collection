@@ -312,7 +312,14 @@ legacy_field_map:
   layout_policy: "maven.layoutPolicy"
   version_policy: "maven.versionPolicy"
   # content_disposition is used for raw group, hosted and proxy and maven hosted and proxy repositories
-  content_disposition: "maven.contentDisposition"
+  content_disposition:
+    maven:
+      hosted: "maven.contentDisposition"
+      proxy: "maven.contentDisposition"
+    raw:
+      hosted: "raw.contentDisposition"
+      proxy: "raw.contentDisposition"
+      group: "raw.contentDisposition"
   write_policy: "storage.writePolicy"
   remote_url: "proxy.remoteUrl"
   proprietary_components: "component.proprietaryComponents"
