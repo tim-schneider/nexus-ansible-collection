@@ -16,16 +16,16 @@ A: Make sure you have removed the blobstore from the all blobstore groups first
 The order of the group_vars is important since the dictionaries will be passed through as-is to the Nexus API.
 
 ## Missing support on API
-- setting content disposition on maven groups
-- setting layout policy on maven groups
-- setting version policy on maven groups
-- httpclient.authentication.password cant be fetched through API
-- create cleanup policy for format 'all'
-- useTrustStoreForIndexAccess docker proxy
-- yumsigning cant be fetched through the API
-- raw.contentdisposition cant be fetched through api
-- aptSigning cant be fetched through api
-- conanProxy.conanVersion cant be fetched through API
+- setting content disposition on maven groups (and therefore can not be set through this role)
+- setting layout policy on maven groups (and therefore can not be set through this role)
+- setting version policy on maven groups (and therefore can not be set through this role)
+- httpclient.authentication.password cant be fetched through API (and therefore not updated through this role) but it can be set for new repos
+- create cleanup policy for format 'all' (and therefore can not be created through this role)
+- useTrustStoreForIndexAccess docker proxy (and therefore can not be set through this role)
+- yumsigning cant be fetched through the API (and therefore not updated through this role) but it can be set for new repos
+- raw.contentdisposition cant be fetched through api (and therefore not updated through this role) but it can be set for new repos
+- aptSigning cant be fetched through api (and therefore not updated through this role) but it can be set for new repos
+- conanProxy.conanVersion cant be fetched through API (and therefore not updated through this role) but it can be set for new repos
 
 
 # TODO:
@@ -33,14 +33,17 @@ The order of the group_vars is important since the dictionaries will be passed t
 - S3 Blob store PUT endpoint
 - Group Blob store PUT endpoit
 - Update httpClient.authentication attributes
+- TODO: implement raw.contentDisposition for groups, hosted, proxy, its not idempotent yet
 
-- HTTPS System settings
+- HTTPS System settings + normalize
 - IQ Repo Firewall
-- Tasks
+- Tasks + normalize
 - Security Management SAML
-- Email endpoint
+- Email endpoint + normalize
 - Security Atlassian Cloud
-- Security Management Privileges
+- Security Management Privileges + normalize
 - Tags
 - Azure Blob store endpoint
 - Google Blob store endpoint
+
+idea: when _nexus_repos_<format>_defaults exists, map attributes to new format
