@@ -355,9 +355,19 @@ legacy_field_map:
   deploy_policy: "yum.deployPolicy"
   repodata_depth: "yum.repodataDepth"
   # passphrase can be set on yum proxy and groups and apt hosted
-  passphrase: "yumSigning.passphrase"
+  passphrase:
+    yum:
+      proxy: "yumSigning.passphrase"
+      group: "yumSigning.passphrase"
+    apt:
+      hosted: "aptSigning.passphrase"
   # keypair can be set on yum proxy and groups and apt hosted
-  keypair: "yumSigning.keypair"
+  keypair:
+    yum:
+      proxy: "yumSigning.keypair"
+      group: "yumSigning.keypair"
+    apt:
+      hosted: "aptSigning.keypair"
   distribution: "apt.distribution"
   flat: "apt.flat"
   # replication_preemptive_pull: "replication.pullReplication"
