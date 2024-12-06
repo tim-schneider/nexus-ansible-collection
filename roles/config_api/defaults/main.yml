@@ -297,6 +297,8 @@ nexus_repos_format_defaults:
   raw:
     storage:
       blobStoreName: "{{ nexus_blob_names.raw.blob | default('default') }}"
+    raw:
+      contentDisposition: ATTACHMENT
   npm:
     storage:
       blobStoreName: "{{ nexus_blob_names.npm.blob | default('default') }}"
