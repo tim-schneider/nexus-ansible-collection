@@ -1910,8 +1910,8 @@ nexus_repos_yum_proxy:
         password: "full-auth-pass"
     routingRule: routing-rule-allow-all
     yumSigning:
-      keypair:
-      passphrase:
+      keypair: keypair-yum
+      passphrase: passphrase-yum
   - name: full-legacy-format-yum-proxy
     blob_store: legacy-minimal-blobstore
     strict_content_validation: true
@@ -1936,8 +1936,8 @@ nexus_repos_yum_proxy:
     ntlm_domain: "full-ntlm-domain"
     ntlm_host: "full-ntlm-host"
     routing_rules: routing-rule-allow-all
-    keypair:
-    passphrase:
+    keypair: keypair-yum
+    passphrase: passphrase-yum
 
 nexus_repos_yum_group:
   # Minimal new format

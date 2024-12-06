@@ -287,6 +287,8 @@ nexus_repos_format_defaults:
   yum:
     storage:
       blobStoreName: "{{ nexus_blob_names.yum.blob | default('default') }}"
+    yum:
+      repodataDepth: 0
   raw:
     storage:
       blobStoreName: "{{ nexus_blob_names.raw.blob | default('default') }}"
