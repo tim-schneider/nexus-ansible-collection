@@ -236,8 +236,6 @@ nexus_repos_format_defaults:
   pypi:
     storage:
       blobStoreName: "{{ nexus_blob_names.pypi.blob | default('default') }}"
-    pypi:
-      removeQuarantined: true
   docker:
     storage:
       blobStoreName: "{{ nexus_blob_names.docker.blob | default('default') }}"

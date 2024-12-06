@@ -5,6 +5,7 @@
   you can now use your
   - `nexus_repos_raw_hosted`, `nexus_repos_raw_proxy`, `nexus_repos_raw_group`
   - `nexus_repos_npm_hosted`, `nexus_repos_npm_proxy`, `nexus_repos_npm_group`
+  - `nexus_repos_pypi_hosted`, `nexus_repos_pypi_proxy`, `nexus_repos_pypi_group`
   definitions with the `config_api` role without reformatting the dictionary.
 
 

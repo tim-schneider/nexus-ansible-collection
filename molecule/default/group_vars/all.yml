@@ -2827,7 +2827,7 @@ nexus_repos_pypi_proxy:
         username: "full-auth-user"
         password: "full-auth-pass"
       pypi:
-        removeQuarantined: false
+        removeQuarantined: true
     routingRule: routing-rule-allow-all
   - name: full-legacy-format-pypi-proxy
     blob_store: legacy-minimal-blobstore
