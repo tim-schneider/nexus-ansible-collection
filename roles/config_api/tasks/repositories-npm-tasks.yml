@@ -1,34 +1,45 @@
-- name: Process definitions for npm
-  block:
-    - name: Apply defaults to npm hosted repos
-      ansible.builtin.set_fact:
-        nxs_desired_npm_hosted_repos: >-
-          {%- set result = [] -%}
-          {%- for repo in nexus_repos_npm_hosted -%}
-            {%- set combined_repo = __nexus_repos_npm_hosted_defaults | combine(repo, recursive=True) -%}
-              {{ result.append(combined_repo) }}
-          {%- endfor -%}
-          {{ result | to_json | from_json }}
+- name: Normalize npm proxy repositories
+  ansible.builtin.set_fact:
+    nexus_repos_npm_proxy_normalized: >
+      {{ nexus_repos_npm_proxy | cloudkrafter.nexus.normalize_repositories(
+          nexus_repos_global_defaults,
+          nexus_repos_type_defaults,
+          nexus_repos_format_defaults,
+          'proxy',
+          'npm',
+          legacy_field_map
+        ) }}
+  tags:
+    - npm
+    - npm-proxy
 
-    - name: Apply defaults to npm proxy repos
-      ansible.builtin.set_fact:
-        nxs_desired_npm_proxy_repos: >-
-          {%- set result = [] -%}
-          {%- for repo in nexus_repos_npm_proxy -%}
-            {%- set combined_repo = __nexus_repos_npm_proxy_defaults | combine(repo, recursive=True) -%}
-              {{ result.append(combined_repo) }}
-          {%- endfor -%}
-          {{ result | to_json | from_json }}
+- name: Normalize npm hosted repositories
+  ansible.builtin.set_fact:
+    nexus_repos_npm_hosted_normalized: >
+      {{ nexus_repos_npm_hosted | cloudkrafter.nexus.normalize_repositories(
+          nexus_repos_global_defaults,
+          nexus_repos_type_defaults,
+          nexus_repos_format_defaults,
+          'hosted',
+          'npm',
+          legacy_field_map
+        ) }}
+  tags:
+    - npm
+    - npm-hosted
 
-    - name: Apply defaults to npm group repos
-      ansible.builtin.set_fact:
-        nxs_desired_npm_group_repos: >-
-          {%- set result = [] -%}
-          {%- for repo in nexus_repos_npm_group -%}
-            {%- set combined_repo = __nexus_repos_npm_group_defaults | combine(repo) -%}
-              {{ result.append(combined_repo) }}
-          {%- endfor -%}
-          {{ result | to_json | from_json }}
+- name: Normalize npm group repositories
+  ansible.builtin.set_fact:
+    nexus_repos_npm_group_normalized: >
+      {{ nexus_repos_npm_group | cloudkrafter.nexus.normalize_repositories(
+          nexus_repos_global_defaults,
+          nexus_repos_type_defaults,
+          nexus_repos_format_defaults,
+          'group',
+          'npm',
+          legacy_field_map
+        ) }}
+  tags: npm
 
 # Need filtered facts for existing repositories because the API has different endpoints for each type and format
 - name: Filter existing NPM repositories
@@ -36,23 +47,26 @@
     __nxs_crnt_npm_hstd__: "{{ __nxs_all_repos__.json | selectattr('format', 'equalto', 'npm') | selectattr('type', 'equalto', 'hosted') | list }}"
     __nxs_crnt_npm_prxy__: "{{ __nxs_all_repos__.json | selectattr('format', 'equalto', 'npm') | selectattr('type', 'equalto', 'proxy') | list }}"
     __nxs_crnt_npm_grp__: "{{ __nxs_all_repos__.json | selectattr('format', 'equalto', 'npm') | selectattr('type', 'equalto', 'group') | list }}"
+  tags: repositories
 
 - name: Determine NPM repositories to create
   ansible.builtin.set_fact:
-    nxs_create_npm_hosted_repos: "{{ nxs_desired_npm_hosted_repos | rejectattr('name', 'in', __nxs_crnt_npm_hstd__ | map(attribute='name') | list) | list }}"
-    nxs_create_npm_proxy_repos: "{{ nxs_desired_npm_proxy_repos | rejectattr('name', 'in', __nxs_crnt_npm_prxy__ | map(attribute='name') | list) | list }}"
-    nxs_create_npm_group_repos: "{{ nxs_desired_npm_group_repos | rejectattr('name', 'in', __nxs_crnt_npm_grp__ | map(attribute='name') | list) | list }}"
+    nxs_create_npm_hosted_repos: "{{ nexus_repos_npm_hosted_normalized | rejectattr('name', 'in', __nxs_crnt_npm_hstd__ | map(attribute='name') | list) | list }}"
+    nxs_create_npm_proxy_repos: "{{ nexus_repos_npm_proxy_normalized | rejectattr('name', 'in', __nxs_crnt_npm_prxy__ | map(attribute='name') | list) | list }}"
+    nxs_create_npm_group_repos: "{{ nexus_repos_npm_group_normalized | rejectattr('name', 'in', __nxs_crnt_npm_grp__ | map(attribute='name') | list) | list }}"
+  tags: repositories
 
 - name: Determine NPM repositories to delete
   ansible.builtin.set_fact:
-    nxs_delete_npm_hosted_repos: "{{ __nxs_crnt_npm_hstd__ | rejectattr('name', 'in', nxs_desired_npm_hosted_repos | map(attribute='name') | list) | list }}"
-    nxs_delete_npm_proxy_repos: "{{ __nxs_crnt_npm_prxy__ | rejectattr('name', 'in', nxs_desired_npm_proxy_repos | map(attribute='name') | list) | list }}"
-    nxs_delete_npm_group_repos: "{{ __nxs_crnt_npm_grp__ | rejectattr('name', 'in', nxs_desired_npm_group_repos | map(attribute='name') | list) | list }}"
+    nxs_delete_npm_hosted_repos: "{{ __nxs_crnt_npm_hstd__ | rejectattr('name', 'in', nexus_repos_npm_hosted_normalized | map(attribute='name') | list) | list }}"
+    nxs_delete_npm_proxy_repos: "{{ __nxs_crnt_npm_prxy__ | rejectattr('name', 'in', nexus_repos_npm_proxy_normalized | map(attribute='name') | list) | list }}"
+    nxs_delete_npm_group_repos: "{{ __nxs_crnt_npm_grp__ | rejectattr('name', 'in', nexus_repos_npm_group_normalized | map(attribute='name') | list) | list }}"
+  tags: repositories
 
 - name: Compare NPM hosted repositories for changes
   ansible.builtin.set_fact:
     nxs_update_npm_hosted_repos: "{{ nxs_update_npm_hosted_repos + [item] }}"
-  loop: "{{ nxs_desired_npm_hosted_repos | list }}"
+  loop: "{{ nexus_repos_npm_hosted_normalized | list }}"
   when: >
     (__nxs_crnt_npm_hstd__ | selectattr('name', 'equalto', item.name) | first) is not defined or
     (__nxs_crnt_npm_hstd__ | selectattr('name', 'equalto', item.name) | first).format | default('npm') != item.format | default('npm') or
@@ -63,11 +77,14 @@
     (__nxs_crnt_npm_hstd__ | selectattr('name', 'equalto', item.name) | first).storage.strictContentTypeValidation | default(false) != item.storage.strictContentTypeValidation | default(false) or
     (__nxs_crnt_npm_hstd__ | selectattr('name', 'equalto', item.name) | first).storage.writePolicy | default(omit) != item.storage.writePolicy | default(None) or
     (__nxs_crnt_npm_hstd__ | selectattr('name', 'equalto', item.name) | first).component.proprietaryComponents | default(false) != item.component.proprietaryComponents | default(false)
+  tags:
+    - npm
+    - npm-hosted
 
 - name: Compare NPM proxy repositories for changes
   ansible.builtin.set_fact:
     nxs_update_npm_proxy_repos: "{{ nxs_update_npm_proxy_repos + [item] }}"
-  loop: "{{ nxs_desired_npm_proxy_repos | list }}"
+  loop: "{{ nexus_repos_npm_proxy_normalized | list }}"
   # TODO: implement replication and authentication
   when: >
     (__nxs_crnt_npm_prxy__ | selectattr('name', 'equalto', item.name) | first) is not defined or
@@ -92,11 +109,14 @@
     (__nxs_crnt_npm_prxy__ | selectattr('name', 'equalto', item.name) | first).httpClient.connection.useTrustStore | default(false) != item.httpClient.connection.useTrustStore | default(false) or
     (__nxs_crnt_npm_prxy__ | selectattr('name', 'equalto', item.name) | first).routingRuleName | default(omit) != item.routingRule | default(None) or
     (__nxs_crnt_npm_prxy__ | selectattr('name', 'equalto', item.name) | first).npm.removeQuarantined | default(false) != item.npm.removeQuarantined | default(false)
+  tags:
+    - npm
+    - npm-proxy
 
 - name: Compare NPM group repositories for changes
   ansible.builtin.set_fact:
     nxs_update_npm_group_repos: "{{ nxs_update_npm_group_repos + [item] }}"
-  loop: "{{ nxs_desired_npm_group_repos | list }}"
+  loop: "{{ nexus_repos_npm_group_normalized | list }}"
   when: >
     (__nxs_crnt_npm_grp__ | selectattr('name', 'equalto', item.name) | first) is not defined or
     (__nxs_crnt_npm_grp__ | selectattr('name', 'equalto', item.name) | first).format | default('npm') != item.format | default('npm') or
@@ -106,42 +126,64 @@
     (__nxs_crnt_npm_grp__ | selectattr('name', 'equalto', item.name) | first).storage.strictContentTypeValidation | default(false) != item.storage.strictContentTypeValidation | default(false) or
     (__nxs_crnt_npm_grp__ | selectattr('name', 'equalto', item.name) | first).group.memberNames | default([]) != item.group.memberNames | default([]) or
     (__nxs_crnt_npm_grp__ | selectattr('name', 'equalto', item.name) | first).group.writableMember | default(omit) != item.group.writableMember | default(omit)
+  tags: npm
 
 - name: Show nxs_create_npm_hosted_repos
   ansible.builtin.debug:
     var: nxs_create_npm_hosted_repos | length
+  tags:
+    - npm
+    - npm-hosted
 
 - name: Show nxs_update_npm_hosted_repos
   ansible.builtin.debug:
     var: nxs_update_npm_hosted_repos | length
+  tags:
+    - npm
+    - npm-hosted
 
 - name: Show nxs_delete_npm_hosted_repos
   ansible.builtin.debug:
     var: nxs_delete_npm_hosted_repos | length
+  tags:
+    - npm
+    - npm-hosted
 
 - name: Show nxs_create_npm_proxy_repos
   ansible.builtin.debug:
     var: nxs_create_npm_proxy_repos | length
+  tags:
+    - npm
+    - npm-proxy
 
 - name: Show nxs_update_npm_proxy_repos
   ansible.builtin.debug:
     var: nxs_update_npm_proxy_repos | length
+  tags:
+    - npm
+    - npm-proxy
 
 - name: Show nxs_delete_npm_proxy_repos
   ansible.builtin.debug:
     var: nxs_delete_npm_proxy_repos | length
+  tags:
+    - npm
+    - npm-proxy
 
 - name: Show nxs_create_npm_group_repos
   ansible.builtin.debug:
     var: nxs_create_npm_group_repos | length
+  tags: npm
 
 - name: Show nxs_update_npm_group_repos
   ansible.builtin.debug:
     var: nxs_update_npm_group_repos | length
+  tags: npm
 
 - name: Show nxs_delete_npm_group_repos
   ansible.builtin.debug:
     var: nxs_delete_npm_group_repos | length
+  tags: npm
 
 - name: Create configured NPM Hosted repositories using Nexus API
   ansible.builtin.include_tasks: repositories-api.yml
@@ -153,6 +195,9 @@
   with_items:
     - "{{ nxs_create_npm_hosted_repos | default([]) }}"
   when: nxs_create_npm_hosted_repos | length > 0
+  tags:
+    - npm
+    - npm-hosted
 
 - name: Create configured NPM Proxy repositories using Nexus API
   ansible.builtin.include_tasks: repositories-api.yml
@@ -164,6 +209,9 @@
   with_items:
     - "{{ nxs_create_npm_proxy_repos | default([]) }}"
   when: nxs_create_npm_proxy_repos | length > 0
+  tags:
+    - npm
+    - npm-proxy
 
 - name: Create configured NPM Group repositories using Nexus API
   ansible.builtin.include_tasks: repositories-api.yml
@@ -175,6 +223,7 @@
   with_items:
     - "{{ nxs_create_npm_group_repos | default([]) }}"
   when: nxs_create_npm_group_repos | length > 0
+  tags: npm
 
 - name: Update configured NPM Hosted repositories using Nexus API
   ansible.builtin.include_tasks: repositories-api.yml
@@ -186,6 +235,9 @@
   with_items:
     - "{{ nxs_update_npm_hosted_repos | default([]) }}"
   when: nxs_update_npm_hosted_repos | length > 0
+  tags:
+    - npm
+    - npm-hosted
 
 - name: Update configured NPM Proxy repositories using Nexus API
   ansible.builtin.include_tasks: repositories-api.yml
@@ -197,6 +249,9 @@
   with_items:
     - "{{ nxs_update_npm_proxy_repos | default([]) }}"
   when: nxs_update_npm_proxy_repos | length > 0
+  tags:
+    - npm
+    - npm-proxy
 
 - name: Update configured NPM Group repositories using Nexus API
   ansible.builtin.include_tasks: repositories-api.yml
@@ -208,6 +263,7 @@
   with_items:
     - "{{ nxs_update_npm_group_repos | default([]) }}"
   when: nxs_update_npm_group_repos | length > 0
+  tags: npm
 
 - name: Delete NPM Hosted repositories using Nexus API
   ansible.builtin.include_tasks: repositories-api.yml
@@ -219,6 +275,9 @@
   with_items:
     - "{{ nxs_delete_npm_hosted_repos | default([]) }}"
   when: nxs_delete_npm_hosted_repos | length > 0
+  tags:
+    - npm
+    - npm-hosted
 
 - name: Delete NPM Proxy repositories using Nexus API
   ansible.builtin.include_tasks: repositories-api.yml
@@ -230,6 +289,9 @@
   with_items:
     - "{{ nxs_delete_npm_proxy_repos | default([]) }}"
   when: nxs_delete_npm_proxy_repos | length > 0
+  tags:
+    - npm
+    - npm-proxy
 
 - name: Delete NPM Group repositories using Nexus API
   ansible.builtin.include_tasks: repositories-api.yml
@@ -241,3 +303,4 @@
   with_items:
     - "{{ nxs_delete_npm_group_repos | default([]) }}"
   when: nxs_delete_npm_group_repos | length > 0
+  tags: npm
