@@ -12,18 +12,18 @@ nexus_enable_pro_version: true
 nexus_config_maven: true
 nexus_config_docker: true
 nexus_config_gitlfs: true
-nexus_config_npm: false
-nexus_config_pypi: false
+nexus_config_npm: true
+nexus_config_pypi: true
 nexus_config_conda: true
 nexus_config_helm: true
 nexus_config_r: true
 nexus_config_nuget: true
-nexus_config_apt: false
-nexus_config_yum: false
-nexus_config_raw: false
+nexus_config_apt: true
+nexus_config_yum: true
+nexus_config_raw: true
 nexus_config_p2: true
 nexus_config_cocoapods: true
-nexus_config_conan: false
+nexus_config_conan: true
 nexus_config_go: true
 nexus_config_cargo: true
 nexus_config_rubygems: true
@@ -31,7 +31,7 @@ nexus_config_rubygems: true
 ldap_connections:
   - name: Mock ldap server STATIC # Required
     protocol: LDAPS # Required. Values: "LDAP" or "LDAPS"
-    host: "{{ nexus_hostname }}" # Required
+    host: "{{ nexus_api_hostname }}" # Required
     searchBase: dc=slapd-server-mock # Required
     port: 389 # Required
     groupType: STATIC # Required if ldapGroupsAsRoles is true. Values: "DYNAMIC" or "STATIC"
@@ -61,7 +61,7 @@ ldap_connections:
     groupSubtree: false
   - name: Mock ldap server DYNAMIC # Required
     protocol: LDAP # Required. Values: "LDAP" or "LDAPS"
-    host: "{{ nexus_hostname }}" # Required
+    host: "{{ nexus_api_hostname }}" # Required
     searchBase: dc=slapd-server-mock # Required
     port: 389 # Required
     groupType: DYNAMIC # Required if ldapGroupsAsRoles is true. Values: "DYNAMIC" or "STATIC"
@@ -428,6 +428,7 @@ nexus_user_tokens_capability:
   expirationDays: 180
 
 nexus_default_user_password: changeme
+
 nexus_local_users:
   - userId: anonymous
     firstName: Anonymous
@@ -1360,9 +1361,42 @@ nexus_repos_conan_hosted:
     proprietary_components: true
 
 nexus_repos_conan_proxy:
-  - name: conan-proxy-1
+  - name: new-format-minimal-conan-proxy
     proxy:
-      remoteUrl: https://conan.bintray.com
+      remoteUrl: https://repo.conan.com/pkgs/main
+  - name: legacy-format-minimal-conan-proxy
+    blob_store: default
+    strict_content_validation: true
+    remote_url: https://repo.conan.com/pkgs/main
+  - name: legacy-format-cleanup-conan-proxy
+    cleanup_policies:
+      - conan_cleanup_nexus_oss
+      - conan_cleanup_config_api
+    remote_url: https://repo.conan.com/pkgs/main
+  - name: new-format-cleanup-reverse-order-conan-proxy
+    cleanup:
+      policyNames:
+        - conan_cleanup_config_api
+        - conan_cleanup_nexus_oss
+    remote_url: https://repo.conan.com/pkgs/main
+  - name: mixed-format-conan-proxy
+    blob_store: legacy-minimal-blobstore
+    storage:
+      strictContentTypeValidation: false
+    cleanup_policies:
+      - conan_cleanup_nexus_oss
+    remote_url: https://repo.conan.com/pkgs/main
+  - name: full-new-format-conan-proxy
+    online: true
+    storage:
+      blobStoreName: default
+      strictContentTypeValidation: true
+    cleanup:
+      policyNames:
+        - conan_cleanup_config_api
+        - conan_cleanup_nexus_oss
+    proxy:
+      remoteUrl: https://repo.conan.com/pkgs/main
       contentMaxAge: 1440
       metadataMaxAge: 1440
     negativeCache:
@@ -1373,20 +1407,43 @@ nexus_repos_conan_proxy:
       autoBlock: true
       connection:
         useTrustStore: true
-  - name: conan-proxy-2
-    proxy:
-      remoteUrl: https://conan.bintray.com
-      contentMaxAge: 1440
-      metadataMaxAge: 1440
+        retries: 3
+        timeout: 60
+        userAgentSuffix: "Nexus/3.20.1-01 (OSS)"
+        enableCircularRedirects: true
+        enableCookies: true
+      authentication:
+        type: username
+        username: "full-auth-user"
+        password: "full-auth-pass"
+      conanProxy:
+        conanVersion: V1
     routingRule: routing-rule-allow-all
-  - name: conan-proxy-3
-    proxy:
-      remoteUrl: https://conan.bintray.com
-      contentMaxAge: 1440
-      metadataMaxAge: 1440
-    negativeCache:
-      enabled: true
-      timeToLive: 1440
+  - name: full-legacy-format-conan-proxy
+    blob_store: legacy-minimal-blobstore
+    strict_content_validation: true
+    cleanup_policies:
+      - conan_cleanup_config_api
+      - conan_cleanup_nexus_oss
+    remote_url: https://repo.conan.com/pkgs/main
+    maximum_component_age: 1440
+    maximum_metadata_age: 1440
+    negative_cache_enabled: true
+    negative_cache_ttl: 1440
+    blocked: false
+    auto_block: true
+    use_trust_store: true
+    connection_retries: 3
+    connection_timeout: 60
+    user_agent_suffix: "Nexus/3.20.1-01 (OSS)"
+    enable_circular_redirects: true
+    enable_cookies: true
+    remote_username: "full-auth-user"
+    remote_password: "full-auth-pass"
+    ntlm_domain: "full-ntlm-domain"
+    ntlm_host: "full-ntlm-host"
+    routing_rules: routing-rule-allow-all
+    conan_version: V1
 
 nexus_repos_cocoapods_proxy:
   - name: new-format-minimal-cocoapods-proxy
@@ -1553,205 +1610,86 @@ nexus_repos_p2_proxy:
     routing_rules: routing-rule-allow-all
 
 nexus_repos_raw_hosted:
-  - name: raw-hosted-1
-    online: true
-    storage:
-      blobStoreName: default
-      strictContentTypeValidation: true
-    cleanup:
-      policyNames: []
-  - name: raw-hosted-2
-    online: true
-    storage:
-      blobStoreName: default
-      strictContentTypeValidation: false
-    cleanup:
-      policyNames: []
-  - name: raw-hosted-offline
-    online: false
-    storage:
-      blobStoreName: default
-      strictContentTypeValidation: false
+  - name: new-format-minimal-raw-hosted
+  - name: legacy-format-minimal-raw-hosted
+    blob_store: default
+    strict_content_validation: true
+  - name: legacy-format-cleanup-raw-hosted
+    cleanup_policies:
+      - raw_cleanup_nexus_oss
+      - raw_cleanup_config_api
+  - name: new-format-cleanup-reverse-order-raw-hosted
     cleanup:
       policyNames:
-        - raw_cleanup
-    raw:
-      contentDisposition: INLINE
-
-nexus_repos_raw_proxy:
-  - name: raw-proxy-1
-    proxy:
-      remoteUrl: http://example.com
-      contentMaxAge: 1440
-      metadataMaxAge: 1440
-    negativeCache:
-      enabled: true
-      timeToLive: 1440
-    httpClient:
-      blocked: false
-      autoBlock: true
-      connection:
-        useTrustStore: false
-  - name: raw-proxy-2
-    proxy:
-      remoteUrl: http://example.com
-      contentMaxAge: 1440
-      metadataMaxAge: 1440
-    routingRule: routing-rule-allow-all
-  - name: raw-proxy-3
-    proxy:
-      remoteUrl: http://example.com
-      contentMaxAge: 1440
-      metadataMaxAge: 1440
-    negativeCache:
-      enabled: true
-      timeToLive: 1440
-    raw:
-      contentDisposition: INLINE
-
-nexus_repos_raw_group:
-  - name: raw-group
+        - raw_cleanup_config_api
+        - raw_cleanup_nexus_oss
+  - name: mixed-format-raw-hosted
+    blob_store: legacy-blobstore-complete
+    storage:
+      strictContentTypeValidation: false
+    cleanup_policies:
+      - raw_cleanup_nexus_oss
+  - name: full-new-format-raw-hosted
     online: true
     storage:
       blobStoreName: default
       strictContentTypeValidation: true
-    group:
-      memberNames:
-        - raw-proxy-1
-        - raw-proxy-2
-        - raw-proxy-3
-        - raw-hosted-1
-  - name: raw-group-reverse-group-order
-    online: false
-    storage:
-      blobStoreName: default
-      strictContentTypeValidation: false
-    group:
-      memberNames:
-        - raw-proxy-3
-        - raw-proxy-2
-        - raw-proxy-1
-        - raw-hosted-1
-    raw:
-      contentDisposition: INLINE
-
-nexus_repos_yum_hosted:
-  - name: yum-hosted-1
-    online: true
-    storage:
-      blobStoreName: default
-      strictContentTypeValidation: true
-    cleanup:
-      policyNames: []
-    yum:
-      repoDataDepth: 1
-  - name: yum-hosted-2
-    online: true
-    storage:
-      blobStoreName: default
-      strictContentTypeValidation: false
-    cleanup:
-      policyNames: []
-    yum:
-      repoDataDepth: 1
-  - name: yum-hosted-offline
-    online: false
-    storage:
-      blobStoreName: default
-      strictContentTypeValidation: false
+      writePolicy: ALLOW
     cleanup:
       policyNames:
-        - yum_cleanup
-    yum:
-      repoDataDepth: 1
-
-nexus_repos_yum_proxy:
-  - name: yum-proxy-1
-    proxy:
-      remoteUrl: http://mirror.centos.org/centos/
-      contentMaxAge: 1440
-      metadataMaxAge: 1440
-    negativeCache:
-      enabled: true
-      timeToLive: 1440
-    httpClient:
-      blocked: false
-      autoBlock: true
-      connection:
-        useTrustStore: false
-  - name: yum-proxy-2
-    proxy:
-      remoteUrl: http://mirror.centos.org/centos/
-      contentMaxAge: 1440
-      metadataMaxAge: 1440
-    routingRule: routing-rule-allow-all
-  - name: yum-proxy-3
-    proxy:
-      remoteUrl: http://mirror.centos.org/centos/
-      contentMaxAge: 1440
-      metadataMaxAge: 1440
-    negativeCache:
-      enabled: true
-      timeToLive: 1440
-
-nexus_repos_yum_group:
-  - name: yum-group
-    online: true
-    storage:
-      blobStoreName: default
-      strictContentTypeValidation: true
-    group:
-      memberNames:
-        - yum-proxy-1
-        - yum-proxy-2
-        - yum-proxy-3
-        - yum-hosted-1
-  - name: yum-group-reverse-group-order
-    online: false
-    storage:
-      blobStoreName: default
-      strictContentTypeValidation: false
-    group:
-      memberNames:
-        - yum-proxy-3
-        - yum-proxy-2
-        - yum-proxy-1
-        - yum-hosted-1
-
-nexus_repos_apt_hosted:
-  - name: apt-hosted-1
-    online: true
-    storage:
-      blobStoreName: default
-      strictContentTypeValidation: true
-    cleanup:
-      policyNames: []
+        - raw_cleanup_config_api
+        - raw_cleanup_nexus_oss
     component:
       proprietaryComponents: true
-  - name: apt-hosted-2
+    raw:
+      contentDisposition: INLINE
+  - name: full-legacy-format-raw-hosted
+    blob_store: legacy-blobstore-complete
+    strict_content_validation: true
+    cleanup_policies:
+      - raw_cleanup_nexus_oss
+      - raw_cleanup_config_api
+    write_policy: ALLOW
+    proprietary_components: true
+    content_disposition: ATTACHMENT
+
+nexus_repos_raw_proxy:
+  - name: new-format-minimal-raw-proxy
+    proxy:
+      remoteUrl: https://repo.raw.com/pkgs/main
+  - name: legacy-format-minimal-raw-proxy
+    blob_store: default
+    strict_content_validation: true
+    remote_url: https://repo.raw.com/pkgs/main
+  - name: legacy-format-cleanup-raw-proxy
+    cleanup_policies:
+      - raw_cleanup_nexus_oss
+      - raw_cleanup_config_api
+    remote_url: https://repo.raw.com/pkgs/main
+  - name: new-format-cleanup-reverse-order-raw-proxy
+    cleanup:
+      policyNames:
+        - raw_cleanup_config_api
+        - raw_cleanup_nexus_oss
+    remote_url: https://repo.raw.com/pkgs/main
+  - name: mixed-format-raw-proxy
+    blob_store: legacy-minimal-blobstore
+    storage:
+      strictContentTypeValidation: false
+    cleanup_policies:
+      - raw_cleanup_nexus_oss
+    remote_url: https://repo.raw.com/pkgs/main
+  - name: full-new-format-raw-proxy
     online: true
     storage:
       blobStoreName: default
-      strictContentTypeValidation: false
-    cleanup:
-      policyNames: []
-    component:
-      proprietaryComponents: false
-  - name: apt-hosted-offline
-    online: false
-    storage:
-      blobStoreName: default
-      strictContentTypeValidation: false
+      strictContentTypeValidation: true
     cleanup:
       policyNames:
-        - apt_cleanup
-    component:
-      proprietaryComponents: false
-
-nexus_repos_apt_proxy:
-  - name: apt-proxy-1
+        - raw_cleanup_config_api
+        - raw_cleanup_nexus_oss
     proxy:
-      remoteUrl: http://archive.ubuntu.com/ubuntu/
+      remoteUrl: https://repo.raw.com/pkgs/main
       contentMaxAge: 1440
       metadataMaxAge: 1440
     negativeCache:
@@ -1761,24 +1699,453 @@ nexus_repos_apt_proxy:
       blocked: false
       autoBlock: true
       connection:
-        useTrustStore: false
-  - name: apt-proxy-2
-    proxy:
-      remoteUrl: http://archive.ubuntu.com/ubuntu/
-      contentMaxAge: 1440
-      metadataMaxAge: 1440
+        useTrustStore: true
+        retries: 3
+        timeout: 60
+        userAgentSuffix: "Nexus/3.20.1-01 (OSS)"
+        enableCircularRedirects: true
+        enableCookies: true
+      authentication:
+        type: username
+        username: "full-auth-user"
+        password: "full-auth-pass"
     routingRule: routing-rule-allow-all
-  - name: apt-proxy-flat-bionic
+    raw:
+      contentDisposition: INLINE
+  - name: full-legacy-format-raw-proxy
+    blob_store: legacy-minimal-blobstore
+    strict_content_validation: true
+    cleanup_policies:
+      - raw_cleanup_config_api
+      - raw_cleanup_nexus_oss
+    remote_url: https://repo.raw.com/pkgs/main
+    maximum_component_age: 1440
+    maximum_metadata_age: 1440
+    negative_cache_enabled: true
+    negative_cache_ttl: 1440
+    blocked: false
+    auto_block: true
+    use_trust_store: true
+    connection_retries: 3
+    connection_timeout: 60
+    user_agent_suffix: "Nexus/3.20.1-01 (OSS)"
+    enable_circular_redirects: true
+    enable_cookies: true
+    remote_username: "full-auth-user"
+    remote_password: "full-auth-pass"
+    ntlm_domain: "full-ntlm-domain"
+    ntlm_host: "full-ntlm-host"
+    routing_rules: routing-rule-allow-all
+    content_disposition: ATTACHMENT
+
+nexus_repos_raw_group:
+  # Minimal new format
+  - name: new-format-minimal-raw-group
+    group:
+      memberNames:
+        - new-format-minimal-raw-hosted
+
+  # Minimal legacy format
+  - name: legacy-format-minimal-raw-group
+    member_repos:
+      - legacy-format-minimal-raw-hosted
+
+  # Legacy format with both hosted and proxy members
+  - name: legacy-format-hosted-proxy-raw-group
+    member_repos:
+      - legacy-format-minimal-raw-hosted
+      - legacy-format-minimal-raw-proxy
+
+  # New format with both hosted and proxy members
+  - name: new-format-hosted-proxy-raw-group
+    group:
+      memberNames:
+        - new-format-minimal-raw-hosted
+        - new-format-minimal-raw-proxy
+
+  # New format with both hosted and proxy members (reversed order)
+  - name: new-format-hosted-proxy-raw-group-reversed
+    group:
+      memberNames:
+        - new-format-minimal-raw-proxy
+        - new-format-minimal-raw-hosted
+
+  # Mixed format with a combination of legacy and new format members
+  - name: mixed-format-raw-group
+    storage:
+      strictContentTypeValidation: true
+    member_repos:
+      - legacy-format-minimal-raw-hosted
+      - new-format-minimal-raw-proxy
+
+  # Fully complete new format
+  - name: full-new-format-raw-group
+    online: true
+    storage:
+      blobStoreName: default
+      strictContentTypeValidation: true
+    cleanup:
+      policyNames:
+        - raw_cleanup_config_api
+        - mvn_cleanup_legacy_format
+    group:
+      memberNames:
+        - full-new-format-raw-hosted
+        - full-new-format-raw-proxy
+    raw:
+      contentDisposition: ATTACHMENT
+
+  # Fully complete legacy format
+  - name: full-legacy-format-raw-group
+    blob_store: legacy-minimal-blobstore
+    strict_content_validation: false
+    cleanup_policies:
+      - mvn_cleanup_legacy_format
+    member_repos:
+      - full-legacy-format-raw-hosted
+      - full-legacy-format-raw-proxy
+    content_disposition: INLINE
+
+nexus_repos_yum_hosted:
+  - name: new-format-minimal-yum-hosted
+  - name: legacy-format-minimal-yum-hosted
+    blob_store: default
+    strict_content_validation: true
+  - name: legacy-format-cleanup-yum-hosted
+    cleanup_policies:
+      - yum_cleanup_nexus_oss
+      - yum_cleanup_config_api
+  - name: new-format-cleanup-reverse-order-yum-hosted
+    cleanup:
+      policyNames:
+        - yum_cleanup_config_api
+        - yum_cleanup_nexus_oss
+  - name: mixed-format-yum-hosted
+    blob_store: legacy-blobstore-complete
+    storage:
+      strictContentTypeValidation: false
+    cleanup_policies:
+      - yum_cleanup_nexus_oss
+  - name: full-new-format-yum-hosted
+    online: true
+    storage:
+      blobStoreName: default
+      strictContentTypeValidation: true
+      writePolicy: ALLOW
+    cleanup:
+      policyNames:
+        - yum_cleanup_config_api
+        - yum_cleanup_nexus_oss
+    component:
+      proprietaryComponents: true
+    yum:
+      repodataDepth: 3
+      deployPolicy: PERMISSIVE
+  - name: full-legacy-format-yum-hosted
+    blob_store: legacy-blobstore-complete
+    strict_content_validation: true
+    cleanup_policies:
+      - yum_cleanup_nexus_oss
+      - yum_cleanup_config_api
+    write_policy: ALLOW
+    proprietary_components: true
+    repodata_depth: 3
+    deploy_policy: PERMISSIVE
+
+nexus_repos_yum_proxy:
+  - name: new-format-minimal-yum-proxy
     proxy:
-      remoteUrl: http://archive.ubuntu.com/ubuntu/
+      remoteUrl: https://repo.yum.com/pkgs/main
+  - name: legacy-format-minimal-yum-proxy
+    blob_store: default
+    strict_content_validation: true
+    remote_url: https://repo.yum.com/pkgs/main
+  - name: legacy-format-cleanup-yum-proxy
+    cleanup_policies:
+      - yum_cleanup_nexus_oss
+      - yum_cleanup_config_api
+    remote_url: https://repo.yum.com/pkgs/main
+  - name: new-format-cleanup-reverse-order-yum-proxy
+    cleanup:
+      policyNames:
+        - yum_cleanup_config_api
+        - yum_cleanup_nexus_oss
+    remote_url: https://repo.yum.com/pkgs/main
+  - name: mixed-format-yum-proxy
+    blob_store: legacy-minimal-blobstore
+    storage:
+      strictContentTypeValidation: false
+    cleanup_policies:
+      - yum_cleanup_nexus_oss
+    remote_url: https://repo.yum.com/pkgs/main
+  - name: full-new-format-yum-proxy
+    online: true
+    storage:
+      blobStoreName: default
+      strictContentTypeValidation: true
+    cleanup:
+      policyNames:
+        - yum_cleanup_config_api
+        - yum_cleanup_nexus_oss
+    proxy:
+      remoteUrl: https://repo.yum.com/pkgs/main
       contentMaxAge: 1440
       metadataMaxAge: 1440
     negativeCache:
       enabled: true
       timeToLive: 1440
+    httpClient:
+      blocked: false
+      autoBlock: true
+      connection:
+        useTrustStore: true
+        retries: 3
+        timeout: 60
+        userAgentSuffix: "Nexus/3.20.1-01 (OSS)"
+        enableCircularRedirects: true
+        enableCookies: true
+      authentication:
+        type: username
+        username: "full-auth-user"
+        password: "full-auth-pass"
+    routingRule: routing-rule-allow-all
+    yumSigning:
+      keypair: keypair-yum
+      passphrase: passphrase-yum
+  - name: full-legacy-format-yum-proxy
+    blob_store: legacy-minimal-blobstore
+    strict_content_validation: true
+    cleanup_policies:
+      - yum_cleanup_config_api
+      - yum_cleanup_nexus_oss
+    remote_url: https://repo.yum.com/pkgs/main
+    maximum_component_age: 1440
+    maximum_metadata_age: 1440
+    negative_cache_enabled: true
+    negative_cache_ttl: 1440
+    blocked: false
+    auto_block: true
+    use_trust_store: true
+    connection_retries: 3
+    connection_timeout: 60
+    user_agent_suffix: "Nexus/3.20.1-01 (OSS)"
+    enable_circular_redirects: true
+    enable_cookies: true
+    remote_username: "full-auth-user"
+    remote_password: "full-auth-pass"
+    ntlm_domain: "full-ntlm-domain"
+    ntlm_host: "full-ntlm-host"
+    routing_rules: routing-rule-allow-all
+    keypair: keypair-yum
+    passphrase: passphrase-yum
+
+nexus_repos_yum_group:
+  # Minimal new format
+  - name: new-format-minimal-yum-group
+    group:
+      memberNames:
+        - new-format-minimal-yum-hosted
+
+  # Minimal legacy format
+  - name: legacy-format-minimal-yum-group
+    member_repos:
+      - legacy-format-minimal-yum-hosted
+
+  # Legacy format with both hosted and proxy members
+  - name: legacy-format-hosted-proxy-yum-group
+    member_repos:
+      - legacy-format-minimal-yum-hosted
+      - legacy-format-minimal-yum-proxy
+
+  # New format with both hosted and proxy members
+  - name: new-format-hosted-proxy-yum-group
+    group:
+      memberNames:
+        - new-format-minimal-yum-hosted
+        - new-format-minimal-yum-proxy
+
+  # New format with both hosted and proxy members (reversed order)
+  - name: new-format-hosted-proxy-yum-group-reversed
+    group:
+      memberNames:
+        - new-format-minimal-yum-proxy
+        - new-format-minimal-yum-hosted
+
+  # Mixed format with a combination of legacy and new format members
+  - name: mixed-format-yum-group
+    storage:
+      strictContentTypeValidation: true
+    member_repos:
+      - legacy-format-minimal-yum-hosted
+      - new-format-minimal-yum-proxy
+
+  # Fully complete new format
+  - name: full-new-format-yum-group
+    online: true
+    storage:
+      blobStoreName: default
+      strictContentTypeValidation: true
+    cleanup:
+      policyNames:
+        - yum_cleanup_config_api
+        - mvn_cleanup_legacy_format
+    group:
+      memberNames:
+        - full-new-format-yum-hosted
+        - full-new-format-yum-proxy
+    yumSigning:
+      keypair:
+      passphrase:
+
+  # Fully complete legacy format
+  - name: full-legacy-format-yum-group
+    blob_store: legacy-minimal-blobstore
+    strict_content_validation: false
+    cleanup_policies:
+      - mvn_cleanup_legacy_format
+    member_repos:
+      - full-legacy-format-yum-hosted
+      - full-legacy-format-yum-proxy
+    keypair:
+    passphrase:
+
+nexus_repos_apt_hosted:
+  - name: new-format-minimal-apt-hosted
+  - name: legacy-format-minimal-apt-hosted
+    blob_store: default
+    strict_content_validation: true
+  - name: legacy-format-cleanup-apt-hosted
+    cleanup_policies:
+      - apt_cleanup_nexus_oss
+      - apt_cleanup_config_api
+  - name: new-format-cleanup-reverse-order-apt-hosted
+    cleanup:
+      policyNames:
+        - apt_cleanup_config_api
+        - apt_cleanup_nexus_oss
+  - name: mixed-format-apt-hosted
+    blob_store: legacy-blobstore-complete
+    storage:
+      strictContentTypeValidation: false
+    cleanup_policies:
+      - apt_cleanup_nexus_oss
+  - name: full-new-format-apt-hosted
+    online: true
+    storage:
+      blobStoreName: default
+      strictContentTypeValidation: true
+      writePolicy: ALLOW
+    cleanup:
+      policyNames:
+        - apt_cleanup_config_api
+        - apt_cleanup_nexus_oss
+    component:
+      proprietaryComponents: true
+    aptSigning:
+      keypair: keypair-apt
+      passphrase: passphrase-apt
     apt:
       distribution: bionic
       flat: true
+  - name: full-legacy-format-apt-hosted
+    blob_store: legacy-blobstore-complete
+    strict_content_validation: true
+    cleanup_policies:
+      - apt_cleanup_nexus_oss
+      - apt_cleanup_config_api
+    write_policy: ALLOW
+    proprietary_components: true
+    keypair: keypair-apt
+    passphrase: passphrase-apt
+    distribution: bionic
+    flat: true
+
+nexus_repos_apt_proxy:
+  - name: new-format-minimal-apt-proxy
+    proxy:
+      remoteUrl: https://repo.apt.com/pkgs/main
+  - name: legacy-format-minimal-apt-proxy
+    blob_store: default
+    strict_content_validation: true
+    remote_url: https://repo.apt.com/pkgs/main
+  - name: legacy-format-cleanup-apt-proxy
+    cleanup_policies:
+      - apt_cleanup_nexus_oss
+      - apt_cleanup_config_api
+    remote_url: https://repo.apt.com/pkgs/main
+  - name: new-format-cleanup-reverse-order-apt-proxy
+    cleanup:
+      policyNames:
+        - apt_cleanup_config_api
+        - apt_cleanup_nexus_oss
+    remote_url: https://repo.apt.com/pkgs/main
+  - name: mixed-format-apt-proxy
+    blob_store: legacy-minimal-blobstore
+    storage:
+      strictContentTypeValidation: false
+    cleanup_policies:
+      - apt_cleanup_nexus_oss
+    remote_url: https://repo.apt.com/pkgs/main
+  - name: full-new-format-apt-proxy
+    online: true
+    storage:
+      blobStoreName: default
+      strictContentTypeValidation: true
+    cleanup:
+      policyNames:
+        - apt_cleanup_config_api
+        - apt_cleanup_nexus_oss
+    proxy:
+      remoteUrl: https://repo.apt.com/pkgs/main
+      contentMaxAge: 1440
+      metadataMaxAge: 1440
+    negativeCache:
+      enabled: true
+      timeToLive: 1440
+    httpClient:
+      blocked: false
+      autoBlock: true
+      connection:
+        useTrustStore: true
+        retries: 3
+        timeout: 60
+        userAgentSuffix: "Nexus/3.20.1-01 (OSS)"
+        enableCircularRedirects: true
+        enableCookies: true
+      authentication:
+        type: username
+        username: "full-auth-user"
+        password: "full-auth-pass"
+    routingRule: routing-rule-allow-all
+    apt:
+      distribution: bionic
+      flat: false
+  - name: full-legacy-format-apt-proxy
+    blob_store: legacy-minimal-blobstore
+    strict_content_validation: true
+    cleanup_policies:
+      - apt_cleanup_config_api
+      - apt_cleanup_nexus_oss
+    remote_url: https://repo.apt.com/pkgs/main
+    maximum_component_age: 1440
+    maximum_metadata_age: 1440
+    negative_cache_enabled: true
+    negative_cache_ttl: 1440
+    blocked: false
+    auto_block: true
+    use_trust_store: true
+    connection_retries: 3
+    connection_timeout: 60
+    user_agent_suffix: "Nexus/3.20.1-01 (OSS)"
+    enable_circular_redirects: true
+    enable_cookies: true
+    remote_username: "full-auth-user"
+    remote_password: "full-auth-pass"
+    ntlm_domain: "full-ntlm-domain"
+    ntlm_host: "full-ntlm-host"
+    routing_rules: routing-rule-allow-all
+    distribution: bionic
+    flat: false
 
 nexus_repos_nuget_hosted:
   - name: new-format-minimal-nuget-hosted
@@ -2365,42 +2732,85 @@ nexus_repos_conda_proxy:
     ntlm_domain: "full-ntlm-domain"
     ntlm_host: "full-ntlm-host"
     routing_rules: routing-rule-allow-all
+
 nexus_repos_pypi_hosted:
-  - name: pypi-hosted-1
+  - name: new-format-minimal-pypi-hosted
+  - name: legacy-format-minimal-pypi-hosted
+    blob_store: default
+    strict_content_validation: true
+  - name: legacy-format-cleanup-pypi-hosted
+    cleanup_policies:
+      - pypi_cleanup_nexus_oss
+      - pypi_cleanup_config_api
+  - name: new-format-cleanup-reverse-order-pypi-hosted
+    cleanup:
+      policyNames:
+        - pypi_cleanup_config_api
+        - pypi_cleanup_nexus_oss
+  - name: mixed-format-pypi-hosted
+    blob_store: legacy-blobstore-complete
+    storage:
+      strictContentTypeValidation: false
+    cleanup_policies:
+      - pypi_cleanup_nexus_oss
+  - name: full-new-format-pypi-hosted
     online: true
     storage:
       blobStoreName: default
       strictContentTypeValidation: true
+      writePolicy: ALLOW
     cleanup:
       policyNames:
-        - python_cleanup
+        - pypi_cleanup_config_api
+        - pypi_cleanup_nexus_oss
     component:
       proprietaryComponents: true
-  - name: pypi-hosted-2
-    online: true
-    storage:
-      blobStoreName: default
-      strictContentTypeValidation: false
-    cleanup:
-      policyNames:
-        - python_cleanup
-    component:
-      proprietaryComponents: false
-  - name: pypi-hosted-offline
-    online: false
-    storage:
-      blobStoreName: default
-      strictContentTypeValidation: false
-    cleanup:
-      policyNames:
-        - python_cleanup
-    component:
-      proprietaryComponents: false
+  - name: full-legacy-format-pypi-hosted
+    blob_store: legacy-blobstore-complete
+    strict_content_validation: true
+    cleanup_policies:
+      - pypi_cleanup_nexus_oss
+      - pypi_cleanup_config_api
+    write_policy: ALLOW
+    proprietary_components: true
 
 nexus_repos_pypi_proxy:
-  - name: pypi-proxy-1
+  - name: new-format-minimal-pypi-proxy
     proxy:
-      remoteUrl: https://pypi.org/simple
+      remoteUrl: https://repo.pypi.com/pkgs/main
+  - name: legacy-format-minimal-pypi-proxy
+    blob_store: default
+    strict_content_validation: true
+    remote_url: https://repo.pypi.com/pkgs/main
+  - name: legacy-format-cleanup-pypi-proxy
+    cleanup_policies:
+      - pypi_cleanup_nexus_oss
+      - pypi_cleanup_config_api
+    remote_url: https://repo.pypi.com/pkgs/main
+  - name: new-format-cleanup-reverse-order-pypi-proxy
+    cleanup:
+      policyNames:
+        - pypi_cleanup_config_api
+        - pypi_cleanup_nexus_oss
+    remote_url: https://repo.pypi.com/pkgs/main
+  - name: mixed-format-pypi-proxy
+    blob_store: legacy-minimal-blobstore
+    storage:
+      strictContentTypeValidation: false
+    cleanup_policies:
+      - pypi_cleanup_nexus_oss
+    remote_url: https://repo.pypi.com/pkgs/main
+  - name: full-new-format-pypi-proxy
+    online: true
+    storage:
+      blobStoreName: default
+      strictContentTypeValidation: true
+    cleanup:
+      policyNames:
+        - pypi_cleanup_config_api
+        - pypi_cleanup_nexus_oss
+    proxy:
+      remoteUrl: https://repo.pypi.com/pkgs/main
       contentMaxAge: 1440
       metadataMaxAge: 1440
     negativeCache:
@@ -2411,68 +2821,187 @@ nexus_repos_pypi_proxy:
       autoBlock: true
       connection:
         useTrustStore: true
-  - name: pypi-proxy-2
-    proxy:
-      remoteUrl: https://pypi.org/simple
-      contentMaxAge: 1440
-      metadataMaxAge: 1440
-    routingRule: routing-rule-allow-all
-  - name: pypi-proxy-3
-    proxy:
-      remoteUrl: https://pypi.org/simple
-      contentMaxAge: 1440
-      metadataMaxAge: 1440
-    negativeCache:
-      enabled: true
-      timeToLive: 1440
+        retries: 3
+        timeout: 60
+        userAgentSuffix: "Nexus/3.20.1-01 (OSS)"
+        enableCircularRedirects: true
+        enableCookies: true
+      authentication:
+        type: username
+        username: "full-auth-user"
+        password: "full-auth-pass"
     pypi:
       removeQuarantined: false
+    routingRule: routing-rule-allow-all
+  - name: full-legacy-format-pypi-proxy
+    blob_store: legacy-minimal-blobstore
+    strict_content_validation: true
+    cleanup_policies:
+      - pypi_cleanup_config_api
+      - pypi_cleanup_nexus_oss
+    remote_url: https://repo.pypi.com/pkgs/main
+    maximum_component_age: 1440
+    maximum_metadata_age: 1440
+    negative_cache_enabled: true
+    negative_cache_ttl: 1440
+    blocked: false
+    auto_block: true
+    use_trust_store: true
+    connection_retries: 3
+    connection_timeout: 60
+    user_agent_suffix: "Nexus/3.20.1-01 (OSS)"
+    enable_circular_redirects: true
+    enable_cookies: true
+    remote_username: "full-auth-user"
+    remote_password: "full-auth-pass"
+    ntlm_domain: "full-ntlm-domain"
+    ntlm_host: "full-ntlm-host"
+    routing_rules: routing-rule-allow-all
+    remove_quarantined: false
 
 nexus_repos_pypi_group:
-  - name: pypi-group
+  # Minimal new format
+  - name: new-format-minimal-pypi-group
+    group:
+      memberNames:
+        - new-format-minimal-pypi-hosted
+
+  # Minimal legacy format
+  - name: legacy-format-minimal-pypi-group
+    member_repos:
+      - legacy-format-minimal-pypi-hosted
+
+  # Legacy format with both hosted and proxy members
+  - name: legacy-format-hosted-proxy-pypi-group
+    member_repos:
+      - legacy-format-minimal-pypi-hosted
+      - legacy-format-minimal-pypi-proxy
+
+  # New format with both hosted and proxy members
+  - name: new-format-hosted-proxy-pypi-group
+    group:
+      memberNames:
+        - new-format-minimal-pypi-hosted
+        - new-format-minimal-pypi-proxy
+
+  # New format with both hosted and proxy members (reversed order)
+  - name: new-format-hosted-proxy-pypi-group-reversed
+    group:
+      memberNames:
+        - new-format-minimal-pypi-proxy
+        - new-format-minimal-pypi-hosted
+
+  # Mixed format with a combination of legacy and new format members
+  - name: mixed-format-pypi-group
+    storage:
+      strictContentTypeValidation: true
+    member_repos:
+      - legacy-format-minimal-pypi-hosted
+      - new-format-minimal-pypi-proxy
+
+  # Fully complete new format
+  - name: full-new-format-pypi-group
     online: true
     storage:
       blobStoreName: default
       strictContentTypeValidation: true
+    cleanup:
+      policyNames:
+        - pypi_cleanup_config_api
+        - mvn_cleanup_legacy_format
     group:
       memberNames:
-        - pypi-proxy-1
-        - pypi-proxy-2
-        - pypi-proxy-3
-        - pypi-hosted-1
-  - name: pypi-group-reverse-group-order
-    online: false
-    storage:
-      blobStoreName: default
-      strictContentTypeValidation: false
-    group:
-      memberNames:
-        - pypi-proxy-3
-        - pypi-proxy-2
-        - pypi-proxy-1
-        - pypi-hosted-1
+        - full-new-format-pypi-hosted
+        - full-new-format-pypi-proxy
+
+  # Fully complete legacy format
+  - name: full-legacy-format-pypi-group
+    blob_store: legacy-minimal-blobstore
+    strict_content_validation: false
+    cleanup_policies:
+      - mvn_cleanup_legacy_format
+    member_repos:
+      - full-legacy-format-pypi-hosted
+      - full-legacy-format-pypi-proxy
 
 nexus_repos_npm_hosted:
-  - name: npm-hosted-1
+  - name: new-format-minimal-npm-hosted
+  - name: legacy-format-minimal-npm-hosted
+    blob_store: default
+    strict_content_validation: true
+  - name: legacy-format-cleanup-npm-hosted
+    cleanup_policies:
+      - npm_cleanup_nexus_oss
+      - npm_cleanup_config_api
+  - name: new-format-cleanup-reverse-order-npm-hosted
+    cleanup:
+      policyNames:
+        - npm_cleanup_config_api
+        - npm_cleanup_nexus_oss
+  - name: mixed-format-npm-hosted
+    blob_store: legacy-blobstore-complete
+    storage:
+      strictContentTypeValidation: false
+    cleanup_policies:
+      - npm_cleanup_nexus_oss
+  - name: full-new-format-npm-hosted
     online: true
     storage:
       blobStoreName: default
       strictContentTypeValidation: true
-  - name: npm-hosted-2
+      writePolicy: ALLOW
+    cleanup:
+      policyNames:
+        - npm_cleanup_config_api
+        - npm_cleanup_nexus_oss
+    component:
+      proprietaryComponents: true
+  - name: full-legacy-format-npm-hosted
+    blob_store: legacy-blobstore-complete
+    strict_content_validation: true
+    cleanup_policies:
+      - npm_cleanup_nexus_oss
+      - npm_cleanup_config_api
+    write_policy: ALLOW
+    proprietary_components: true
+
+nexus_repos_npm_proxy:
+  - name: new-format-minimal-npm-proxy
+    proxy:
+      remoteUrl: https://repo.npm.com/pkgs/main
+  - name: legacy-format-minimal-npm-proxy
+    blob_store: default
+    strict_content_validation: true
+    remote_url: https://repo.npm.com/pkgs/main
+  - name: legacy-format-cleanup-npm-proxy
+    cleanup_policies:
+      - npm_cleanup_nexus_oss
+      - npm_cleanup_config_api
+    remote_url: https://repo.npm.com/pkgs/main
+  - name: new-format-cleanup-reverse-order-npm-proxy
+    cleanup:
+      policyNames:
+        - npm_cleanup_config_api
+        - npm_cleanup_nexus_oss
+    remote_url: https://repo.npm.com/pkgs/main
+  - name: mixed-format-npm-proxy
+    blob_store: legacy-minimal-blobstore
+    storage:
+      strictContentTypeValidation: false
+    cleanup_policies:
+      - npm_cleanup_nexus_oss
+    remote_url: https://repo.npm.com/pkgs/main
+  - name: full-new-format-npm-proxy
     online: true
     storage:
       blobStoreName: default
-      strictContentTypeValidation: false
-  - name: npm-hosted-offline
-    online: false
-    storage:
-      blobStoreName: default
-      strictContentTypeValidation: false
-
-nexus_repos_npm_proxy:
-  - name: npm-proxy-1
+      strictContentTypeValidation: true
+    cleanup:
+      policyNames:
+        - npm_cleanup_config_api
+        - npm_cleanup_nexus_oss
     proxy:
-      remoteUrl: https://registry.npmjs.org/
+      remoteUrl: https://repo.npm.com/pkgs/main
       contentMaxAge: 1440
       metadataMaxAge: 1440
     negativeCache:
@@ -2483,24 +3012,110 @@ nexus_repos_npm_proxy:
       autoBlock: true
       connection:
         useTrustStore: true
-    npm:
-      removeQuarantined: false
-  - name: npm-proxy-2
-    proxy:
-      remoteUrl: https://registry.npmjs.org/
-      contentMaxAge: 1440
-      metadataMaxAge: 1440
+        retries: 3
+        timeout: 60
+        userAgentSuffix: "Nexus/3.20.1-01 (OSS)"
+        enableCircularRedirects: true
+        enableCookies: true
+      authentication:
+        type: username
+        username: "full-auth-user"
+        password: "full-auth-pass"
     routingRule: routing-rule-allow-all
     npm:
       removeQuarantined: false
-  - name: npm-proxy-3
-    proxy:
-      remoteUrl: https://registry.npmjs.org/
-      contentMaxAge: 1440
-      metadataMaxAge: 1440
-    negativeCache:
-      enabled: true
-      timeToLive: 1440
+  - name: full-legacy-format-npm-proxy
+    blob_store: legacy-minimal-blobstore
+    strict_content_validation: true
+    cleanup_policies:
+      - npm_cleanup_config_api
+      - npm_cleanup_nexus_oss
+    remote_url: https://repo.npm.com/pkgs/main
+    maximum_component_age: 1440
+    maximum_metadata_age: 1440
+    negative_cache_enabled: true
+    negative_cache_ttl: 1440
+    blocked: false
+    auto_block: true
+    use_trust_store: true
+    connection_retries: 3
+    connection_timeout: 60
+    user_agent_suffix: "Nexus/3.20.1-01 (OSS)"
+    enable_circular_redirects: true
+    enable_cookies: true
+    remote_username: "full-auth-user"
+    remote_password: "full-auth-pass"
+    ntlm_domain: "full-ntlm-domain"
+    ntlm_host: "full-ntlm-host"
+    routing_rules: routing-rule-allow-all
+    remove_quarantined: false
+
+nexus_repos_npm_group:
+  # Minimal new format
+  - name: new-format-minimal-npm-group
+    group:
+      memberNames:
+        - new-format-minimal-npm-hosted
+
+  # Minimal legacy format
+  - name: legacy-format-minimal-npm-group
+    member_repos:
+      - legacy-format-minimal-npm-hosted
+
+  # Legacy format with both hosted and proxy members
+  - name: legacy-format-hosted-proxy-npm-group
+    member_repos:
+      - legacy-format-minimal-npm-hosted
+      - legacy-format-minimal-npm-proxy
+
+  # New format with both hosted and proxy members
+  - name: new-format-hosted-proxy-npm-group
+    group:
+      memberNames:
+        - new-format-minimal-npm-hosted
+        - new-format-minimal-npm-proxy
+
+  # New format with both hosted and proxy members (reversed order)
+  - name: new-format-hosted-proxy-npm-group-reversed
+    group:
+      memberNames:
+        - new-format-minimal-npm-proxy
+        - new-format-minimal-npm-hosted
+
+  # Mixed format with a combination of legacy and new format members
+  - name: mixed-format-npm-group
+    storage:
+      strictContentTypeValidation: true
+    member_repos:
+      - legacy-format-minimal-npm-hosted
+      - new-format-minimal-npm-proxy
+
+  # Fully complete new format
+  - name: full-new-format-npm-group
+    online: true
+    storage:
+      blobStoreName: default
+      strictContentTypeValidation: true
+    cleanup:
+      policyNames:
+        - npm_cleanup_config_api
+        - mvn_cleanup_legacy_format
+    group:
+      memberNames:
+        - full-new-format-npm-hosted
+        - full-new-format-npm-proxy
+      writableMember: full-new-format-npm-hosted
+
+  # Fully complete legacy format
+  - name: full-legacy-format-npm-group
+    blob_store: legacy-minimal-blobstore
+    strict_content_validation: false
+    cleanup_policies:
+      - mvn_cleanup_legacy_format
+    member_repos:
+      - full-legacy-format-npm-hosted
+      - full-legacy-format-npm-proxy
+    writable_member_repo: full-legacy-format-npm-hosted
 
 nexus_repos_gitlfs_hosted:
   - name: new-format-minimal-gitlfs-hosted
@@ -2829,7 +3444,7 @@ nexus_repos_maven_hosted:
     maven:
       versionPolicy: SNAPSHOT
       layoutPolicy: PERMISSIVE
-      contentDisposition: INLINE
+      contentDisposition: ATTACHMENT
 
   # Fully complete new format
   - name: full-new-format-maven-hosted
@@ -2939,7 +3554,7 @@ nexus_repos_maven_proxy:
     maven:
       versionPolicy: RELEASE
       layoutPolicy: PERMISSIVE
-      contentDisposition: INLINE
+      contentDisposition: ATTACHMENT
     routingRule: routing-rule-block-nmap
 
   # Fully complete legacy format
@@ -2963,7 +3578,7 @@ nexus_repos_maven_proxy:
     user_agent_suffix: full-legacy-user-agent
     version_policy: RELEASE
     layout_policy: PERMISSIVE
-    content_disposition: INLINE
+    content_disposition: ATTACHMENT
     routing_rule: routing-rule-block-nmap
 
 nexus_repos_maven_group:

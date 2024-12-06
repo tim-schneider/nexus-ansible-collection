@@ -1,4 +1,22 @@
 # Changelog
+## [1.13.0] - 2024-12-06
+## Added
+- **config_api** Added support to normalize the following repositories types/formats.
+  you can now use your
+  - `nexus_repos_raw_hosted`, `nexus_repos_raw_proxy`, `nexus_repos_raw_group`
+  - `nexus_repos_npm_hosted`, `nexus_repos_npm_proxy`, `nexus_repos_npm_group`
+  - `nexus_repos_pypi_hosted`, `nexus_repos_pypi_proxy`, `nexus_repos_pypi_group`
+  - `nexus_repos_conan_hosted`, `nexus_repos_conan_proxy`
+  - `nexus_repos_yum_hosted`, `nexus_repos_yum_proxy`, `nexus_repos_yum_group`
+  - `nexus_repos_apt_hosted`, `nexus_repos_apt_proxy`
+  definitions with the `config_api` role without reformatting the dictionary.
+
+
+## [1.12.1] - 2024-12-05
+## Fixed
+- **nexus_oss** After introducing `nexus_api_availability_*` variables the role would fail while waiting for Nexus to be started.
+  this has been fixed.
+
 ## [1.12.0] - 2024-12-04
 ## Added
 - **nexus_oss** Introduced variables to control waiting time for nexus to startup.
