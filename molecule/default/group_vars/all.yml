@@ -31,7 +31,7 @@ nexus_config_rubygems: true
 ldap_connections:
   - name: Mock ldap server STATIC # Required
     protocol: LDAPS # Required. Values: "LDAP" or "LDAPS"
-    host: "{{ nexus_hostname }}" # Required
+    host: "{{ nexus_api_hostname }}" # Required
     searchBase: dc=slapd-server-mock # Required
     port: 389 # Required
     groupType: STATIC # Required if ldapGroupsAsRoles is true. Values: "DYNAMIC" or "STATIC"
@@ -61,7 +61,7 @@ ldap_connections:
     groupSubtree: false
   - name: Mock ldap server DYNAMIC # Required
     protocol: LDAP # Required. Values: "LDAP" or "LDAPS"
-    host: "{{ nexus_hostname }}" # Required
+    host: "{{ nexus_api_hostname }}" # Required
     searchBase: dc=slapd-server-mock # Required
     port: 389 # Required
     groupType: DYNAMIC # Required if ldapGroupsAsRoles is true. Values: "DYNAMIC" or "STATIC"
