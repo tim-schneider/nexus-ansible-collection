@@ -48,7 +48,7 @@ This is intentionally to help facilitating the migration process where the _prov
 This role also aims to stick with the API definitions as described in the Nexus API reference.
 Meaning the format of all dictionaries, lists, strings etc. will be in line with the API requirements.
 
-To maintain compatibility with the values set previously if you are using the `nexus_oss` role, all payloads to the API will be transformed and mapped accorindly a.k.a normalized.
+To maintain compatibility with the values set previously if you are using the `nexus_oss` role, all payloads to the API will be transformed and mapped accordingly a.k.a normalized.
 
 Eventually the `nexus_oss` role will not be handling tasks to create, update or delete Nexus assets suchs as; repositories, local users, cleanup policies, routing rules, content selectors, security realms, roles, privileges etc.. That will be handled by this role.
 
@@ -98,63 +98,8 @@ nexus_local_users: []
 
 #### Other
 
+```yaml
 nexus_config_maven: true
-
-__nexus_repos_maven_hosted_defaults:
-  online: true
-  format: maven2
-  type: hosted
-  storage:
-    blobStoreName: default
-    strictContentTypeValidation: false
-    writePolicy: allow_once
-  cleanup:
-    policyNames: []
-  component:
-    proprietaryComponents: false
-  maven:
-    versionPolicy: MIXED
-    layoutPolicy: STRICT
-    contentDisposition: INLINE
-
-__nexus_repos_maven_proxy_defaults:
-  format: maven2
-  type: proxy
-  online: true
-  storage:
-    blobStoreName: default
-    strictContentTypeValidation: true
-  cleanup:
-    policyNames: []
-  proxy:
-    remoteUrl: https://remote.repository.com
-    contentMaxAge: 1440
-    metadataMaxAge: 1440
-  negativeCache:
-    enabled: true
-    timeToLive: 1440
-  httpClient:
-    blocked: false
-    autoBlock: true
-    connection:
-      retries: 0
-      userAgentSuffix: string
-      timeout: 60
-      enableCircularRedirects: false
-      enableCookies: false
-      useTrustStore: false
-    # authentication:
-    #   type:
-    #   username:
-    #   preemptive:
-    #   ntlmHost:
-    #   ntlmDomain:
-  routingRule:
-  replication:
-  maven:
-    versionPolicy: MIXED
-    layoutPolicy: STRICT
-    contentDisposition: ATTACHMENT
 
 nexus_repos_maven_hosted: []
 

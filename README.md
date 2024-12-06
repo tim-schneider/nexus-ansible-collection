@@ -19,8 +19,6 @@
 
 ### Running desired-state configurations
 
-This is work in progress and is not -yet- compatible with all the `nexus_repos_*_*` format used in the nexus_oss role.
-
 #### Important note on repository defaults
 The `config_api` role uses a different approach to set defaults. If you override the `_nexus_repos_maven_defaults` variable for example, make sure you apply the same defaults to the `nexus_repos_global_defaults`, `nexus_repos_type_defaults` and `nexus_repos_format_defaults` dictionaries! See role defaults for the full dictionaries.
 
