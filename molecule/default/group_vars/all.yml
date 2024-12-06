@@ -2042,10 +2042,11 @@ nexus_repos_apt_hosted:
     component:
       proprietaryComponents: true
     aptSigning:
-      keypair:
-      passphrase:
+      keypair: keypair-apt
+      passphrase: passphrase-apt
     apt:
-      distribution:
+      distribution: bionic
+      flat: true
   - name: full-legacy-format-apt-hosted
     blob_store: legacy-blobstore-complete
     strict_content_validation: true
@@ -2054,9 +2055,10 @@ nexus_repos_apt_hosted:
       - apt_cleanup_config_api
     write_policy: ALLOW
     proprietary_components: true
-    keypair:
-    passphrase:
-    distribution:
+    keypair: keypair-apt
+    passphrase: passphrase-apt
+    distribution: bionic
+    flat: true
 
 nexus_repos_apt_proxy:
   - name: new-format-minimal-apt-proxy
@@ -2116,7 +2118,7 @@ nexus_repos_apt_proxy:
         password: "full-auth-pass"
     routingRule: routing-rule-allow-all
     apt:
-      distribution:
+      distribution: bionic
       flat: false
   - name: full-legacy-format-apt-proxy
     blob_store: legacy-minimal-blobstore
@@ -2142,6 +2144,8 @@ nexus_repos_apt_proxy:
     ntlm_domain: "full-ntlm-domain"
     ntlm_host: "full-ntlm-host"
     routing_rules: routing-rule-allow-all
+    distribution: bionic
+    flat: false
 
 nexus_repos_nuget_hosted:
   - name: new-format-minimal-nuget-hosted

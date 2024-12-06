@@ -284,6 +284,11 @@ nexus_repos_format_defaults:
   apt:
     storage:
       blobStoreName: "{{ nexus_blob_names.apt.blob | default('default') }}"
+    apt:
+      distribution: bionic
+      flat: false
+    aptSigning:
+      keypair: test-keypair
   yum:
     storage:
       blobStoreName: "{{ nexus_blob_names.yum.blob | default('default') }}"

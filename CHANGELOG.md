@@ -8,6 +8,7 @@
   - `nexus_repos_pypi_hosted`, `nexus_repos_pypi_proxy`, `nexus_repos_pypi_group`
   - `nexus_repos_conan_hosted`, `nexus_repos_conan_proxy`
   - `nexus_repos_yum_hosted`, `nexus_repos_yum_proxy`, `nexus_repos_yum_group`
+  - `nexus_repos_apt_hosted`, `nexus_repos_apt_proxy`
   definitions with the `config_api` role without reformatting the dictionary.
 
 
