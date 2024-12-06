@@ -364,5 +364,8 @@ legacy_field_map:
   flat: "apt.flat"
   # replication_preemptive_pull: "replication.pullReplication"
   # replication_asset_path_regex: "replication.assetPathRegex"
-  # removeQuarantined can be set on pypi and npm proxies
-  # remove_quarantined: "npm.removeQuarantined"
+  remove_quarantined:
+    pypi:
+      proxy: "pypi.removeQuarantined"
+    npm:
+      proxy: "npm.removeQuarantined"
