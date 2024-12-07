@@ -1,8 +1,10 @@
 # Changelog
 ## [1.14.0] - 2024-12-07
 ## Added
-- **config_api** Added support to set and update raw.contentDisposition for raw proxy and hosted repos
 - **config_api** Added support to set and update httpClient.authentication attributes
+
+## Fixed
+- **config_api** updating raw.contentDisposition for raw proxy and hosted repos are now idempotent.
 
 ## [1.13.0] - 2024-12-06
 ## Added
