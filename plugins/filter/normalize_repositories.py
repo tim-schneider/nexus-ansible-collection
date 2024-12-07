@@ -97,8 +97,7 @@ def merge_defaults(repo, global_defaults, type_defaults, format_defaults, repo_t
                         # NTLM authentication requires all related fields
                         if not (username and password and ntlm_host and ntlm_domain):
                             raise ValueError(
-                                f"Repository '{
-                                    repo.get('name', 'unknown')}' is missing required fields "
+                                f"Repository '{repo.get('name', 'unknown')}' is missing required fields "
                                 "for NTLM authentication (username, password, ntlmHost, ntlmDomain)."
                             )
                         auth_block["type"] = "ntlm"
@@ -106,8 +105,7 @@ def merge_defaults(repo, global_defaults, type_defaults, format_defaults, repo_t
                         # Username-based authentication
                         if not (username and password):
                             raise ValueError(
-                                f"Repository '{
-                                    repo.get('name', 'unknown')}' is missing required fields "
+                                f"Repository '{repo.get('name', 'unknown')}' is missing required fields "
                                 "for username authentication (username and password)."
                             )
                         auth_block["type"] = "username"
@@ -128,8 +126,7 @@ def merge_defaults(repo, global_defaults, type_defaults, format_defaults, repo_t
 
         return normalized
     except Exception as e:
-        raise RuntimeError(f"Error processing repository '{
-                           repo.get('name', 'unknown')}': {e}")
+        raise RuntimeError(f"Error processing repository '{repo.get('name', 'unknown')}': {e}")
 
 
 def enhanced_cleanup_legacy_attributes(repo, legacy_field_map):
