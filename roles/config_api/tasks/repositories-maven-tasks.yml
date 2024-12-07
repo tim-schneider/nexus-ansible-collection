@@ -88,7 +88,7 @@
   ansible.builtin.set_fact:
     nxs_update_mvn_proxy_repos: "{{ nxs_update_mvn_proxy_repos + [item] }}"
   loop: "{{ nexus_repos_maven_proxy_normalized | list }}"
-  # TODO: implement replication and authentication
+  # TODO: implement replication
   when: >
     (__nxs_crnt_mvn_prxy__ | selectattr('name', 'equalto', item.name) | first) is not defined or
     (__nxs_crnt_mvn_prxy__ | selectattr('name', 'equalto', item.name) | first).format | default('maven2') != item.format | default('maven2') or
@@ -109,6 +109,25 @@
     (__nxs_crnt_mvn_prxy__ | selectattr('name', 'equalto', item.name) | first).httpClient.connection.enableCookies | default(false) != item.httpClient.connection.enableCookies | default(false) or
     (__nxs_crnt_mvn_prxy__ | selectattr('name', 'equalto', item.name) | first).httpClient.connection.useTrustStore | default(false) != item.httpClient.connection.useTrustStore | default(false) or
     (__nxs_crnt_mvn_prxy__ | selectattr('name', 'equalto', item.name) | first).httpClient.connection.userAgentSuffix | default(omit) != item.httpClient.connection.userAgentSuffix | default(None) or
+    (
+    (__nxs_crnt_mvn_prxy__ | selectattr('name', 'equalto', item.name) | first).httpClient.authentication is not none and
+        item.httpClient.authentication is none
+    ) or
+    (
+        (__nxs_crnt_mvn_prxy__ | selectattr('name', 'equalto', item.name) | first).httpClient.authentication is none and
+        item.httpClient.authentication is not none
+    ) or
+    (
+        (__nxs_crnt_mvn_prxy__ | selectattr('name', 'equalto', item.name) | first).httpClient.authentication is not none and
+        item.httpClient.authentication is not none and
+        (
+            (__nxs_crnt_mvn_prxy__ | selectattr('name', 'equalto', item.name) | first).httpClient.authentication.type | default(None) != item.httpClient.authentication.type | default(None) or
+            (__nxs_crnt_mvn_prxy__ | selectattr('name', 'equalto', item.name) | first).httpClient.authentication.username | default(None) != item.httpClient.authentication.username | default(None) or
+            (__nxs_crnt_mvn_prxy__ | selectattr('name', 'equalto', item.name) | first).httpClient.authentication.preemptive | default(None) != item.httpClient.authentication.preemptive | default(None) or
+            (__nxs_crnt_mvn_prxy__ | selectattr('name', 'equalto', item.name) | first).httpClient.authentication.ntlmHost | default(None) != item.httpClient.authentication.ntlmHost | default(None) or
+            (__nxs_crnt_mvn_prxy__ | selectattr('name', 'equalto', item.name) | first).httpClient.authentication.ntlmDomain | default(None) != item.httpClient.authentication.ntlmDomain | default(None)
+        )
+    ) or
     (__nxs_crnt_mvn_prxy__ | selectattr('name', 'equalto', item.name) | first).maven.versionPolicy | default(omit) != item.maven.versionPolicy | default(None) or
     (__nxs_crnt_mvn_prxy__ | selectattr('name', 'equalto', item.name) | first).maven.layoutPolicy | default(omit) != item.maven.layoutPolicy | default(None) or
     (__nxs_crnt_mvn_prxy__ | selectattr('name', 'equalto', item.name) | first).maven.contentDisposition | default(omit) != item.maven.contentDisposition | default(None) or

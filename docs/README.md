@@ -26,13 +26,15 @@ The order of the group_vars is important since the dictionaries will be passed t
 - raw.contentdisposition for groups cant be fetched through api (and therefore not updated through this role) but it can be set for new repos
 - aptSigning cant be fetched through api (and therefore not updated through this role) but it can be set for new repos
 - conanProxy.conanVersion cant be fetched through API (and therefore not updated through this role) but it can be set for new repos
+- preemptive beartoken can not be set for cargo and npm proxies
 
 
 # TODO:
 - File blob store PUT endpoint
 - S3 Blob store PUT endpoint
 - Group Blob store PUT endpoit
-- Update httpClient.authentication attributes
+- handle preemtive auth for maven proxies
+- Set & update replication attributes
 
 - HTTPS System settings + normalize
 - IQ Repo Firewall

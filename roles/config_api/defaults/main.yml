@@ -359,7 +359,6 @@ legacy_field_map:
   ntlm_domain: "httpClient.authentication.ntlmDomain"
   ntlm_host: "httpClient.authentication.ntlmHost"
   preemptive: "httpClient.authentication.preemptive"
-  remote_auth_type: "httpClient.authentication.type"
   bearerToken: "httpClient.authentication.bearerToken"
   conan_version: "conanProxy.conanVersion"
   deploy_policy: "yum.deployPolicy"
