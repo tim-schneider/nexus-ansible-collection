@@ -2,6 +2,8 @@
 ## [1.14.0] - 2024-12-07
 ## Added
 - **config_api** Added support to set and update raw.contentDisposition for raw proxy and hosted repos
+- **config_api** Added support to set and update httpClient.authentication attributes
+
 ## [1.13.0] - 2024-12-06
 ## Added
 - **config_api** Added support to normalize the following repositories types/formats.

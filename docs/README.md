@@ -44,5 +44,3 @@ The order of the group_vars is important since the dictionaries will be passed t
 - Tags
 - Azure Blob store endpoint
 - Google Blob store endpoint
-
-idea: when _nexus_repos_<format>_defaults exists, map attributes to new format

@@ -86,29 +86,31 @@ def merge_defaults(repo, global_defaults, type_defaults, format_defaults, repo_t
             auth_block = normalized.get(
                 "httpClient", {}).get("authentication", {})
             if auth_block:
-                username = auth_block.get("username")
-                password = auth_block.get("password")
-                ntlm_host = auth_block.get("ntlmHost")
-                ntlm_domain = auth_block.get("ntlmDomain")
+                # Use the existing 'type' if defined
+                if "type" not in auth_block:
+                    username = auth_block.get("username")
+                    password = auth_block.get("password")
+                    ntlm_host = auth_block.get("ntlmHost")
+                    ntlm_domain = auth_block.get("ntlmDomain")
 
-                if ntlm_host or ntlm_domain:
-                    # NTLM authentication requires all related fields
-                    if not (username and password and ntlm_host and ntlm_domain):
-                        raise ValueError(
-                            f"Repository '{
-                                repo.get('name', 'unknown')}' is missing required fields "
-                            "for NTLM authentication (username, password, ntlmHost, ntlmDomain)."
-                        )
-                    auth_block["type"] = "ntlm"
-                elif username or password:
-                    # Username-based authentication
-                    if not (username and password):
-                        raise ValueError(
-                            f"Repository '{
-                                repo.get('name', 'unknown')}' is missing required fields "
-                            "for username authentication (username and password)."
-                        )
-                    auth_block["type"] = "username"
+                    if ntlm_host or ntlm_domain:
+                        # NTLM authentication requires all related fields
+                        if not (username and password and ntlm_host and ntlm_domain):
+                            raise ValueError(
+                                f"Repository '{
+                                    repo.get('name', 'unknown')}' is missing required fields "
+                                "for NTLM authentication (username, password, ntlmHost, ntlmDomain)."
+                            )
+                        auth_block["type"] = "ntlm"
+                    elif username or password:
+                        # Username-based authentication
+                        if not (username and password):
+                            raise ValueError(
+                                f"Repository '{
+                                    repo.get('name', 'unknown')}' is missing required fields "
+                                "for username authentication (username and password)."
+                            )
+                        auth_block["type"] = "username"
 
                 # Update the normalized structure with the modified auth_block
                 normalized["httpClient"]["authentication"] = auth_block

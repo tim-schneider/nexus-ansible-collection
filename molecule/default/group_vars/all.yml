@@ -1707,8 +1707,10 @@ nexus_repos_raw_proxy:
         enableCookies: true
       authentication:
         type: username
-        username: "full-auth-user"
-        password: "full-auth-pass"
+        username: "full-new-ntlm-user"
+        password: "full-new-ntlm-pass"
+        ntlmDomain: "full-new-ntlm-domain"
+        ntlmHost: "full-new-ntlm-host"
     routingRule: routing-rule-allow-all
     raw:
       contentDisposition: INLINE
@@ -1731,10 +1733,11 @@ nexus_repos_raw_proxy:
     user_agent_suffix: "Nexus/3.20.1-01 (OSS)"
     enable_circular_redirects: true
     enable_cookies: true
-    remote_username: "full-auth-user"
-    remote_password: "full-auth-pass"
-    ntlm_domain: "full-ntlm-domain"
-    ntlm_host: "full-ntlm-host"
+    remote_auth_type: username
+    remote_username: "full-ntlm-user"
+    remote_password: "full-ntlm-pass"
+    ntlm_domain: "full-legacy-ntlm-domain"
+    ntlm_host: "full-legacy-ntlm-host"
     routing_rules: routing-rule-allow-all
     content_disposition: ATTACHMENT
 

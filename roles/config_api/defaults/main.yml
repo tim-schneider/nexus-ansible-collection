@@ -355,6 +355,7 @@ legacy_field_map:
   auto_block: "httpClient.autoBlock"
   blocked: "httpClient.blocked"
   routing_rules: "routingRule"
+  remote_auth_type: "httpClient.authentication.type"
   ntlm_domain: "httpClient.authentication.ntlmDomain"
   ntlm_host: "httpClient.authentication.ntlmHost"
   preemptive: "httpClient.authentication.preemptive"
