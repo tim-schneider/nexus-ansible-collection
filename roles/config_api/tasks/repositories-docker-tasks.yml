@@ -77,14 +77,14 @@
     (__nxs_crnt_docker_hstd__ | selectattr('name', 'equalto', item.name) | first).cleanup.policyNames | default([]) | sort != item.cleanup.policyNames | default([]) | sort or
     (__nxs_crnt_docker_hstd__ | selectattr('name', 'equalto', item.name) | first).storage.blobStoreName | default(omit) != item.storage.blobStoreName | default(None) or
     (__nxs_crnt_docker_hstd__ | selectattr('name', 'equalto', item.name) | first).storage.strictContentTypeValidation | default(false) != item.storage.strictContentTypeValidation | default(false) or
-    (__nxs_crnt_docker_hstd__ | selectattr('name', 'equalto', item.name) | first).storage.writePolicy | default(omit) != item.storage.writePolicy | default(None) or
-    (__nxs_crnt_docker_hstd__ | selectattr('name', 'equalto', item.name) | first).storage.latestPolicy | default(false) != item.storage.latestPolicy | default(false) or
+    (__nxs_crnt_docker_hstd__ | selectattr('name', 'equalto', item.name) | first).storage.writePolicy | default(omit) | lower != item.storage.writePolicy | default(None) | lower or
+    (__nxs_crnt_docker_hstd__ | selectattr('name', 'equalto', item.name) | first).storage.latestPolicy | default(false) | lower != item.storage.latestPolicy | default(false) | lower or
     (__nxs_crnt_docker_hstd__ | selectattr('name', 'equalto', item.name) | first).component.proprietaryComponents | default(false) != item.component.proprietaryComponents | default(false) or
     (__nxs_crnt_docker_hstd__ | selectattr('name', 'equalto', item.name) | first).docker.v1Enabled | default(false) != item.docker.v1Enabled | default(false) or
     (__nxs_crnt_docker_hstd__ | selectattr('name', 'equalto', item.name) | first).docker.forceBasicAuth | default(false) != item.docker.forceBasicAuth | default(false) or
     (__nxs_crnt_docker_hstd__ | selectattr('name', 'equalto', item.name) | first).docker.httpPort | default(omit) != item.docker.httpPort | default(None) or
     (__nxs_crnt_docker_hstd__ | selectattr('name', 'equalto', item.name) | first).docker.httpsPort | default(omit) != item.docker.httpsPort | default(None) or
-    (__nxs_crnt_docker_hstd__ | selectattr('name', 'equalto', item.name) | first).docker.subdomain | default(omit) != item.docker.subdomain | default(None)
+    (__nxs_crnt_docker_hstd__ | selectattr('name', 'equalto', item.name) | first).docker.subdomain | default(omit) | lower != item.docker.subdomain | default(None) | lower
   tags:
     - docker
     - docker-hosted
@@ -137,8 +137,8 @@
     (__nxs_crnt_docker_prxy__ | selectattr('name', 'equalto', item.name) | first).docker.forceBasicAuth | default(false) != item.docker.forceBasicAuth | default(false) or
     (__nxs_crnt_docker_prxy__ | selectattr('name', 'equalto', item.name) | first).docker.httpPort | default(omit) != item.docker.httpPort | default(None) or
     (__nxs_crnt_docker_prxy__ | selectattr('name', 'equalto', item.name) | first).docker.httpsPort | default(omit) != item.docker.httpsPort | default(None) or
-    (__nxs_crnt_docker_prxy__ | selectattr('name', 'equalto', item.name) | first).docker.subdomain | default(omit) != item.docker.subdomain | default(None) or
-    (__nxs_crnt_docker_prxy__ | selectattr('name', 'equalto', item.name) | first).dockerProxy.indexType | default(omit) != item.dockerProxy.indexType | default(None) or
+    (__nxs_crnt_docker_prxy__ | selectattr('name', 'equalto', item.name) | first).docker.subdomain | default(omit) | lower != item.docker.subdomain | default(None) | lower or
+    (__nxs_crnt_docker_prxy__ | selectattr('name', 'equalto', item.name) | first).dockerProxy.indexType | default(omit) | upper != item.dockerProxy.indexType | default(None) | upper or
     (__nxs_crnt_docker_prxy__ | selectattr('name', 'equalto', item.name) | first).dockerProxy.indexUrl | default(omit) != item.dockerProxy.indexUrl | default(None) or
     (__nxs_crnt_docker_prxy__ | selectattr('name', 'equalto', item.name) | first).dockerProxy.cacheForeignLayers | default(false) != item.dockerProxy.cacheForeignLayers | default(false) or
     (__nxs_crnt_docker_prxy__ | selectattr('name', 'equalto', item.name) | first).dockerProxy.foreignLayerUrlWhitelist | default([]) != item.dockerProxy.foreignLayerUrlWhitelist | default([]) or
@@ -164,7 +164,7 @@
     (__nxs_crnt_docker_grp__ | selectattr('name', 'equalto', item.name) | first).docker.forceBasicAuth | default(false) != item.docker.forceBasicAuth | default(false) or
     (__nxs_crnt_docker_grp__ | selectattr('name', 'equalto', item.name) | first).docker.httpPort | default(omit) != item.docker.httpPort | default(None) or
     (__nxs_crnt_docker_grp__ | selectattr('name', 'equalto', item.name) | first).docker.httpsPort | default(omit) != item.docker.httpsPort | default(None) or
-    (__nxs_crnt_docker_grp__ | selectattr('name', 'equalto', item.name) | first).docker.subdomain | default(omit) != item.docker.subdomain | default(None)
+    (__nxs_crnt_docker_grp__ | selectattr('name', 'equalto', item.name) | first).docker.subdomain | default(omit) | lower != item.docker.subdomain | default(None) | lower
   tags: docker
 
 - name: Show nxs_create_docker_hosted_repos
