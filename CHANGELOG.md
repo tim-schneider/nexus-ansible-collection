@@ -1,13 +1,26 @@
 # Changelog
+## [1.14.2] - 2024-12-09
+### Added
+- **nexus_oss** Check if `nexus_anonymous_access` is boolean
+- Published documentation website at https://nexus.cloudkrater.org/docs
+
+### Fixed
+- **config_api** Ensure comparision is case-insensitive for certain attributes
+
+
+## [1.14.1] - 2024-12-07
+### Fixed
+- **config_api** Fix line breaks in normalize_repositories.py filter
+
 ## [1.14.0] - 2024-12-07
-## Added
+### Added
 - **config_api** Added support to set and update httpClient.authentication attributes
 
-## Fixed
+### Fixed
 - **config_api** updating raw.contentDisposition for raw proxy and hosted repos are now idempotent.
 
 ## [1.13.0] - 2024-12-06
-## Added
+### Added
 - **config_api** Added support to normalize the following repositories types/formats.
   you can now use your
   - `nexus_repos_raw_hosted`, `nexus_repos_raw_proxy`, `nexus_repos_raw_group`
@@ -20,12 +33,12 @@
 
 
 ## [1.12.1] - 2024-12-05
-## Fixed
+### Fixed
 - **nexus_oss** After introducing `nexus_api_availability_*` variables the role would fail while waiting for Nexus to be started.
   this has been fixed.
 
 ## [1.12.0] - 2024-12-04
-## Added
+### Added
 - **nexus_oss** Introduced variables to control waiting time for nexus to startup.
   `nexus_api_availability_delay: 10`
   `nexus_api_availability_retries: 30`
@@ -47,32 +60,32 @@
 #### Important note on repository defaults
 The `config_api` role uses a different approach to set defaults. If , for example, you override the `_nexus_repos_maven_defaults` variable, make sure you apply the same defaults to the `nexus_repos_global_defaults`, `nexus_repos_type_defaults` and `nexus_repos_format_defaults` dictionaries! See role defaults for the full dictionaries.
 
-## Fixed
+### Fixed
 - **config_api** Use defaults from `_nexus_repos_<format>_defaults` for normalizing repos.
 - **nexus_oss** Fixed attribute `allow_redeploy_latest` for docker repos
 
-## Changed
+### Changed
 - **nexus_oss** Renamed `layout_policy` to `deploy_policy` for yum repos
 
 
 ## [1.11.1] - 2024-12-02
 
-## Changed
+### Changed
 - **config_api** Renamed `nexus_hostname` to `nexus_api_hostname` to be compatible with with nexus_oss role
 
 ## [1.11.0] - 2024-12-02
 
-# Added
+### Added
 - **nexus_oss** Introduced new option to run in clustered mode. This variable with is default value is `nexus_cluster_enabled: false`.
 - **config_api** Nexus license API will always be queried to obtain the license status
   We need this information to determine if we can use API endpoints for pro features
 
 ## [1.10.3] - 2024-12-01
 
-## Added
+### Added
 - Introduced `nexus_api_validate_certs` and `nexus_api_timeout` variables.
 
-## Changed
+### Changed
 - **config_api** `nexus_protocol` variable has be renamed to `nexus_api_scheme` to be compatible with nexus_oss role.
 - **config_api** `nexus_hostname` variable has be renamed to `nexus_api_hostname` to be compatible with nexus_oss role.
 - **config_api** `nexus_port` variable has be renamed to `nexus_api_port` to be compatible with nexus_oss role.
