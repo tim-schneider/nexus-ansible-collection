@@ -77,8 +77,8 @@
     (__nxs_crnt_raw_hstd__ | selectattr('name', 'equalto', item.name) | first).cleanup.policyNames | default([]) | sort != item.cleanup.policyNames | default([]) | sort or
     (__nxs_crnt_raw_hstd__ | selectattr('name', 'equalto', item.name) | first).storage.blobStoreName | default(omit) != item.storage.blobStoreName | default(None) or
     (__nxs_crnt_raw_hstd__ | selectattr('name', 'equalto', item.name) | first).storage.strictContentTypeValidation | default(false) != item.storage.strictContentTypeValidation | default(false) or
-    (__nxs_crnt_raw_hstd__ | selectattr('name', 'equalto', item.name) | first).storage.writePolicy | default(omit) | lower != item.storage.writePolicy | default(None) | lower or
-    (__nxs_crnt_raw_hstd__ | selectattr('name', 'equalto', item.name) | first).raw.contentDisposition | default(omit) | lower != item.raw.contentDisposition | default(None) | lower or
+    (__nxs_crnt_raw_hstd__ | selectattr('name', 'equalto', item.name) | first).storage.writePolicy | default(omit) | upper != item.storage.writePolicy | default(None) | upper or
+    (__nxs_crnt_raw_hstd__ | selectattr('name', 'equalto', item.name) | first).raw.contentDisposition | default(omit) | upper != item.raw.contentDisposition | default(None) | upper or
     (__nxs_crnt_raw_hstd__ | selectattr('name', 'equalto', item.name) | first).component.proprietaryComponents | default(false) != item.component.proprietaryComponents | default(false)
   tags:
     - raw
@@ -128,7 +128,7 @@
             (__nxs_crnt_raw_prxy__ | selectattr('name', 'equalto', item.name) | first).httpClient.authentication.ntlmDomain | default(None) != item.httpClient.authentication.ntlmDomain | default(None)
         )
     ) or
-    (__nxs_crnt_raw_prxy__ | selectattr('name', 'equalto', item.name) | first).raw.contentDisposition | default(omit) | lower != item.raw.contentDisposition | default(None) | lower or
+    (__nxs_crnt_raw_prxy__ | selectattr('name', 'equalto', item.name) | first).raw.contentDisposition | default(omit) | upper != item.raw.contentDisposition | default(None) | upper or
     (__nxs_crnt_raw_prxy__ | selectattr('name', 'equalto', item.name) | first).routingRuleName | default(omit) != item.routingRule | default(None)
   tags:
     - raw
