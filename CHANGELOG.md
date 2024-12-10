@@ -1,4 +1,9 @@
 # Changelog
+## [1.14.3] - 2024-12-09
+### Fixed
+- **config_api** Ensure comparision is case-insensitive and uppercase for certain attributes
+
+
 ## [1.14.2] - 2024-12-09
 ### Added
 - **nexus_oss** Check if `nexus_anonymous_access` is boolean
