@@ -1,5 +1,25 @@
 import copy
 
+UPPERCASE_FIELDS = [
+    "storage.writePolicy",
+    "yum.deployPolicy",
+    "maven.contentDisposition",
+    "raw.contentDisposition",
+    "maven.layoutPolicy",
+    "maven.versionPolicy"
+]
+
+
+def convert_specified_fields_to_uppercase(data, fields_to_uppercase):
+    """
+    Convert specified keys' values to uppercase in the given dictionary.
+    Handles both top-level and nested dotted key paths.
+    """
+    for key_path in fields_to_uppercase:
+        value = get_nested_value(data, key_path)
+        if isinstance(value, str):
+            set_nested_value(data, key_path, value.upper())
+
 
 def get_nested_value(data, key_path, default=None):
     """
@@ -80,6 +100,9 @@ def merge_defaults(repo, global_defaults, type_defaults, format_defaults, repo_t
 
         # Step 5: Add repository-specific attributes
         normalized = merge_dict(repo, normalized)
+
+        # Step 6: Convert specific fields to uppercase
+        convert_specified_fields_to_uppercase(normalized, UPPERCASE_FIELDS)
 
         # Step 6: Set httpClient.authentication.type (only for proxy repositories)
         if repo_type == "proxy":
