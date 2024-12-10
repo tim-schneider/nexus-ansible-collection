@@ -34,8 +34,8 @@
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	// "forwardPorts": [	],
 	// Use 'postCreateCommand' to run commands after the container is created.
-	"onCreateCommand": ".devcontainer/post-create.sh",
-	"postStartCommand": ".devcontainer/post-start.sh",
+	"onCreateCommand": ".devcontainer/ansible-role/post-create.sh",
+	"postStartCommand": ".devcontainer/ansible-role/post-start.sh",
 	"remoteEnv": {
 		"NEXUS_LICENSE_B64": "${localEnv:NEXUS_LICENSE_B64}"
 	},

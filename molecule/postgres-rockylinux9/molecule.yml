@@ -20,28 +20,12 @@ platforms:
     override_command: false
     volumes:
       - /sys/fs/cgroup:/sys/fs/cgroup:rw
-      - .nexus-downloads:/nexus-downloads
+      - nexus-downloads:/nexus-downloads
     cgroupns_mode: host
     groups:
       - nexus
     networks: &nexus_networks
       - name: nexus-default
-  - name: cluster-2
-    hostname: cluster-2
-    image: brianveltman/molecule_openjdk17:rockylinux9
-    pull: true
-    pre_build_image: true
-    privileged: true
-    published_ports:
-      - 9092:443
-    override_command: false
-    volumes:
-      - /sys/fs/cgroup:/sys/fs/cgroup:rw
-      - .nexus-downloads:/nexus-downloads
-    cgroupns_mode: host
-    groups:
-      - nexus
-    networks: *nexus_networks
 
   - name: slapd-server-mock
     hostname: slapd-server-mock
