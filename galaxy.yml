@@ -54,7 +54,7 @@ repository: https://github.com/CloudKrafter/nexus-ansible-collection
 documentation: https://ansible-nexus.cloudkrafter.org
 
 # The URL to the homepage of the collection/project
-homepage: https://cloudkrafter.org
+homepage: https://nexus.cloudkrafter.org/docs
 
 # The URL to the collection issue tracker
 issues: https://github.com/CloudKrafter/nexus-ansible-collection/issues
