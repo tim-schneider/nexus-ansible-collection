@@ -249,8 +249,6 @@ nexus_repos_format_defaults:
   rubygems:
     storage:
       blobStoreName: "{{ nexus_blob_names.rubygems.blob | default('default') }}"
-    yum:
-      repodataDepth: 0
   nuget:
     storage:
       blobStoreName: "{{ nexus_blob_names.nuget.blob | default('default') }}"
