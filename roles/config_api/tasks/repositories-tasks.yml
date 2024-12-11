@@ -140,3 +140,10 @@
   tags:
     - repositories
     - cargo
+
+- name: Include repositories-composer-tasks
+  ansible.builtin.include_tasks: repositories-composer-tasks.yml
+  when: nexus_config_composer | bool
+  tags:
+    - repositories
+    - composer

@@ -290,6 +290,7 @@
         - "{{ _nexus_repos_go_group | d([]) }}"
         - "{{ _nexus_repos_conan_proxy | d([]) }}"
         - "{{ _nexus_repos_cocoapods_proxy | d([]) }}"
+        - "{{ _nexus_repos_composer_proxy | d([]) }}"
       when: nexus_use_api_for_provisioning | default(false) | bool
       tags: repos
     

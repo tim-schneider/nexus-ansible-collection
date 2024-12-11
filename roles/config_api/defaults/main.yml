@@ -61,6 +61,7 @@ nexus_config_conan: true
 nexus_config_go: true
 nexus_config_cargo: true
 nexus_config_rubygems: true
+nexus_config_composer: true
 
 nexus_repos_rubygems_hosted: []
 
@@ -139,6 +140,8 @@ nexus_repos_maven_hosted: []
 nexus_repos_maven_proxy: []
 
 nexus_repos_maven_group: []
+
+nexus_repos_composer_proxy: []
 
 nexus_repos_routing_rules: []
 
@@ -264,6 +267,9 @@ nexus_repos_format_defaults:
   p2:
     storage:
       blobStoreName: "{{ nexus_blob_names.p2.blob | default('default') }}"
+  composer:
+    storage:
+      blobStoreName: "{{ nexus_blob_names.composer.blob | default('default') }}"
   conda:
     storage:
       blobStoreName: "{{ nexus_blob_names.conda.blob | default('default') }}"

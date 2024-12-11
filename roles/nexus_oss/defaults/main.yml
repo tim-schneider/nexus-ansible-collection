@@ -313,6 +313,8 @@ nexus_blob_names: # Splited blob name list @ blob_vars.yml
     blob: default
   cocoapods:
     blob: default
+  composer:
+    blob: default
 
 nexus_blobstores: []
 # example blobstore item :
@@ -779,6 +781,17 @@ _nexus_repos_p2_defaults:
   negative_cache_ttl: 1440 # Nexus gui default. For proxies only
 
 nexus_repos_p2_proxy: []
+
+_nexus_repos_composer_defaults:
+  blob_store: "{{ nexus_blob_names.composer.blob }}"
+  strict_content_validation: true
+  maximum_component_age: 1440 # Nexus gui default. For proxies only
+  maximum_metadata_age: 1440 # Nexus gui default. For proxies only
+  negative_cache_enabled: true # Nexus gui default. For proxies only
+  negative_cache_ttl: 1440 # Nexus gui default. For proxies only
+
+nexus_repos_composer_proxy: []
+
 # conda support
 _nexus_repos_conda_defaults:
   blob_store: "{{ nexus_blob_names.conda.blob }}"

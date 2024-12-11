@@ -37,6 +37,8 @@ nexus_blob_names:
     blob: "{{ nexus_blob_prefix }}go"
   cocoapods:
     blob: "{{ nexus_blob_prefix }}cocoapods"
+  composer:
+    blob: "{{ nexus_blob_prefix }}composer"
 
 nexus_blobstores:
   - name: "{{ nexus_blob_prefix }}raw"
@@ -93,3 +95,6 @@ nexus_blobstores:
   - name: "{{ nexus_blob_prefix }}cocoapods"
     type: file
     path: "{{ nexus_data_dir }}/blobs/{{ nexus_blob_names.cocoapods.blob }}"
+  - name: "{{ nexus_blob_prefix }}composer"
+    type: file
+    path: "{{ nexus_data_dir }}/blobs/{{ nexus_blob_names.composer.blob }}"

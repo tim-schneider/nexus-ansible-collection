@@ -1,4 +1,10 @@
 # Changelog
+## [1.15.0] - 2024-12-10
+### Added
+- **config_api** Added support for Composer proxy repositories
+- **nexus_oss** Added support for Composer proxy repositories
+
+
 ## [1.14.3] - 2024-12-09
 ### Fixed
 - **config_api** Ensure comparision is case-insensitive and uppercase for certain attributes

@@ -27,6 +27,7 @@ nexus_config_conan: true
 nexus_config_go: true
 nexus_config_cargo: true
 nexus_config_rubygems: true
+nexus_config_composer: true
 
 ldap_connections:
   - name: Mock ldap server STATIC # Required
@@ -1591,6 +1592,88 @@ nexus_repos_p2_proxy:
       - p2_cleanup_config_api
       - p2_cleanup_nexus_oss
     remote_url: https://repo.p2.com/pkgs/main
+    maximum_component_age: 1440
+    maximum_metadata_age: 1440
+    negative_cache_enabled: true
+    negative_cache_ttl: 1440
+    blocked: false
+    auto_block: true
+    use_trust_store: true
+    connection_retries: 3
+    connection_timeout: 60
+    user_agent_suffix: "Nexus/3.20.1-01 (OSS)"
+    enable_circular_redirects: true
+    enable_cookies: true
+    remote_username: "full-auth-user"
+    remote_password: "full-auth-pass"
+    ntlm_domain: "full-ntlm-domain"
+    ntlm_host: "full-ntlm-host"
+    routing_rules: routing-rule-allow-all
+
+nexus_repos_composer_proxy:
+  - name: new-format-minimal-composer-proxy
+    proxy:
+      remoteUrl: https://packagist.org/
+  - name: legacy-format-minimal-composer-proxy
+    blob_store: default
+    strict_content_validation: true
+    remote_url: https://packagist.org/
+  - name: legacy-format-cleanup-composer-proxy
+    cleanup_policies:
+      - composer_cleanup_nexus_oss
+      - composer_cleanup_config_api
+    remote_url: https://packagist.org/
+  - name: new-format-cleanup-reverse-order-composer-proxy
+    cleanup:
+      policyNames:
+        - composer_cleanup_config_api
+        - composer_cleanup_nexus_oss
+    remote_url: https://packagist.org/
+  - name: mixed-format-composer-proxy
+    blob_store: legacy-minimal-blobstore
+    storage:
+      strictContentTypeValidation: false
+    cleanup_policies:
+      - composer_cleanup_nexus_oss
+    remote_url: https://packagist.org/
+  - name: full-new-format-composer-proxy
+    online: true
+    storage:
+      blobStoreName: default
+      strictContentTypeValidation: true
+    cleanup:
+      policyNames:
+        - composer_cleanup_config_api
+        - composer_cleanup_nexus_oss
+    proxy:
+      remoteUrl: https://packagist.org/
+      contentMaxAge: 1440
+      metadataMaxAge: 1440
+    negativeCache:
+      enabled: true
+      timeToLive: 1440
+    httpClient:
+      blocked: false
+      autoBlock: true
+      connection:
+        useTrustStore: true
+        retries: 3
+        timeout: 60
+        userAgentSuffix: "Nexus/3.20.1-01 (OSS)"
+        enableCircularRedirects: true
+        enableCookies: true
+      authentication:
+        type: username
+        username: "full-auth-user"
+        password: "full-auth-pass"
+    routingRule: routing-rule-allow-all
+  - name: full-legacy-format-composer-proxy
+    blob_store: legacy-minimal-blobstore
+    strict_content_validation: true
+    cleanup_policies:
+      - composer_cleanup_config_api
+      - composer_cleanup_nexus_oss
+    remote_url: https://packagist.org/
     maximum_component_age: 1440
     maximum_metadata_age: 1440
     negative_cache_enabled: true

@@ -44,6 +44,7 @@ nexus_config_go: true
 nexus_config_bower: false
 nexus_config_p2: true
 nexus_config_cocoapods: true
+nexus_config_composer: true
 
 nexus_anonymous_access: true
 
@@ -235,6 +236,13 @@ nexus_repos_cleanup_policies:
   - name: p2_cleanup
     format: p2
     notes: "p2"
+    criteria:
+      lastBlobUpdated: 60
+      lastDownloaded: 120
+      regexKey: "beta-*"
+  - name: composer_cleanup
+    format: composer
+    notes: "composer"
     criteria:
       lastBlobUpdated: 60
       lastDownloaded: 120
@@ -593,6 +601,10 @@ nexus_repos_nuget_proxy:
 nexus_repos_p2_proxy:
   - name: p2-proxy
     remote_url: http://download.eclipse.org/technology/epp/packages/oxygen/
+
+nexus_repos_composer_proxy:
+  - name: composer-proxy
+    remote_url: https://packagist.org/
 
 nexus_repos_cocoapods_proxy:
   - name: cocoapods-proxy

@@ -801,7 +801,7 @@ nexus_repos_docker_hosted:
     allow_redeploy_latest: true
 ```
 
-Maven, Pypi, Docker, Raw, Rubygems, Bower, NPM, Git-LFS, yum, apt, helm, r, p2, conda and go repository types:
+Maven, Pypi, Docker, Raw, Rubygems, Bower, NPM, Git-LFS, yum, apt, helm, r, p2, conda, go and composer repository types:
 see `defaults/main.yml` for these options. For historical reasons and to keep backward compatibility,
 maven is configured by default
 
@@ -821,6 +821,7 @@ maven is configured by default
       nexus_config_p2: false
       nexus_config_conda: false
       nexus_config_go: false
+      nexus_config_composer: false
 ```
 
 These are all false unless you override them from playbook / group_var / cli, these all utilize the same mechanism as maven.
