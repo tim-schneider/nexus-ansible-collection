@@ -203,6 +203,7 @@ nexus_config_conda: false
 nexus_config_go: false
 nexus_config_cocoapods: false
 nexus_config_conan: false
+nexus_config_composer: false
 
 nexus_content_selectors: []
 
