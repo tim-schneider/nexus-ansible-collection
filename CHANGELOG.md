@@ -7,6 +7,7 @@
 ### Changed
 - **nexus_oss** Cleanup policies will only be created using the API if ALL cleanup policies are in the proper API format and `nexus_enable_pro_version` is `true` since the cleanup API endpoint is a Pro feature.
   However, we do recommend to use the `config_api` role when managing cleanup policies via the API.
+- **nexus_oss** Alle repo defaults have been set to `[]`. Meaning the role will not create repositories by default. Might cause unexpected behaviour for users who do not specifiy their default repositories in their group_vars, but it will not delete the repositories.
 
 
 ## [1.14.3] - 2024-12-09
