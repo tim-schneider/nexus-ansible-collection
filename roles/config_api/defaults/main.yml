@@ -198,20 +198,20 @@ nexus_repos_global_defaults:
 # Type-Specific Defaults
 nexus_repos_type_defaults:
   proxy:
-    cleanup:
-      policyNames: []
+    # cleanup:
+    #   policyNames: []
     httpClient:
       blocked: false
       autoBlock: true
       connection:
-        retries: 0
+        retries:
         timeout: # Left blank on purpose to use the http global value
         enableCircularRedirects: false
         enableCookies: false
         useTrustStore: false
       authentication: # Left blank on purpose to return null for the API
     proxy:
-      contentMaxAge: -1
+      contentMaxAge: 1440
       metadataMaxAge: 1440
     negativeCache:
       enabled: true
@@ -221,8 +221,6 @@ nexus_repos_type_defaults:
       writePolicy: allow_once
     component:
       proprietaryComponents: false
-    cleanup:
-      policyNames: []
   group:
     group:
       memberNames: []
@@ -232,6 +230,8 @@ nexus_repos_format_defaults:
   maven:
     storage:
       blobStoreName: "{{ nexus_blob_names.mvn.blob | default('default') }}"
+    proxy:
+      contentMaxAge: -1
     maven:
       versionPolicy: RELEASE
       layoutPolicy: STRICT
@@ -251,7 +251,7 @@ nexus_repos_format_defaults:
       foreignLayerUrlWhitelist: []
   rubygems:
     storage:
-      blobStoreName: "{{ nexus_blob_names.rubygems.blob | default('default') }}"
+      blobStoreName: "{{ nexus_blob_names.ruby.blob | default('default') }}"
   nuget:
     storage:
       blobStoreName: "{{ nexus_blob_names.nuget.blob | default('default') }}"
