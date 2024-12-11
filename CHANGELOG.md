@@ -4,6 +4,10 @@
 - **config_api** Added support for Composer proxy repositories
 - **nexus_oss** Added support for Composer proxy repositories
 
+### Changed
+- **nexus_oss** Cleanup policies will only be created using the API if ALL cleanup policies are in the proper API format and `nexus_enable_pro_version` is `true` since the cleanup API endpoint is a Pro feature.
+  However, we do recommend to use the `config_api` role when managing cleanup policies via the API.
+
 
 ## [1.14.3] - 2024-12-09
 ### Fixed

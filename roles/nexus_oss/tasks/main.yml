@@ -163,12 +163,17 @@
     - ldap
     - routing-rules
   block:
+    - name: Check if any cleanup policy has the 'criteria' attribute
+      ansible.builtin.set_fact:
+        cleanup_in_groovy_format: "{{ nexus_repos_cleanup_policies | selectattr('criteria', 'defined') | list | length > 0 }}"
+      tags: cleanup
+
     - name: Create/check cleanup policies
       ansible.builtin.include_tasks: call_script.yml
       vars:
         script_name: create_cleanup_policies_from_list
         call_args: "{{ nexus_repos_cleanup_policies }}"
-      when: nexus_repos_cleanup_policies | length > 0 and not nexus_enable_pro_version | default(false) | bool
+      when: nexus_repos_cleanup_policies | length > 0 and cleanup_in_groovy_format | default(false) | bool
       tags: cleanup
 
     - name: Get all existing cleanup policies
@@ -183,7 +188,7 @@
         return_content: yes
         status_code: 200
       register: __nexus_existing_cleanup_policies__
-      when: nexus_enable_pro_version | default(false) | bool
+      when: nexus_enable_pro_version | default(false) | bool and not cleanup_in_groovy_format | bool
       tags: cleanup
     
     - name: Create configured cleanup policies using Nexus API
@@ -192,7 +197,7 @@
         api_payload: "{{ item | default([]) }}"
       loop:
         - "{{ nexus_repos_cleanup_policies | d([]) }}"
-      when: nexus_use_api_for_provisioning | default(false) | bool and nexus_repos_cleanup_policies | length > 0 and nexus_enable_pro_version
+      when: not cleanup_in_groovy_format | bool and nexus_repos_cleanup_policies | length > 0 and nexus_enable_pro_version
       tags: cleanup
     
     - name: Get all existing routing rules
