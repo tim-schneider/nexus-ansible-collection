@@ -119,126 +119,145 @@
 
 - name: Show nxs_create_apt_hosted_repos
   ansible.builtin.debug:
-    var: nxs_create_apt_hosted_repos | length
+    var: nxs_create_apt_hosted_repos
+  when: nexus_config_dry_run
+  changed_when: nxs_create_apt_hosted_repos | length > 0
   tags:
     - apt
     - apt-hosted
 
 - name: Show nxs_update_apt_hosted_repos
   ansible.builtin.debug:
-    var: nxs_update_apt_hosted_repos | length
+    var: nxs_update_apt_hosted_repos
+  when: nexus_config_dry_run
+  changed_when: nxs_update_apt_hosted_repos | length > 0
   tags:
     - apt
     - apt-hosted
 
 - name: Show nxs_delete_apt_hosted_repos
   ansible.builtin.debug:
-    var: nxs_delete_apt_hosted_repos | length
+    var: nxs_delete_apt_hosted_repos
+  when: nexus_config_dry_run
+  changed_when: nxs_delete_apt_hosted_repos | length > 0
   tags:
     - apt
     - apt-hosted
 
 - name: Show nxs_create_apt_proxy_repos
   ansible.builtin.debug:
-    var: nxs_create_apt_proxy_repos | length
+    var: nxs_create_apt_proxy_repos
+  when: nexus_config_dry_run
+  changed_when: nxs_create_apt_proxy_repos | length > 0
   tags:
     - apt
     - apt-proxy
 
 - name: Show nxs_update_apt_proxy_repos
   ansible.builtin.debug:
-    var: nxs_update_apt_proxy_repos | length
+    var: nxs_update_apt_proxy_repos
+  when: nexus_config_dry_run
+  changed_when: nxs_update_apt_proxy_repos | length > 0
   tags:
     - apt
     - apt-proxy
 
 - name: Show nxs_delete_apt_proxy_repos
   ansible.builtin.debug:
-    var: nxs_delete_apt_proxy_repos | length
+    var: nxs_delete_apt_proxy_repos
+  when: nexus_config_dry_run
+  changed_when: nxs_delete_apt_proxy_repos | length > 0
   tags:
     - apt
     - apt-proxy
 
-- name: Create configured APT Hosted repositories using Nexus API
-  ansible.builtin.include_tasks: repositories-api.yml
-  vars:
-    repos: "{{ item | default([]) }}"
-    format: apt
-    type: hosted
-    method: POST
-  with_items:
-    - "{{ nxs_create_apt_hosted_repos | default([]) }}"
-  when: nxs_create_apt_hosted_repos | length > 0
+- name: Apply APT repository changes
+  block:
+    - name: Create configured APT Hosted repositories using Nexus API
+      ansible.builtin.include_tasks: repositories-api.yml
+      vars:
+        repos: "{{ item | default([]) }}"
+        format: apt
+        type: hosted
+        method: POST
+      with_items:
+        - "{{ nxs_create_apt_hosted_repos | default([]) }}"
+      when: nxs_create_apt_hosted_repos | length > 0
+      tags:
+        - apt
+        - apt-hosted
+
+    - name: Create configured APT Proxy repositories using Nexus API
+      ansible.builtin.include_tasks: repositories-api.yml
+      vars:
+        repos: "{{ item | default([]) }}"
+        format: apt
+        type: proxy
+        method: POST
+      with_items:
+        - "{{ nxs_create_apt_proxy_repos | default([]) }}"
+      when: nxs_create_apt_proxy_repos | length > 0
+      tags:
+        - apt
+        - apt-proxy
+
+    - name: Update configured APT Hosted repositories using Nexus API
+      ansible.builtin.include_tasks: repositories-api.yml
+      vars:
+        repos: "{{ item | default([]) }}"
+        format: apt
+        type: hosted
+        method: PUT
+      with_items:
+        - "{{ nxs_update_apt_hosted_repos | default([]) }}"
+      when: nxs_update_apt_hosted_repos | length > 0
+      tags:
+        - apt
+        - apt-hosted
+
+    - name: Update configured APT Proxy repositories using Nexus API
+      ansible.builtin.include_tasks: repositories-api.yml
+      vars:
+        repos: "{{ item | default([]) }}"
+        format: apt
+        type: proxy
+        method: PUT
+      with_items:
+        - "{{ nxs_update_apt_proxy_repos | default([]) }}"
+      when: nxs_update_apt_proxy_repos | length > 0
+      tags:
+        - apt
+        - apt-proxy
+
+    - name: Delete APT Hosted repositories using Nexus API
+      ansible.builtin.include_tasks: repositories-api.yml
+      vars:
+        repos: "{{ nxs_delete_apt_hosted_repos | default([]) }}"
+        format: apt
+        type: hosted
+        method: DELETE
+      with_items:
+        - "{{ nxs_delete_apt_hosted_repos | default([]) }}"
+      when: nxs_delete_apt_hosted_repos | length > 0
+      tags:
+        - apt
+        - apt-hosted
+
+    - name: Delete APT Proxy repositories using Nexus API
+      ansible.builtin.include_tasks: repositories-api.yml
+      vars:
+        repos: "{{ nxs_delete_apt_proxy_repos | default([]) }}"
+        format: apt
+        type: proxy
+        method: DELETE
+      with_items:
+        - "{{ nxs_delete_apt_proxy_repos | default([]) }}"
+      when: nxs_delete_apt_proxy_repos | length > 0
+      tags:
+        - apt
+        - apt-proxy
+  when: not nexus_config_dry_run
   tags:
     - apt
     - apt-hosted
-
-- name: Create configured APT Proxy repositories using Nexus API
-  ansible.builtin.include_tasks: repositories-api.yml
-  vars:
-    repos: "{{ item | default([]) }}"
-    format: apt
-    type: proxy
-    method: POST
-  with_items:
-    - "{{ nxs_create_apt_proxy_repos | default([]) }}"
-  when: nxs_create_apt_proxy_repos | length > 0
-  tags:
-    - apt
-    - apt-proxy
-
-- name: Update configured APT Hosted repositories using Nexus API
-  ansible.builtin.include_tasks: repositories-api.yml
-  vars:
-    repos: "{{ item | default([]) }}"
-    format: apt
-    type: hosted
-    method: PUT
-  with_items:
-    - "{{ nxs_update_apt_hosted_repos | default([]) }}"
-  when: nxs_update_apt_hosted_repos | length > 0
-  tags:
-    - apt
-    - apt-hosted
-
-- name: Update configured APT Proxy repositories using Nexus API
-  ansible.builtin.include_tasks: repositories-api.yml
-  vars:
-    repos: "{{ item | default([]) }}"
-    format: apt
-    type: proxy
-    method: PUT
-  with_items:
-    - "{{ nxs_update_apt_proxy_repos | default([]) }}"
-  when: nxs_update_apt_proxy_repos | length > 0
-  tags:
-    - apt
-    - apt-proxy
-
-- name: Delete APT Hosted repositories using Nexus API
-  ansible.builtin.include_tasks: repositories-api.yml
-  vars:
-    repos: "{{ nxs_delete_apt_hosted_repos | default([]) }}"
-    format: apt
-    type: hosted
-    method: DELETE
-  with_items:
-    - "{{ nxs_delete_apt_hosted_repos | default([]) }}"
-  when: nxs_delete_apt_hosted_repos | length > 0
-  tags:
-    - apt
-    - apt-hosted
-
-- name: Delete APT Proxy repositories using Nexus API
-  ansible.builtin.include_tasks: repositories-api.yml
-  vars:
-    repos: "{{ nxs_delete_apt_proxy_repos | default([]) }}"
-    format: apt
-    type: proxy
-    method: DELETE
-  with_items:
-    - "{{ nxs_delete_apt_proxy_repos | default([]) }}"
-  when: nxs_delete_apt_proxy_repos | length > 0
-  tags:
-    - apt
     - apt-proxy

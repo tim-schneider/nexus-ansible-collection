@@ -116,126 +116,139 @@
 
 - name: Show nxs_create_conan_hosted_repos
   ansible.builtin.debug:
-    var: nxs_create_conan_hosted_repos | length
+    var: nxs_create_conan_hosted_repos
+  when: nexus_config_dry_run
   tags:
     - conan
     - conan-hosted
 
 - name: Show nxs_create_conan_proxy_repos
   ansible.builtin.debug:
-    var: nxs_create_conan_proxy_repos | length
+    var: nxs_create_conan_proxy_repos
+  when: nexus_config_dry_run
   tags:
     - conan
     - conan-proxy
 
 - name: Show nxs_update_conan_hosted_repos
   ansible.builtin.debug:
-    var: nxs_update_conan_hosted_repos | length
+    var: nxs_update_conan_hosted_repos
+  when: nexus_config_dry_run
   tags:
     - conan
     - conan-hosted
 
 - name: Show nxs_update_conan_proxy_repos
   ansible.builtin.debug:
-    var: nxs_update_conan_proxy_repos | length
+    var: nxs_update_conan_proxy_repos
+  when: nexus_config_dry_run
   tags:
     - conan
     - conan-proxy
 
 - name: Show nxs_delete_conan_hosted_repos
   ansible.builtin.debug:
-    var: nxs_delete_conan_hosted_repos | length
+    var: nxs_delete_conan_hosted_repos
+  when: nexus_config_dry_run
   tags:
     - conan
     - conan-hosted
 
 - name: Show nxs_delete_conan_proxy_repos
   ansible.builtin.debug:
-    var: nxs_delete_conan_proxy_repos | length
+    var: nxs_delete_conan_proxy_repos
+  when: nexus_config_dry_run
   tags:
     - conan
     - conan-proxy
 
-- name: Create configured conan Hosted repositories using Nexus API
-  ansible.builtin.include_tasks: repositories-api.yml
-  vars:
-    repos: "{{ item | default([]) }}"
-    format: conan
-    type: hosted
-    method: POST
-  with_items:
-    - "{{ nxs_create_conan_hosted_repos | default([]) }}"
-  when: nxs_create_conan_hosted_repos | length > 0
+- name: Apply Conan repository changes
+  block:
+    - name: Create configured conan Hosted repositories using Nexus API
+      ansible.builtin.include_tasks: repositories-api.yml
+      vars:
+        repos: "{{ item | default([]) }}"
+        format: conan
+        type: hosted
+        method: POST
+      with_items:
+        - "{{ nxs_create_conan_hosted_repos | default([]) }}"
+      when: nxs_create_conan_hosted_repos | length > 0
+      tags:
+        - conan
+        - conan-hosted
+
+    - name: Create configured conan Proxy repositories using Nexus API
+      ansible.builtin.include_tasks: repositories-api.yml
+      vars:
+        repos: "{{ item | default([]) }}"
+        format: conan
+        type: proxy
+        method: POST
+      with_items:
+        - "{{ nxs_create_conan_proxy_repos | default([]) }}"
+      when: nxs_create_conan_proxy_repos | length > 0
+      tags:
+        - conan
+        - conan-proxy
+
+    - name: Update configured conan Hosted repositories using Nexus API
+      ansible.builtin.include_tasks: repositories-api.yml
+      vars:
+        repos: "{{ item | default([]) }}"
+        format: conan
+        type: hosted
+        method: PUT
+      with_items:
+        - "{{ nxs_update_conan_hosted_repos | default([]) }}"
+      when: nxs_update_conan_hosted_repos | length > 0
+      tags:
+        - conan
+        - conan-hosted
+
+    - name: Update configured conan Proxy repositories using Nexus API
+      ansible.builtin.include_tasks: repositories-api.yml
+      vars:
+        repos: "{{ item | default([]) }}"
+        format: conan
+        type: proxy
+        method: PUT
+      with_items:
+        - "{{ nxs_update_conan_proxy_repos | default([]) }}"
+      when: nxs_update_conan_proxy_repos | length > 0
+      tags:
+        - conan
+        - conan-proxy
+
+    - name: Delete conan Hosted repositories using Nexus API
+      ansible.builtin.include_tasks: repositories-api.yml
+      vars:
+        repos: "{{ nxs_delete_conan_hosted_repos | default([]) }}"
+        format: conan
+        type: hosted
+        method: DELETE
+      with_items:
+        - "{{ nxs_delete_conan_hosted_repos | default([]) }}"
+      when: nxs_delete_conan_hosted_repos | length > 0
+      tags:
+        - conan
+        - conan-hosted
+
+    - name: Delete conan Proxy repositories using Nexus API
+      ansible.builtin.include_tasks: repositories-api.yml
+      vars:
+        repos: "{{ nxs_delete_conan_proxy_repos | default([]) }}"
+        format: conan
+        type: proxy
+        method: DELETE
+      with_items:
+        - "{{ nxs_delete_conan_proxy_repos | default([]) }}"
+      when: nxs_delete_conan_proxy_repos | length > 0
+      tags:
+        - conan
+        - conan-proxy
+  when: not nexus_config_dry_run
   tags:
     - conan
     - conan-hosted
-
-- name: Create configured conan Proxy repositories using Nexus API
-  ansible.builtin.include_tasks: repositories-api.yml
-  vars:
-    repos: "{{ item | default([]) }}"
-    format: conan
-    type: proxy
-    method: POST
-  with_items:
-    - "{{ nxs_create_conan_proxy_repos | default([]) }}"
-  when: nxs_create_conan_proxy_repos | length > 0
-  tags:
-    - conan
-    - conan-proxy
-
-- name: Update configured conan Hosted repositories using Nexus API
-  ansible.builtin.include_tasks: repositories-api.yml
-  vars:
-    repos: "{{ item | default([]) }}"
-    format: conan
-    type: hosted
-    method: PUT
-  with_items:
-    - "{{ nxs_update_conan_hosted_repos | default([]) }}"
-  when: nxs_update_conan_hosted_repos | length > 0
-  tags:
-    - conan
-    - conan-hosted
-
-- name: Update configured conan Proxy repositories using Nexus API
-  ansible.builtin.include_tasks: repositories-api.yml
-  vars:
-    repos: "{{ item | default([]) }}"
-    format: conan
-    type: proxy
-    method: PUT
-  with_items:
-    - "{{ nxs_update_conan_proxy_repos | default([]) }}"
-  when: nxs_update_conan_proxy_repos | length > 0
-  tags:
-    - conan
-    - conan-proxy
-
-- name: Delete conan Hosted repositories using Nexus API
-  ansible.builtin.include_tasks: repositories-api.yml
-  vars:
-    repos: "{{ nxs_delete_conan_hosted_repos | default([]) }}"
-    format: conan
-    type: hosted
-    method: DELETE
-  with_items:
-    - "{{ nxs_delete_conan_hosted_repos | default([]) }}"
-  when: nxs_delete_conan_hosted_repos | length > 0
-  tags:
-    - conan
-    - conan-hosted
-
-- name: Delete conan Proxy repositories using Nexus API
-  ansible.builtin.include_tasks: repositories-api.yml
-  vars:
-    repos: "{{ nxs_delete_conan_proxy_repos | default([]) }}"
-    format: conan
-    type: proxy
-    method: DELETE
-  with_items:
-    - "{{ nxs_delete_conan_proxy_repos | default([]) }}"
-  when: nxs_delete_conan_proxy_repos | length > 0
-  tags:
-    - conan
     - conan-proxy

@@ -150,177 +150,193 @@
 
 - name: Show nxs_create_raw_hosted_repos
   ansible.builtin.debug:
-    var: nxs_create_raw_hosted_repos | length
+    var: nxs_create_raw_hosted_repos
+  when: nexus_config_dry_run
   tags:
     - raw
     - raw-hosted
 
 - name: Show nxs_update_raw_hosted_repos
   ansible.builtin.debug:
-    var: nxs_update_raw_hosted_repos | length
+    var: nxs_update_raw_hosted_repos
+  when: nexus_config_dry_run
   tags:
     - raw
     - raw-hosted
 
 - name: Show nxs_delete_raw_hosted_repos
   ansible.builtin.debug:
-    var: nxs_delete_raw_hosted_repos | length
+    var: nxs_delete_raw_hosted_repos
+  when: nexus_config_dry_run
   tags:
     - raw
     - raw-hosted
 
 - name: Show nxs_create_raw_proxy_repos
   ansible.builtin.debug:
-    var: nxs_create_raw_proxy_repos | length
+    var: nxs_create_raw_proxy_repos
+  when: nexus_config_dry_run
   tags:
     - raw
     - raw-proxy
 
 - name: Show nxs_update_raw_proxy_repos
   ansible.builtin.debug:
-    var: nxs_update_raw_proxy_repos | length
+    var: nxs_update_raw_proxy_repos
+  when: nexus_config_dry_run
   tags:
     - raw
     - raw-proxy
 
 - name: Show nxs_delete_raw_proxy_repos
   ansible.builtin.debug:
-    var: nxs_delete_raw_proxy_repos | length
+    var: nxs_delete_raw_proxy_repos
+  when: nexus_config_dry_run
   tags:
     - raw
     - raw-proxy
 
 - name: Show nxs_create_raw_group_repos
   ansible.builtin.debug:
-    var: nxs_create_raw_group_repos | length
+    var: nxs_create_raw_group_repos
+  when: nexus_config_dry_run
   tags: raw
 
 - name: Show nxs_update_raw_group_repos
   ansible.builtin.debug:
-    var: nxs_update_raw_group_repos | length
+    var: nxs_update_raw_group_repos
+  when: nexus_config_dry_run
   tags: raw
 
 - name: Show nxs_delete_raw_group_repos
   ansible.builtin.debug:
-    var: nxs_delete_raw_group_repos | length
+    var: nxs_delete_raw_group_repos
+  when: nexus_config_dry_run
   tags: raw
 
-- name: Create configured raw Hosted repositories using Nexus API
-  ansible.builtin.include_tasks: repositories-api.yml
-  vars:
-    repos: "{{ item | default([]) }}"
-    format: raw
-    type: hosted
-    method: POST
-  with_items:
-    - "{{ nxs_create_raw_hosted_repos | default([]) }}"
-  when: nxs_create_raw_hosted_repos | length > 0
+- name: Apply Raw repository changes
+  block:
+    - name: Create configured raw Hosted repositories using Nexus API
+      ansible.builtin.include_tasks: repositories-api.yml
+      vars:
+        repos: "{{ item | default([]) }}"
+        format: raw
+        type: hosted
+        method: POST
+      with_items:
+        - "{{ nxs_create_raw_hosted_repos | default([]) }}"
+      when: nxs_create_raw_hosted_repos | length > 0
+      tags:
+        - raw
+        - raw-hosted
+
+    - name: Create configured raw Proxy repositories using Nexus API
+      ansible.builtin.include_tasks: repositories-api.yml
+      vars:
+        repos: "{{ item | default([]) }}"
+        format: raw
+        type: proxy
+        method: POST
+      with_items:
+        - "{{ nxs_create_raw_proxy_repos | default([]) }}"
+      when: nxs_create_raw_proxy_repos | length > 0
+      tags:
+        - raw
+        - raw-proxy
+
+    - name: Create configured raw Group repositories using Nexus API
+      ansible.builtin.include_tasks: repositories-api.yml
+      vars:
+        repos: "{{ item | default([]) }}"
+        format: raw
+        type: group
+        method: POST
+      with_items:
+        - "{{ nxs_create_raw_group_repos | default([]) }}"
+      when: nxs_create_raw_group_repos | length > 0
+      tags: raw
+
+    - name: Update configured raw Hosted repositories using Nexus API
+      ansible.builtin.include_tasks: repositories-api.yml
+      vars:
+        repos: "{{ item | default([]) }}"
+        format: raw
+        type: hosted
+        method: PUT
+      with_items:
+        - "{{ nxs_update_raw_hosted_repos | default([]) }}"
+      when: nxs_update_raw_hosted_repos | length > 0
+      tags:
+        - raw
+        - raw-hosted
+
+    - name: Update configured raw Proxy repositories using Nexus API
+      ansible.builtin.include_tasks: repositories-api.yml
+      vars:
+        repos: "{{ item | default([]) }}"
+        format: raw
+        type: proxy
+        method: PUT
+      with_items:
+        - "{{ nxs_update_raw_proxy_repos | default([]) }}"
+      when: nxs_update_raw_proxy_repos | length > 0
+      tags:
+        - raw
+        - raw-proxy
+
+    - name: Update configured raw Group repositories using Nexus API
+      ansible.builtin.include_tasks: repositories-api.yml
+      vars:
+        repos: "{{ item | default([]) }}"
+        format: raw
+        type: group
+        method: PUT
+      with_items:
+        - "{{ nxs_update_raw_group_repos | default([]) }}"
+      when: nxs_update_raw_group_repos | length > 0
+      tags: raw
+
+    - name: Delete raw Hosted repositories using Nexus API
+      ansible.builtin.include_tasks: repositories-api.yml
+      vars:
+        repos: "{{ nxs_delete_raw_hosted_repos | default([]) }}"
+        format: raw
+        type: hosted
+        method: DELETE
+      with_items:
+        - "{{ nxs_delete_raw_hosted_repos | default([]) }}"
+      when: nxs_delete_raw_hosted_repos | length > 0
+      tags:
+        - raw
+        - raw-hosted
+
+    - name: Delete raw Proxy repositories using Nexus API
+      ansible.builtin.include_tasks: repositories-api.yml
+      vars:
+        repos: "{{ nxs_delete_raw_proxy_repos | default([]) }}"
+        format: raw
+        type: proxy
+        method: DELETE
+      with_items:
+        - "{{ nxs_delete_raw_proxy_repos | default([]) }}"
+      when: nxs_delete_raw_proxy_repos | length > 0
+      tags:
+        - raw
+        - raw-proxy
+
+    - name: Delete raw Group repositories using Nexus API
+      ansible.builtin.include_tasks: repositories-api.yml
+      vars:
+        repos: "{{ nxs_delete_raw_group_repos | default([]) }}"
+        format: raw
+        type: group
+        method: DELETE
+      with_items:
+        - "{{ nxs_delete_raw_group_repos | default([]) }}"
+      when: nxs_delete_raw_group_repos | length > 0
+      tags: raw
+  when: not nexus_config_dry_run | bool
   tags:
     - raw
     - raw-hosted
-
-- name: Create configured raw Proxy repositories using Nexus API
-  ansible.builtin.include_tasks: repositories-api.yml
-  vars:
-    repos: "{{ item | default([]) }}"
-    format: raw
-    type: proxy
-    method: POST
-  with_items:
-    - "{{ nxs_create_raw_proxy_repos | default([]) }}"
-  when: nxs_create_raw_proxy_repos | length > 0
-  tags:
-    - raw
     - raw-proxy
-
-- name: Create configured raw Group repositories using Nexus API
-  ansible.builtin.include_tasks: repositories-api.yml
-  vars:
-    repos: "{{ item | default([]) }}"
-    format: raw
-    type: group
-    method: POST
-  with_items:
-    - "{{ nxs_create_raw_group_repos | default([]) }}"
-  when: nxs_create_raw_group_repos | length > 0
-  tags: raw
-
-- name: Update configured raw Hosted repositories using Nexus API
-  ansible.builtin.include_tasks: repositories-api.yml
-  vars:
-    repos: "{{ item | default([]) }}"
-    format: raw
-    type: hosted
-    method: PUT
-  with_items:
-    - "{{ nxs_update_raw_hosted_repos | default([]) }}"
-  when: nxs_update_raw_hosted_repos | length > 0
-  tags:
-    - raw
-    - raw-hosted
-
-- name: Update configured raw Proxy repositories using Nexus API
-  ansible.builtin.include_tasks: repositories-api.yml
-  vars:
-    repos: "{{ item | default([]) }}"
-    format: raw
-    type: proxy
-    method: PUT
-  with_items:
-    - "{{ nxs_update_raw_proxy_repos | default([]) }}"
-  when: nxs_update_raw_proxy_repos | length > 0
-  tags:
-    - raw
-    - raw-proxy
-
-- name: Update configured raw Group repositories using Nexus API
-  ansible.builtin.include_tasks: repositories-api.yml
-  vars:
-    repos: "{{ item | default([]) }}"
-    format: raw
-    type: group
-    method: PUT
-  with_items:
-    - "{{ nxs_update_raw_group_repos | default([]) }}"
-  when: nxs_update_raw_group_repos | length > 0
-  tags: raw
-
-- name: Delete raw Hosted repositories using Nexus API
-  ansible.builtin.include_tasks: repositories-api.yml
-  vars:
-    repos: "{{ nxs_delete_raw_hosted_repos | default([]) }}"
-    format: raw
-    type: hosted
-    method: DELETE
-  with_items:
-    - "{{ nxs_delete_raw_hosted_repos | default([]) }}"
-  when: nxs_delete_raw_hosted_repos | length > 0
-  tags:
-    - raw
-    - raw-hosted
-
-- name: Delete raw Proxy repositories using Nexus API
-  ansible.builtin.include_tasks: repositories-api.yml
-  vars:
-    repos: "{{ nxs_delete_raw_proxy_repos | default([]) }}"
-    format: raw
-    type: proxy
-    method: DELETE
-  with_items:
-    - "{{ nxs_delete_raw_proxy_repos | default([]) }}"
-  when: nxs_delete_raw_proxy_repos | length > 0
-  tags:
-    - raw
-    - raw-proxy
-
-- name: Delete raw Group repositories using Nexus API
-  ansible.builtin.include_tasks: repositories-api.yml
-  vars:
-    repos: "{{ nxs_delete_raw_group_repos | default([]) }}"
-    format: raw
-    type: group
-    method: DELETE
-  with_items:
-    - "{{ nxs_delete_raw_group_repos | default([]) }}"
-  when: nxs_delete_raw_group_repos | length > 0
-  tags: raw

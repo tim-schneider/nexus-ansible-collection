@@ -80,63 +80,72 @@
 
 - name: Show nxs_create_conda_proxy_repos
   ansible.builtin.debug:
-    var: nxs_create_conda_proxy_repos | length
+    var: nxs_create_conda_proxy_repos
+  when: nexus_config_dry_run
   tags:
     - conda
     - conda-proxy
 
 - name: Show nxs_update_conda_proxy_repos
   ansible.builtin.debug:
-    var: nxs_update_conda_proxy_repos | length
+    var: nxs_update_conda_proxy_repos
+  when: nexus_config_dry_run
   tags:
     - conda
     - conda-proxy
 
 - name: Show nxs_delete_conda_proxy_repos
   ansible.builtin.debug:
-    var: nxs_delete_conda_proxy_repos | length
+    var: nxs_delete_conda_proxy_repos
+  when: nexus_config_dry_run
   tags:
     - conda
     - conda-proxy
 
-- name: Create configured Conda Proxy repositories using Nexus API
-  ansible.builtin.include_tasks: repositories-api.yml
-  vars:
-    repos: "{{ item | default([]) }}"
-    format: conda
-    type: proxy
-    method: POST
-  with_items:
-    - "{{ nxs_create_conda_proxy_repos | default([]) }}"
-  when: nxs_create_conda_proxy_repos | length > 0
-  tags:
-    - conda
-    - conda-proxy
+- name: Apply Conda repository changes
+  block:
+    - name: Create configured Conda Proxy repositories using Nexus API
+      ansible.builtin.include_tasks: repositories-api.yml
+      vars:
+        repos: "{{ item | default([]) }}"
+        format: conda
+        type: proxy
+        method: POST
+      with_items:
+        - "{{ nxs_create_conda_proxy_repos | default([]) }}"
+      when: nxs_create_conda_proxy_repos | length > 0
+      tags:
+        - conda
+        - conda-proxy
 
-- name: Update configured Conda Proxy repositories using Nexus API
-  ansible.builtin.include_tasks: repositories-api.yml
-  vars:
-    repos: "{{ item | default([]) }}"
-    format: conda
-    type: proxy
-    method: PUT
-  with_items:
-    - "{{ nxs_update_conda_proxy_repos | default([]) }}"
-  when: nxs_update_conda_proxy_repos | length > 0
-  tags:
-    - conda
-    - conda-proxy
+    - name: Update configured Conda Proxy repositories using Nexus API
+      ansible.builtin.include_tasks: repositories-api.yml
+      vars:
+        repos: "{{ item | default([]) }}"
+        format: conda
+        type: proxy
+        method: PUT
+      with_items:
+        - "{{ nxs_update_conda_proxy_repos | default([]) }}"
+      when: nxs_update_conda_proxy_repos | length > 0
+      tags:
+        - conda
+        - conda-proxy
 
-- name: Delete Conda Proxy repositories using Nexus API
-  ansible.builtin.include_tasks: repositories-api.yml
-  vars:
-    repos: "{{ nxs_delete_conda_proxy_repos | default([]) }}"
-    format: conda
-    type: proxy
-    method: DELETE
-  with_items:
-    - "{{ nxs_delete_conda_proxy_repos | default([]) }}"
-  when: nxs_delete_conda_proxy_repos | length > 0
+    - name: Delete Conda Proxy repositories using Nexus API
+      ansible.builtin.include_tasks: repositories-api.yml
+      vars:
+        repos: "{{ nxs_delete_conda_proxy_repos | default([]) }}"
+        format: conda
+        type: proxy
+        method: DELETE
+      with_items:
+        - "{{ nxs_delete_conda_proxy_repos | default([]) }}"
+      when: nxs_delete_conda_proxy_repos | length > 0
+      tags:
+        - conda
+        - conda-proxy
+  when: not nexus_config_dry_run
   tags:
     - conda
     - conda-proxy

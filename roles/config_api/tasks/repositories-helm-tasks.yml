@@ -116,126 +116,139 @@
 
 - name: Show nxs_create_helm_hosted_repos
   ansible.builtin.debug:
-    var: nxs_create_helm_hosted_repos | length
+    var: nxs_create_helm_hosted_repos
+  when: nexus_config_dry_run
   tags:
     - helm
     - helm-hosted
 
 - name: Show nxs_update_helm_hosted_repos
   ansible.builtin.debug:
-    var: nxs_update_helm_hosted_repos | length
+    var: nxs_update_helm_hosted_repos
+  when: nexus_config_dry_run
   tags:
     - helm
     - helm-hosted
 
 - name: Show nxs_delete_helm_hosted_repos
   ansible.builtin.debug:
-    var: nxs_delete_helm_hosted_repos | length
+    var: nxs_delete_helm_hosted_repos
+  when: nexus_config_dry_run
   tags:
     - helm
     - helm-hosted
 
 - name: Show nxs_create_helm_proxy_repos
   ansible.builtin.debug:
-    var: nxs_create_helm_proxy_repos | length
+    var: nxs_create_helm_proxy_repos
+  when: nexus_config_dry_run
   tags:
     - helm
     - helm-proxy
 
 - name: Show nxs_update_helm_proxy_repos
   ansible.builtin.debug:
-    var: nxs_update_helm_proxy_repos | length
+    var: nxs_update_helm_proxy_repos
+  when: nexus_config_dry_run
   tags:
     - helm
     - helm-proxy
 
 - name: Show nxs_delete_helm_proxy_repos
   ansible.builtin.debug:
-    var: nxs_delete_helm_proxy_repos | length
+    var: nxs_delete_helm_proxy_repos
+  when: nexus_config_dry_run
   tags:
     - helm
     - helm-proxy
 
-- name: Create configured Helm Hosted repositories using Nexus API
-  ansible.builtin.include_tasks: repositories-api.yml
-  vars:
-    repos: "{{ item | default([]) }}"
-    format: helm
-    type: hosted
-    method: POST
-  with_items:
-    - "{{ nxs_create_helm_hosted_repos | default([]) }}"
-  when: nxs_create_helm_hosted_repos | length > 0
+- name: Apply Helm repository changes
+  block:
+    - name: Create configured Helm Hosted repositories using Nexus API
+      ansible.builtin.include_tasks: repositories-api.yml
+      vars:
+        repos: "{{ item | default([]) }}"
+        format: helm
+        type: hosted
+        method: POST
+      with_items:
+        - "{{ nxs_create_helm_hosted_repos | default([]) }}"
+      when: nxs_create_helm_hosted_repos | length > 0
+      tags:
+        - helm
+        - helm-hosted
+
+    - name: Create configured Helm Proxy repositories using Nexus API
+      ansible.builtin.include_tasks: repositories-api.yml
+      vars:
+        repos: "{{ item | default([]) }}"
+        format: helm
+        type: proxy
+        method: POST
+      with_items:
+        - "{{ nxs_create_helm_proxy_repos | default([]) }}"
+      when: nxs_create_helm_proxy_repos | length > 0
+      tags:
+        - helm
+        - helm-proxy
+
+    - name: Update configured Helm Hosted repositories using Nexus API
+      ansible.builtin.include_tasks: repositories-api.yml
+      vars:
+        repos: "{{ item | default([]) }}"
+        format: helm
+        type: hosted
+        method: PUT
+      with_items:
+        - "{{ nxs_update_helm_hosted_repos | default([]) }}"
+      when: nxs_update_helm_hosted_repos | length > 0
+      tags:
+        - helm
+        - helm-hosted
+
+    - name: Update configured Helm Proxy repositories using Nexus API
+      ansible.builtin.include_tasks: repositories-api.yml
+      vars:
+        repos: "{{ item | default([]) }}"
+        format: helm
+        type: proxy
+        method: PUT
+      with_items:
+        - "{{ nxs_update_helm_proxy_repos | default([]) }}"
+      when: nxs_update_helm_proxy_repos | length > 0
+      tags:
+        - helm
+        - helm-proxy
+
+    - name: Delete Helm Hosted repositories using Nexus API
+      ansible.builtin.include_tasks: repositories-api.yml
+      vars:
+        repos: "{{ nxs_delete_helm_hosted_repos | default([]) }}"
+        format: helm
+        type: hosted
+        method: DELETE
+      with_items:
+        - "{{ nxs_delete_helm_hosted_repos | default([]) }}"
+      when: nxs_delete_helm_hosted_repos | length > 0
+      tags:
+        - helm
+        - helm-hosted
+
+    - name: Delete Helm Proxy repositories using Nexus API
+      ansible.builtin.include_tasks: repositories-api.yml
+      vars:
+        repos: "{{ nxs_delete_helm_proxy_repos | default([]) }}"
+        format: helm
+        type: proxy
+        method: DELETE
+      with_items:
+        - "{{ nxs_delete_helm_proxy_repos | default([]) }}"
+      when: nxs_delete_helm_proxy_repos | length > 0
+      tags:
+        - helm
+        - helm-proxy
+  when: not nexus_config_dry_run
   tags:
     - helm
     - helm-hosted
-
-- name: Create configured Helm Proxy repositories using Nexus API
-  ansible.builtin.include_tasks: repositories-api.yml
-  vars:
-    repos: "{{ item | default([]) }}"
-    format: helm
-    type: proxy
-    method: POST
-  with_items:
-    - "{{ nxs_create_helm_proxy_repos | default([]) }}"
-  when: nxs_create_helm_proxy_repos | length > 0
-  tags:
-    - helm
-    - helm-proxy
-
-- name: Update configured Helm Hosted repositories using Nexus API
-  ansible.builtin.include_tasks: repositories-api.yml
-  vars:
-    repos: "{{ item | default([]) }}"
-    format: helm
-    type: hosted
-    method: PUT
-  with_items:
-    - "{{ nxs_update_helm_hosted_repos | default([]) }}"
-  when: nxs_update_helm_hosted_repos | length > 0
-  tags:
-    - helm
-    - helm-hosted
-
-- name: Update configured Helm Proxy repositories using Nexus API
-  ansible.builtin.include_tasks: repositories-api.yml
-  vars:
-    repos: "{{ item | default([]) }}"
-    format: helm
-    type: proxy
-    method: PUT
-  with_items:
-    - "{{ nxs_update_helm_proxy_repos | default([]) }}"
-  when: nxs_update_helm_proxy_repos | length > 0
-  tags:
-    - helm
-    - helm-proxy
-
-- name: Delete Helm Hosted repositories using Nexus API
-  ansible.builtin.include_tasks: repositories-api.yml
-  vars:
-    repos: "{{ nxs_delete_helm_hosted_repos | default([]) }}"
-    format: helm
-    type: hosted
-    method: DELETE
-  with_items:
-    - "{{ nxs_delete_helm_hosted_repos | default([]) }}"
-  when: nxs_delete_helm_hosted_repos | length > 0
-  tags:
-    - helm
-    - helm-hosted
-
-- name: Delete Helm Proxy repositories using Nexus API
-  ansible.builtin.include_tasks: repositories-api.yml
-  vars:
-    repos: "{{ nxs_delete_helm_proxy_repos | default([]) }}"
-    format: helm
-    type: proxy
-    method: DELETE
-  with_items:
-    - "{{ nxs_delete_helm_proxy_repos | default([]) }}"
-  when: nxs_delete_helm_proxy_repos | length > 0
-  tags:
-    - helm
     - helm-proxy

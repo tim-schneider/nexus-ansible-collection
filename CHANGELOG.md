@@ -1,4 +1,16 @@
 # Changelog
+## [1.16.0] - 2024-12-10
+### Added
+- **config_api** Introduced new variable `nexus_config_dry_run` with a default of `false` to control if repos need to be created, updated or deleted. When setting the value to `true` it will only show what will be changed during a regular play.
+
+### Changed
+- **nexus_oss** Updated Groovy script to handle contentDisposition for both maven and raw formats (groups, hosted and proxy)
+- **config_api** Adjusted contentMaxAge for proxy to 1440 and added it to maven format with a default of -1.
+
+### Fixed
+- **config_api** Corrected blob store name for rubygems storage to use 'ruby' instead of 'rubygems'.
+
+
 ## [1.15.0] - 2024-12-10
 ### Added
 - **config_api** Added support for Composer proxy repositories
@@ -10,6 +22,10 @@
   However, we do recommend to use the `config_api` role when managing cleanup policies via the API.
 - **nexus_oss** Alle repo defaults have been set to `[]`. Meaning the role will not create repositories by default. Might cause unexpected behaviour for users who do not specifiy their default repositories in their group_vars, but it will not delete the repositories.
 - **nexus_oss** Updated Groovy script to handle contentDisposition for both maven and raw formats (groups, hosted and proxy)
+- **config_api** Adjusted contentMaxAge for proxy to 1440 and added it to maven format with a default of -1.
+
+### Fixed
+- **config_api** Corrected blob store name for rubygems storage to use 'ruby' instead of 'rubygems'.
 
 
 ## [1.14.3] - 2024-12-09

@@ -148,177 +148,193 @@
 
 - name: Show nxs_create_cargo_hosted_repos
   ansible.builtin.debug:
-    var: nxs_create_cargo_hosted_repos | length
+    var: nxs_create_cargo_hosted_repos
+  when: nexus_config_dry_run
   tags:
     - cargo
     - cargo-hosted
 
 - name: Show nxs_create_cargo_proxy_repos
   ansible.builtin.debug:
-    var: nxs_create_cargo_proxy_repos | length
+    var: nxs_create_cargo_proxy_repos
+  when: nexus_config_dry_run
   tags:
     - cargo
     - cargo-proxy
 
 - name: Show nxs_create_cargo_group_repos
   ansible.builtin.debug:
-    var: nxs_create_cargo_group_repos | length
+    var: nxs_create_cargo_group_repos
+  when: nexus_config_dry_run
   tags: cargo
 
 - name: Show nxs_update_cargo_hosted_repos
   ansible.builtin.debug:
-    var: nxs_update_cargo_hosted_repos | length
+    var: nxs_update_cargo_hosted_repos
+  when: nexus_config_dry_run
   tags:
     - cargo
     - cargo-hosted
 
 - name: Show nxs_update_cargo_proxy_repos
   ansible.builtin.debug:
-    var: nxs_update_cargo_proxy_repos | length
+    var: nxs_update_cargo_proxy_repos
+  when: nexus_config_dry_run
   tags:
     - cargo
     - cargo-proxy
 
 - name: Show nxs_update_cargo_group_repos
   ansible.builtin.debug:
-    var: nxs_update_cargo_group_repos | length
+    var: nxs_update_cargo_group_repos
+  when: nexus_config_dry_run
   tags: cargo
 
 - name: Show nxs_delete_cargo_hosted_repos
   ansible.builtin.debug:
-    var: nxs_delete_cargo_hosted_repos | length
+    var: nxs_delete_cargo_hosted_repos
+  when: nexus_config_dry_run
   tags:
     - cargo
     - cargo-hosted
 
 - name: Show nxs_delete_cargo_proxy_repos
   ansible.builtin.debug:
-    var: nxs_delete_cargo_proxy_repos | length
+    var: nxs_delete_cargo_proxy_repos
+  when: nexus_config_dry_run
   tags:
     - cargo
     - cargo-proxy
 
 - name: Show nxs_delete_cargo_group_repos
   ansible.builtin.debug:
-    var: nxs_delete_cargo_group_repos | length
+    var: nxs_delete_cargo_group_repos
+  when: nexus_config_dry_run
   tags: cargo
 
-- name: Create configured cargo Hosted repositories using Nexus API
-  ansible.builtin.include_tasks: repositories-api.yml
-  vars:
-    repos: "{{ item | default([]) }}"
-    format: cargo
-    type: hosted
-    method: POST
-  with_items:
-    - "{{ nxs_create_cargo_hosted_repos | default([]) }}"
-  when: nxs_create_cargo_hosted_repos | length > 0
+- name: Apply Cargo repository changes
+  block:
+    - name: Create configured cargo Hosted repositories using Nexus API
+      ansible.builtin.include_tasks: repositories-api.yml
+      vars:
+        repos: "{{ item | default([]) }}"
+        format: cargo
+        type: hosted
+        method: POST
+      with_items:
+        - "{{ nxs_create_cargo_hosted_repos | default([]) }}"
+      when: nxs_create_cargo_hosted_repos | length > 0
+      tags:
+        - cargo
+        - cargo-hosted
+
+    - name: Create configured cargo Proxy repositories using Nexus API
+      ansible.builtin.include_tasks: repositories-api.yml
+      vars:
+        repos: "{{ item | default([]) }}"
+        format: cargo
+        type: proxy
+        method: POST
+      with_items:
+        - "{{ nxs_create_cargo_proxy_repos | default([]) }}"
+      when: nxs_create_cargo_proxy_repos | length > 0
+      tags:
+        - cargo
+        - cargo-proxy
+
+    - name: Create configured cargo Group repositories using Nexus API
+      ansible.builtin.include_tasks: repositories-api.yml
+      vars:
+        repos: "{{ item | default([]) }}"
+        format: cargo
+        type: group
+        method: POST
+      with_items:
+        - "{{ nxs_create_cargo_group_repos | default([]) }}"
+      when: nxs_create_cargo_group_repos | length > 0
+      tags: cargo
+
+    - name: Update configured cargo Hosted repositories using Nexus API
+      ansible.builtin.include_tasks: repositories-api.yml
+      vars:
+        repos: "{{ item | default([]) }}"
+        format: cargo
+        type: hosted
+        method: PUT
+      with_items:
+        - "{{ nxs_update_cargo_hosted_repos | default([]) }}"
+      when: nxs_update_cargo_hosted_repos | length > 0
+      tags:
+        - cargo
+        - cargo-hosted
+
+    - name: Update configured cargo Proxy repositories using Nexus API
+      ansible.builtin.include_tasks: repositories-api.yml
+      vars:
+        repos: "{{ item | default([]) }}"
+        format: cargo
+        type: proxy
+        method: PUT
+      with_items:
+        - "{{ nxs_update_cargo_proxy_repos | default([]) }}"
+      when: nxs_update_cargo_proxy_repos | length > 0
+      tags:
+        - cargo
+        - cargo-proxy
+
+    - name: Update configured cargo Group repositories using Nexus API
+      ansible.builtin.include_tasks: repositories-api.yml
+      vars:
+        repos: "{{ item | default([]) }}"
+        format: cargo
+        type: group
+        method: PUT
+      with_items:
+        - "{{ nxs_update_cargo_group_repos | default([]) }}"
+      when: nxs_update_cargo_group_repos | length > 0
+      tags: cargo
+
+    - name: Delete cargo Hosted repositories using Nexus API
+      ansible.builtin.include_tasks: repositories-api.yml
+      vars:
+        repos: "{{ nxs_delete_cargo_hosted_repos | default([]) }}"
+        format: cargo
+        type: hosted
+        method: DELETE
+      with_items:
+        - "{{ nxs_delete_cargo_hosted_repos | default([]) }}"
+      when: nxs_delete_cargo_hosted_repos | length > 0
+      tags:
+        - cargo
+        - cargo-hosted
+
+    - name: Delete cargo Proxy repositories using Nexus API
+      ansible.builtin.include_tasks: repositories-api.yml
+      vars:
+        repos: "{{ nxs_delete_cargo_proxy_repos | default([]) }}"
+        format: cargo
+        type: proxy
+        method: DELETE
+      with_items:
+        - "{{ nxs_delete_cargo_proxy_repos | default([]) }}"
+      when: nxs_delete_cargo_proxy_repos | length > 0
+      tags:
+        - cargo
+        - cargo-proxy
+
+    - name: Delete cargo Group repositories using Nexus API
+      ansible.builtin.include_tasks: repositories-api.yml
+      vars:
+        repos: "{{ nxs_delete_cargo_group_repos | default([]) }}"
+        format: cargo
+        type: group
+        method: DELETE
+      with_items:
+        - "{{ nxs_delete_cargo_group_repos | default([]) }}"
+      when: nxs_delete_cargo_group_repos | length > 0
+      tags: cargo
+  when: not nexus_config_dry_run
   tags:
     - cargo
     - cargo-hosted
-
-- name: Create configured cargo Proxy repositories using Nexus API
-  ansible.builtin.include_tasks: repositories-api.yml
-  vars:
-    repos: "{{ item | default([]) }}"
-    format: cargo
-    type: proxy
-    method: POST
-  with_items:
-    - "{{ nxs_create_cargo_proxy_repos | default([]) }}"
-  when: nxs_create_cargo_proxy_repos | length > 0
-  tags:
-    - cargo
     - cargo-proxy
-
-- name: Create configured cargo Group repositories using Nexus API
-  ansible.builtin.include_tasks: repositories-api.yml
-  vars:
-    repos: "{{ item | default([]) }}"
-    format: cargo
-    type: group
-    method: POST
-  with_items:
-    - "{{ nxs_create_cargo_group_repos | default([]) }}"
-  when: nxs_create_cargo_group_repos | length > 0
-  tags: cargo
-
-- name: Update configured cargo Hosted repositories using Nexus API
-  ansible.builtin.include_tasks: repositories-api.yml
-  vars:
-    repos: "{{ item | default([]) }}"
-    format: cargo
-    type: hosted
-    method: PUT
-  with_items:
-    - "{{ nxs_update_cargo_hosted_repos | default([]) }}"
-  when: nxs_update_cargo_hosted_repos | length > 0
-  tags:
-    - cargo
-    - cargo-hosted
-
-- name: Update configured cargo Proxy repositories using Nexus API
-  ansible.builtin.include_tasks: repositories-api.yml
-  vars:
-    repos: "{{ item | default([]) }}"
-    format: cargo
-    type: proxy
-    method: PUT
-  with_items:
-    - "{{ nxs_update_cargo_proxy_repos | default([]) }}"
-  when: nxs_update_cargo_proxy_repos | length > 0
-  tags:
-    - cargo
-    - cargo-proxy
-
-- name: Update configured cargo Group repositories using Nexus API
-  ansible.builtin.include_tasks: repositories-api.yml
-  vars:
-    repos: "{{ item | default([]) }}"
-    format: cargo
-    type: group
-    method: PUT
-  with_items:
-    - "{{ nxs_update_cargo_group_repos | default([]) }}"
-  when: nxs_update_cargo_group_repos | length > 0
-  tags: cargo
-
-- name: Delete cargo Hosted repositories using Nexus API
-  ansible.builtin.include_tasks: repositories-api.yml
-  vars:
-    repos: "{{ nxs_delete_cargo_hosted_repos | default([]) }}"
-    format: cargo
-    type: hosted
-    method: DELETE
-  with_items:
-    - "{{ nxs_delete_cargo_hosted_repos | default([]) }}"
-  when: nxs_delete_cargo_hosted_repos | length > 0
-  tags:
-    - cargo
-    - cargo-hosted
-
-- name: Delete cargo Proxy repositories using Nexus API
-  ansible.builtin.include_tasks: repositories-api.yml
-  vars:
-    repos: "{{ nxs_delete_cargo_proxy_repos | default([]) }}"
-    format: cargo
-    type: proxy
-    method: DELETE
-  with_items:
-    - "{{ nxs_delete_cargo_proxy_repos | default([]) }}"
-  when: nxs_delete_cargo_proxy_repos | length > 0
-  tags:
-    - cargo
-    - cargo-proxy
-
-- name: Delete cargo Group repositories using Nexus API
-  ansible.builtin.include_tasks: repositories-api.yml
-  vars:
-    repos: "{{ nxs_delete_cargo_group_repos | default([]) }}"
-    format: cargo
-    type: group
-    method: DELETE
-  with_items:
-    - "{{ nxs_delete_cargo_group_repos | default([]) }}"
-  when: nxs_delete_cargo_group_repos | length > 0
-  tags: cargo

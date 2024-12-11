@@ -49,63 +49,72 @@
 
 - name: Show nxs_create_gitlfs_hosted_repos
   ansible.builtin.debug:
-    var: nxs_create_gitlfs_hosted_repos | length
+    var: nxs_create_gitlfs_hosted_repos
+  when: nexus_config_dry_run
   tags:
     - gitlfs
     - gitlfs-hosted
 
 - name: Show nxs_update_gitlfs_hosted_repos
   ansible.builtin.debug:
-    var: nxs_update_gitlfs_hosted_repos | length
+    var: nxs_update_gitlfs_hosted_repos
+  when: nexus_config_dry_run
   tags:
     - gitlfs
     - gitlfs-hosted
 
 - name: Show nxs_delete_gitlfs_hosted_repos
   ansible.builtin.debug:
-    var: nxs_delete_gitlfs_hosted_repos | length
+    var: nxs_delete_gitlfs_hosted_repos
+  when: nexus_config_dry_run
   tags:
     - gitlfs
     - gitlfs-hosted
 
-- name: Create configured GitLFS Hosted repositories using Nexus API
-  ansible.builtin.include_tasks: repositories-api.yml
-  vars:
-    repos: "{{ item | default([]) }}"
-    format: gitlfs
-    type: hosted
-    method: POST
-  with_items:
-    - "{{ nxs_create_gitlfs_hosted_repos | default([]) }}"
-  when: nxs_create_gitlfs_hosted_repos | length > 0
-  tags:
-    - gitlfs
-    - gitlfs-hosted
+- name: Apply GitLFS repository changes
+  block:
+    - name: Create configured GitLFS Hosted repositories using Nexus API
+      ansible.builtin.include_tasks: repositories-api.yml
+      vars:
+        repos: "{{ item | default([]) }}"
+        format: gitlfs
+        type: hosted
+        method: POST
+      with_items:
+        - "{{ nxs_create_gitlfs_hosted_repos | default([]) }}"
+      when: nxs_create_gitlfs_hosted_repos | length > 0
+      tags:
+        - gitlfs
+        - gitlfs-hosted
 
-- name: Update configured GitLFS Hosted repositories using Nexus API
-  ansible.builtin.include_tasks: repositories-api.yml
-  vars:
-    repos: "{{ item | default([]) }}"
-    format: gitlfs
-    type: hosted
-    method: PUT
-  with_items:
-    - "{{ nxs_update_gitlfs_hosted_repos | default([]) }}"
-  when: nxs_update_gitlfs_hosted_repos | length > 0
-  tags:
-    - gitlfs
-    - gitlfs-hosted
+    - name: Update configured GitLFS Hosted repositories using Nexus API
+      ansible.builtin.include_tasks: repositories-api.yml
+      vars:
+        repos: "{{ item | default([]) }}"
+        format: gitlfs
+        type: hosted
+        method: PUT
+      with_items:
+        - "{{ nxs_update_gitlfs_hosted_repos | default([]) }}"
+      when: nxs_update_gitlfs_hosted_repos | length > 0
+      tags:
+        - gitlfs
+        - gitlfs-hosted
 
-- name: Delete GitLFS Hosted repositories using Nexus API
-  ansible.builtin.include_tasks: repositories-api.yml
-  vars:
-    repos: "{{ nxs_delete_gitlfs_hosted_repos | default([]) }}"
-    format: gitlfs
-    type: hosted
-    method: DELETE
-  with_items:
-    - "{{ nxs_delete_gitlfs_hosted_repos | default([]) }}"
-  when: nxs_delete_gitlfs_hosted_repos | length > 0
+    - name: Delete GitLFS Hosted repositories using Nexus API
+      ansible.builtin.include_tasks: repositories-api.yml
+      vars:
+        repos: "{{ nxs_delete_gitlfs_hosted_repos | default([]) }}"
+        format: gitlfs
+        type: hosted
+        method: DELETE
+      with_items:
+        - "{{ nxs_delete_gitlfs_hosted_repos | default([]) }}"
+      when: nxs_delete_gitlfs_hosted_repos | length > 0
+      tags:
+        - gitlfs
+        - gitlfs-hosted
+  when: not nexus_config_dry_run
   tags:
     - gitlfs
     - gitlfs-hosted

@@ -148,177 +148,193 @@
 
 - name: Show nxs_create_r_hosted_repos
   ansible.builtin.debug:
-    var: nxs_create_r_hosted_repos | length
+    var: nxs_create_r_hosted_repos
+  when: nexus_config_dry_run
   tags:
     - r
     - r-hosted
 
 - name: Show nxs_update_r_hosted_repos
   ansible.builtin.debug:
-    var: nxs_update_r_hosted_repos | length
+    var: nxs_update_r_hosted_repos
+  when: nexus_config_dry_run
   tags:
     - r
     - r-hosted
 
 - name: Show nxs_delete_r_hosted_repos
   ansible.builtin.debug:
-    var: nxs_delete_r_hosted_repos | length
+    var: nxs_delete_r_hosted_repos
+  when: nexus_config_dry_run
   tags:
     - r
     - r-hosted
 
 - name: Show nxs_create_r_proxy_repos
   ansible.builtin.debug:
-    var: nxs_create_r_proxy_repos | length
+    var: nxs_create_r_proxy_repos
+  when: nexus_config_dry_run
   tags:
     - r
     - r-proxy
 
 - name: Show nxs_update_r_proxy_repos
   ansible.builtin.debug:
-    var: nxs_update_r_proxy_repos | length
+    var: nxs_update_r_proxy_repos
+  when: nexus_config_dry_run
   tags:
     - r
     - r-proxy
 
 - name: Show nxs_delete_r_proxy_repos
   ansible.builtin.debug:
-    var: nxs_delete_r_proxy_repos | length
+    var: nxs_delete_r_proxy_repos
+  when: nexus_config_dry_run
   tags:
     - r
     - r-proxy
 
 - name: Show nxs_create_r_group_repos
   ansible.builtin.debug:
-    var: nxs_create_r_group_repos | length
+    var: nxs_create_r_group_repos
+  when: nexus_config_dry_run
   tags: r
 
 - name: Show nxs_update_r_group_repos
   ansible.builtin.debug:
-    var: nxs_update_r_group_repos | length
+    var: nxs_update_r_group_repos
+  when: nexus_config_dry_run
   tags: r
 
 - name: Show nxs_delete_r_group_repos
   ansible.builtin.debug:
-    var: nxs_delete_r_group_repos | length
+    var: nxs_delete_r_group_repos
+  when: nexus_config_dry_run
   tags: r
 
-- name: Create configured R Hosted repositories using Nexus API
-  ansible.builtin.include_tasks: repositories-api.yml
-  vars:
-    repos: "{{ item | default([]) }}"
-    format: r
-    type: hosted
-    method: POST
-  with_items:
-    - "{{ nxs_create_r_hosted_repos | default([]) }}"
-  when: nxs_create_r_hosted_repos | length > 0
+- name: Apply R repository changes
+  block:
+    - name: Create configured R Hosted repositories using Nexus API
+      ansible.builtin.include_tasks: repositories-api.yml
+      vars:
+        repos: "{{ item | default([]) }}"
+        format: r
+        type: hosted
+        method: POST
+      with_items:
+        - "{{ nxs_create_r_hosted_repos | default([]) }}"
+      when: nxs_create_r_hosted_repos | length > 0
+      tags:
+        - r
+        - r-hosted
+
+    - name: Create configured R Proxy repositories using Nexus API
+      ansible.builtin.include_tasks: repositories-api.yml
+      vars:
+        repos: "{{ item | default([]) }}"
+        format: r
+        type: proxy
+        method: POST
+      with_items:
+        - "{{ nxs_create_r_proxy_repos | default([]) }}"
+      when: nxs_create_r_proxy_repos | length > 0
+      tags:
+        - r
+        - r-proxy
+
+    - name: Create configured R Group repositories using Nexus API
+      ansible.builtin.include_tasks: repositories-api.yml
+      vars:
+        repos: "{{ item | default([]) }}"
+        format: r
+        type: group
+        method: POST
+      with_items:
+        - "{{ nxs_create_r_group_repos | default([]) }}"
+      when: nxs_create_r_group_repos | length > 0
+      tags: r
+
+    - name: Update configured R Hosted repositories using Nexus API
+      ansible.builtin.include_tasks: repositories-api.yml
+      vars:
+        repos: "{{ item | default([]) }}"
+        format: r
+        type: hosted
+        method: PUT
+      with_items:
+        - "{{ nxs_update_r_hosted_repos | default([]) }}"
+      when: nxs_update_r_hosted_repos | length > 0
+      tags:
+        - r
+        - r-hosted
+
+    - name: Update configured R Proxy repositories using Nexus API
+      ansible.builtin.include_tasks: repositories-api.yml
+      vars:
+        repos: "{{ item | default([]) }}"
+        format: r
+        type: proxy
+        method: PUT
+      with_items:
+        - "{{ nxs_update_r_proxy_repos | default([]) }}"
+      when: nxs_update_r_proxy_repos | length > 0
+      tags:
+        - r
+        - r-proxy
+
+    - name: Update configured R Group repositories using Nexus API
+      ansible.builtin.include_tasks: repositories-api.yml
+      vars:
+        repos: "{{ item | default([]) }}"
+        format: r
+        type: group
+        method: PUT
+      with_items:
+        - "{{ nxs_update_r_group_repos | default([]) }}"
+      when: nxs_update_r_group_repos | length > 0
+      tags: r
+
+    - name: Delete R Hosted repositories using Nexus API
+      ansible.builtin.include_tasks: repositories-api.yml
+      vars:
+        repos: "{{ nxs_delete_r_hosted_repos | default([]) }}"
+        format: r
+        type: hosted
+        method: DELETE
+      with_items:
+        - "{{ nxs_delete_r_hosted_repos | default([]) }}"
+      when: nxs_delete_r_hosted_repos | length > 0
+      tags:
+        - r
+        - r-hosted
+
+    - name: Delete R Proxy repositories using Nexus API
+      ansible.builtin.include_tasks: repositories-api.yml
+      vars:
+        repos: "{{ nxs_delete_r_proxy_repos | default([]) }}"
+        format: r
+        type: proxy
+        method: DELETE
+      with_items:
+        - "{{ nxs_delete_r_proxy_repos | default([]) }}"
+      when: nxs_delete_r_proxy_repos | length > 0
+      tags:
+        - r
+        - r-proxy
+
+    - name: Delete R Group repositories using Nexus API
+      ansible.builtin.include_tasks: repositories-api.yml
+      vars:
+        repos: "{{ nxs_delete_r_group_repos | default([]) }}"
+        format: r
+        type: group
+        method: DELETE
+      with_items:
+        - "{{ nxs_delete_r_group_repos | default([]) }}"
+      when: nxs_delete_r_group_repos | length > 0
+      tags: r
+  when: not nexus_config_dry_run
   tags:
     - r
     - r-hosted
-
-- name: Create configured R Proxy repositories using Nexus API
-  ansible.builtin.include_tasks: repositories-api.yml
-  vars:
-    repos: "{{ item | default([]) }}"
-    format: r
-    type: proxy
-    method: POST
-  with_items:
-    - "{{ nxs_create_r_proxy_repos | default([]) }}"
-  when: nxs_create_r_proxy_repos | length > 0
-  tags:
-    - r
     - r-proxy
-
-- name: Create configured R Group repositories using Nexus API
-  ansible.builtin.include_tasks: repositories-api.yml
-  vars:
-    repos: "{{ item | default([]) }}"
-    format: r
-    type: group
-    method: POST
-  with_items:
-    - "{{ nxs_create_r_group_repos | default([]) }}"
-  when: nxs_create_r_group_repos | length > 0
-  tags: r
-
-- name: Update configured R Hosted repositories using Nexus API
-  ansible.builtin.include_tasks: repositories-api.yml
-  vars:
-    repos: "{{ item | default([]) }}"
-    format: r
-    type: hosted
-    method: PUT
-  with_items:
-    - "{{ nxs_update_r_hosted_repos | default([]) }}"
-  when: nxs_update_r_hosted_repos | length > 0
-  tags:
-    - r
-    - r-hosted
-
-- name: Update configured R Proxy repositories using Nexus API
-  ansible.builtin.include_tasks: repositories-api.yml
-  vars:
-    repos: "{{ item | default([]) }}"
-    format: r
-    type: proxy
-    method: PUT
-  with_items:
-    - "{{ nxs_update_r_proxy_repos | default([]) }}"
-  when: nxs_update_r_proxy_repos | length > 0
-  tags:
-    - r
-    - r-proxy
-
-- name: Update configured R Group repositories using Nexus API
-  ansible.builtin.include_tasks: repositories-api.yml
-  vars:
-    repos: "{{ item | default([]) }}"
-    format: r
-    type: group
-    method: PUT
-  with_items:
-    - "{{ nxs_update_r_group_repos | default([]) }}"
-  when: nxs_update_r_group_repos | length > 0
-  tags: r
-
-- name: Delete R Hosted repositories using Nexus API
-  ansible.builtin.include_tasks: repositories-api.yml
-  vars:
-    repos: "{{ nxs_delete_r_hosted_repos | default([]) }}"
-    format: r
-    type: hosted
-    method: DELETE
-  with_items:
-    - "{{ nxs_delete_r_hosted_repos | default([]) }}"
-  when: nxs_delete_r_hosted_repos | length > 0
-  tags:
-    - r
-    - r-hosted
-
-- name: Delete R Proxy repositories using Nexus API
-  ansible.builtin.include_tasks: repositories-api.yml
-  vars:
-    repos: "{{ nxs_delete_r_proxy_repos | default([]) }}"
-    format: r
-    type: proxy
-    method: DELETE
-  with_items:
-    - "{{ nxs_delete_r_proxy_repos | default([]) }}"
-  when: nxs_delete_r_proxy_repos | length > 0
-  tags:
-    - r
-    - r-proxy
-
-- name: Delete R Group repositories using Nexus API
-  ansible.builtin.include_tasks: repositories-api.yml
-  vars:
-    repos: "{{ nxs_delete_r_group_repos | default([]) }}"
-    format: r
-    type: group
-    method: DELETE
-  with_items:
-    - "{{ nxs_delete_r_group_repos | default([]) }}"
-  when: nxs_delete_r_group_repos | length > 0
-  tags: r

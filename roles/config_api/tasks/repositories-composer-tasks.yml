@@ -80,63 +80,72 @@
 
 - name: Show nxs_create_composer_proxy_repos
   ansible.builtin.debug:
-    var: nxs_create_composer_proxy_repos | length
+    var: nxs_create_composer_proxy_repos
+  when: nexus_config_dry_run
   tags:
     - composer
     - composer-proxy
 
 - name: Show nxs_update_composer_proxy_repos
   ansible.builtin.debug:
-    var: nxs_update_composer_proxy_repos | length
+    var: nxs_update_composer_proxy_repos
+  when: nexus_config_dry_run
   tags:
     - composer
     - composer-proxy
 
 - name: Show nxs_delete_composer_proxy_repos
   ansible.builtin.debug:
-    var: nxs_delete_composer_proxy_repos | length
+    var: nxs_delete_composer_proxy_repos
+  when: nexus_config_dry_run
   tags:
     - composer
     - composer-proxy
 
-- name: Create configured composer Proxy repositories using Nexus API
-  ansible.builtin.include_tasks: repositories-api.yml
-  vars:
-    repos: "{{ item | default([]) }}"
-    format: composer
-    type: proxy
-    method: POST
-  with_items:
-    - "{{ nxs_create_composer_proxy_repos | default([]) }}"
-  when: nxs_create_composer_proxy_repos | length > 0
-  tags:
-    - composer
-    - composer-proxy
+- name: Apply Composer repository changes
+  block:
+    - name: Create configured composer Proxy repositories using Nexus API
+      ansible.builtin.include_tasks: repositories-api.yml
+      vars:
+        repos: "{{ item | default([]) }}"
+        format: composer
+        type: proxy
+        method: POST
+      with_items:
+        - "{{ nxs_create_composer_proxy_repos | default([]) }}"
+      when: nxs_create_composer_proxy_repos | length > 0
+      tags:
+        - composer
+        - composer-proxy
 
-- name: Update configured composer Proxy repositories using Nexus API
-  ansible.builtin.include_tasks: repositories-api.yml
-  vars:
-    repos: "{{ item | default([]) }}"
-    format: composer
-    type: proxy
-    method: PUT
-  with_items:
-    - "{{ nxs_update_composer_proxy_repos | default([]) }}"
-  when: nxs_update_composer_proxy_repos | length > 0
-  tags:
-    - composer
-    - composer-proxy
+    - name: Update configured composer Proxy repositories using Nexus API
+      ansible.builtin.include_tasks: repositories-api.yml
+      vars:
+        repos: "{{ item | default([]) }}"
+        format: composer
+        type: proxy
+        method: PUT
+      with_items:
+        - "{{ nxs_update_composer_proxy_repos | default([]) }}"
+      when: nxs_update_composer_proxy_repos | length > 0
+      tags:
+        - composer
+        - composer-proxy
 
-- name: Delete composer Proxy repositories using Nexus API
-  ansible.builtin.include_tasks: repositories-api.yml
-  vars:
-    repos: "{{ nxs_delete_composer_proxy_repos | default([]) }}"
-    format: composer
-    type: proxy
-    method: DELETE
-  with_items:
-    - "{{ nxs_delete_composer_proxy_repos | default([]) }}"
-  when: nxs_delete_composer_proxy_repos | length > 0
+    - name: Delete composer Proxy repositories using Nexus API
+      ansible.builtin.include_tasks: repositories-api.yml
+      vars:
+        repos: "{{ nxs_delete_composer_proxy_repos | default([]) }}"
+        format: composer
+        type: proxy
+        method: DELETE
+      with_items:
+        - "{{ nxs_delete_composer_proxy_repos | default([]) }}"
+      when: nxs_delete_composer_proxy_repos | length > 0
+      tags:
+        - composer
+        - composer-proxy
+  when: not nexus_config_dry_run
   tags:
     - composer
     - composer-proxy

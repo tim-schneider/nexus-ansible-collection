@@ -171,6 +171,7 @@
   ansible.builtin.debug:
     var: nxs_create_docker_hosted_repos
   when: nexus_config_dry_run
+  changed_when: nxs_create_docker_hosted_repos | length > 0
   tags:
     - docker
     - docker-hosted
@@ -179,6 +180,7 @@
   ansible.builtin.debug:
     var: nxs_update_docker_hosted_repos
   when: nexus_config_dry_run
+  changed_when: nxs_update_docker_hosted_repos | length > 0
   tags:
     - docker
     - docker-hosted
@@ -187,6 +189,7 @@
   ansible.builtin.debug:
     var: nxs_delete_docker_hosted_repos
   when: nexus_config_dry_run
+  changed_when: nxs_delete_docker_hosted_repos | length > 0
   tags:
     - docker
     - docker-hosted
@@ -195,6 +198,7 @@
   ansible.builtin.debug:
     var: nxs_create_docker_proxy_repos
   when: nexus_config_dry_run
+  changed_when: nxs_create_docker_proxy_repos | length > 0
   tags:
     - docker
     - docker-proxy
@@ -203,6 +207,7 @@
   ansible.builtin.debug:
     var: nxs_update_docker_proxy_repos
   when: nexus_config_dry_run
+  changed_when: nxs_update_docker_proxy_repos | length > 0
   tags:
     - docker
     - docker-proxy
@@ -211,6 +216,7 @@
   ansible.builtin.debug:
     var: nxs_delete_docker_proxy_repos
   when: nexus_config_dry_run
+  changed_when: nxs_delete_docker_proxy_repos | length > 0
   tags:
     - docker
     - docker-proxy
@@ -219,18 +225,21 @@
   ansible.builtin.debug:
     var: nxs_create_docker_group_repos
   when: nexus_config_dry_run
+  changed_when: nxs_create_docker_group_repos | length > 0
   tags: docker
 
 - name: Show nxs_update_docker_group_repos
   ansible.builtin.debug:
     var: nxs_update_docker_group_repos
   when: nexus_config_dry_run
+  changed_when: nxs_update_docker_group_repos | length > 0
   tags: docker
 
 - name: Show nxs_delete_docker_group_repos
   ansible.builtin.debug:
     var: nxs_delete_docker_group_repos
   when: nexus_config_dry_run
+  changed_when: nxs_delete_docker_group_repos | length > 0
   tags: docker
 
 - name: Apply Docker repository changes

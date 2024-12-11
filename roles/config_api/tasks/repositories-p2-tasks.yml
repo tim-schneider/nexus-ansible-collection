@@ -80,63 +80,72 @@
 
 - name: Show nxs_create_p2_proxy_repos
   ansible.builtin.debug:
-    var: nxs_create_p2_proxy_repos | length
+    var: nxs_create_p2_proxy_repos
+  when: nexus_config_dry_run
   tags:
     - p2
     - p2-proxy
 
 - name: Show nxs_update_p2_proxy_repos
   ansible.builtin.debug:
-    var: nxs_update_p2_proxy_repos | length
+    var: nxs_update_p2_proxy_repos
+  when: nexus_config_dry_run
   tags:
     - p2
     - p2-proxy
 
 - name: Show nxs_delete_p2_proxy_repos
   ansible.builtin.debug:
-    var: nxs_delete_p2_proxy_repos | length
+    var: nxs_delete_p2_proxy_repos
+  when: nexus_config_dry_run
   tags:
     - p2
     - p2-proxy
 
-- name: Create configured p2 Proxy repositories using Nexus API
-  ansible.builtin.include_tasks: repositories-api.yml
-  vars:
-    repos: "{{ item | default([]) }}"
-    format: p2
-    type: proxy
-    method: POST
-  with_items:
-    - "{{ nxs_create_p2_proxy_repos | default([]) }}"
-  when: nxs_create_p2_proxy_repos | length > 0
-  tags:
-    - p2
-    - p2-proxy
+- name: Apply P2 repository changes
+  block:
+    - name: Create configured p2 Proxy repositories using Nexus API
+      ansible.builtin.include_tasks: repositories-api.yml
+      vars:
+        repos: "{{ item | default([]) }}"
+        format: p2
+        type: proxy
+        method: POST
+      with_items:
+        - "{{ nxs_create_p2_proxy_repos | default([]) }}"
+      when: nxs_create_p2_proxy_repos | length > 0
+      tags:
+        - p2
+        - p2-proxy
 
-- name: Update configured p2 Proxy repositories using Nexus API
-  ansible.builtin.include_tasks: repositories-api.yml
-  vars:
-    repos: "{{ item | default([]) }}"
-    format: p2
-    type: proxy
-    method: PUT
-  with_items:
-    - "{{ nxs_update_p2_proxy_repos | default([]) }}"
-  when: nxs_update_p2_proxy_repos | length > 0
-  tags:
-    - p2
-    - p2-proxy
+    - name: Update configured p2 Proxy repositories using Nexus API
+      ansible.builtin.include_tasks: repositories-api.yml
+      vars:
+        repos: "{{ item | default([]) }}"
+        format: p2
+        type: proxy
+        method: PUT
+      with_items:
+        - "{{ nxs_update_p2_proxy_repos | default([]) }}"
+      when: nxs_update_p2_proxy_repos | length > 0
+      tags:
+        - p2
+        - p2-proxy
 
-- name: Delete p2 Proxy repositories using Nexus API
-  ansible.builtin.include_tasks: repositories-api.yml
-  vars:
-    repos: "{{ nxs_delete_p2_proxy_repos | default([]) }}"
-    format: p2
-    type: proxy
-    method: DELETE
-  with_items:
-    - "{{ nxs_delete_p2_proxy_repos | default([]) }}"
-  when: nxs_delete_p2_proxy_repos | length > 0
+    - name: Delete p2 Proxy repositories using Nexus API
+      ansible.builtin.include_tasks: repositories-api.yml
+      vars:
+        repos: "{{ nxs_delete_p2_proxy_repos | default([]) }}"
+        format: p2
+        type: proxy
+        method: DELETE
+      with_items:
+        - "{{ nxs_delete_p2_proxy_repos | default([]) }}"
+      when: nxs_delete_p2_proxy_repos | length > 0
+      tags:
+        - p2
+        - p2-proxy
+  when: not nexus_config_dry_run
   tags:
     - p2
     - p2-proxy

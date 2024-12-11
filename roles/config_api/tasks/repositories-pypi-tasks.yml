@@ -147,177 +147,193 @@
 
 - name: Show nxs_create_pypi_hosted_repos
   ansible.builtin.debug:
-    var: nxs_create_pypi_hosted_repos | length
+    var: nxs_create_pypi_hosted_repos
+  when: nexus_config_dry_run
   tags:
     - pypi
     - pypi-hosted
 
 - name: Show nxs_update_pypi_hosted_repos
   ansible.builtin.debug:
-    var: nxs_update_pypi_hosted_repos | length
+    var: nxs_update_pypi_hosted_repos
+  when: nexus_config_dry_run
   tags:
     - pypi
     - pypi-hosted
 
 - name: Show nxs_delete_pypi_hosted_repos
   ansible.builtin.debug:
-    var: nxs_delete_pypi_hosted_repos | length
+    var: nxs_delete_pypi_hosted_repos
+  when: nexus_config_dry_run
   tags:
     - pypi
     - pypi-hosted
 
 - name: Show nxs_create_pypi_proxy_repos
   ansible.builtin.debug:
-    var: nxs_create_pypi_proxy_repos | length
+    var: nxs_create_pypi_proxy_repos
+  when: nexus_config_dry_run
   tags:
     - pypi
     - pypi-proxy
 
 - name: Show nxs_update_pypi_proxy_repos
   ansible.builtin.debug:
-    var: nxs_update_pypi_proxy_repos | length
+    var: nxs_update_pypi_proxy_repos
+  when: nexus_config_dry_run
   tags:
     - pypi
     - pypi-proxy
 
 - name: Show nxs_delete_pypi_proxy_repos
   ansible.builtin.debug:
-    var: nxs_delete_pypi_proxy_repos | length
+    var: nxs_delete_pypi_proxy_repos
+  when: nexus_config_dry_run
   tags:
     - pypi
     - pypi-proxy
 
 - name: Show nxs_create_pypi_group_repos
   ansible.builtin.debug:
-    var: nxs_create_pypi_group_repos | length
+    var: nxs_create_pypi_group_repos
+  when: nexus_config_dry_run
   tags: pypi
 
 - name: Show nxs_update_pypi_group_repos
   ansible.builtin.debug:
-    var: nxs_update_pypi_group_repos | length
+    var: nxs_update_pypi_group_repos
+  when: nexus_config_dry_run
   tags: pypi
 
 - name: Show nxs_delete_pypi_group_repos
   ansible.builtin.debug:
-    var: nxs_delete_pypi_group_repos | length
+    var: nxs_delete_pypi_group_repos
+  when: nexus_config_dry_run
   tags: pypi
 
-- name: Create configured PyPi Hosted repositories using Nexus API
-  ansible.builtin.include_tasks: repositories-api.yml
-  vars:
-    repos: "{{ item | default([]) }}"
-    format: pypi
-    type: hosted
-    method: POST
-  with_items:
-    - "{{ nxs_create_pypi_hosted_repos | default([]) }}"
-  when: nxs_create_pypi_hosted_repos | length > 0
+- name: Apply Pypi repository changes
+  block:
+    - name: Create configured PyPi Hosted repositories using Nexus API
+      ansible.builtin.include_tasks: repositories-api.yml
+      vars:
+        repos: "{{ item | default([]) }}"
+        format: pypi
+        type: hosted
+        method: POST
+      with_items:
+        - "{{ nxs_create_pypi_hosted_repos | default([]) }}"
+      when: nxs_create_pypi_hosted_repos | length > 0
+      tags:
+        - pypi
+        - pypi-hosted
+
+    - name: Create configured PyPi Proxy repositories using Nexus API
+      ansible.builtin.include_tasks: repositories-api.yml
+      vars:
+        repos: "{{ item | default([]) }}"
+        format: pypi
+        type: proxy
+        method: POST
+      with_items:
+        - "{{ nxs_create_pypi_proxy_repos | default([]) }}"
+      when: nxs_create_pypi_proxy_repos | length > 0
+      tags:
+        - pypi
+        - pypi-proxy
+
+    - name: Create configured PyPi Group repositories using Nexus API
+      ansible.builtin.include_tasks: repositories-api.yml
+      vars:
+        repos: "{{ item | default([]) }}"
+        format: pypi
+        type: group
+        method: POST
+      with_items:
+        - "{{ nxs_create_pypi_group_repos | default([]) }}"
+      when: nxs_create_pypi_group_repos | length > 0
+      tags: pypi
+
+    - name: Update configured PyPi Hosted repositories using Nexus API
+      ansible.builtin.include_tasks: repositories-api.yml
+      vars:
+        repos: "{{ item | default([]) }}"
+        format: pypi
+        type: hosted
+        method: PUT
+      with_items:
+        - "{{ nxs_update_pypi_hosted_repos | default([]) }}"
+      when: nxs_update_pypi_hosted_repos | length > 0
+      tags:
+        - pypi
+        - pypi-hosted
+
+    - name: Update configured PyPi Proxy repositories using Nexus API
+      ansible.builtin.include_tasks: repositories-api.yml
+      vars:
+        repos: "{{ item | default([]) }}"
+        format: pypi
+        type: proxy
+        method: PUT
+      with_items:
+        - "{{ nxs_update_pypi_proxy_repos | default([]) }}"
+      when: nxs_update_pypi_proxy_repos | length > 0
+      tags:
+        - pypi
+        - pypi-proxy
+
+    - name: Update configured PyPi Group repositories using Nexus API
+      ansible.builtin.include_tasks: repositories-api.yml
+      vars:
+        repos: "{{ item | default([]) }}"
+        format: pypi
+        type: group
+        method: PUT
+      with_items:
+        - "{{ nxs_update_pypi_group_repos | default([]) }}"
+      when: nxs_update_pypi_group_repos | length > 0
+      tags: pypi
+
+    - name: Delete PyPi Hosted repositories using Nexus API
+      ansible.builtin.include_tasks: repositories-api.yml
+      vars:
+        repos: "{{ nxs_delete_pypi_hosted_repos | default([]) }}"
+        format: pypi
+        type: hosted
+        method: DELETE
+      with_items:
+        - "{{ nxs_delete_pypi_hosted_repos | default([]) }}"
+      when: nxs_delete_pypi_hosted_repos | length > 0
+      tags:
+        - pypi
+        - pypi-hosted
+
+    - name: Delete PyPi Proxy repositories using Nexus API
+      ansible.builtin.include_tasks: repositories-api.yml
+      vars:
+        repos: "{{ nxs_delete_pypi_proxy_repos | default([]) }}"
+        format: pypi
+        type: proxy
+        method: DELETE
+      with_items:
+        - "{{ nxs_delete_pypi_proxy_repos | default([]) }}"
+      when: nxs_delete_pypi_proxy_repos | length > 0
+      tags:
+        - pypi
+        - pypi-proxy
+
+    - name: Delete PyPi Group repositories using Nexus API
+      ansible.builtin.include_tasks: repositories-api.yml
+      vars:
+        repos: "{{ nxs_delete_pypi_group_repos | default([]) }}"
+        format: pypi
+        type: group
+        method: DELETE
+      with_items:
+        - "{{ nxs_delete_pypi_group_repos | default([]) }}"
+      when: nxs_delete_pypi_group_repos | length > 0
+      tags: pypi
+  when: not nexus_config_dry_run
   tags:
     - pypi
     - pypi-hosted
-
-- name: Create configured PyPi Proxy repositories using Nexus API
-  ansible.builtin.include_tasks: repositories-api.yml
-  vars:
-    repos: "{{ item | default([]) }}"
-    format: pypi
-    type: proxy
-    method: POST
-  with_items:
-    - "{{ nxs_create_pypi_proxy_repos | default([]) }}"
-  when: nxs_create_pypi_proxy_repos | length > 0
-  tags:
-    - pypi
     - pypi-proxy
-
-- name: Create configured PyPi Group repositories using Nexus API
-  ansible.builtin.include_tasks: repositories-api.yml
-  vars:
-    repos: "{{ item | default([]) }}"
-    format: pypi
-    type: group
-    method: POST
-  with_items:
-    - "{{ nxs_create_pypi_group_repos | default([]) }}"
-  when: nxs_create_pypi_group_repos | length > 0
-  tags: pypi
-
-- name: Update configured PyPi Hosted repositories using Nexus API
-  ansible.builtin.include_tasks: repositories-api.yml
-  vars:
-    repos: "{{ item | default([]) }}"
-    format: pypi
-    type: hosted
-    method: PUT
-  with_items:
-    - "{{ nxs_update_pypi_hosted_repos | default([]) }}"
-  when: nxs_update_pypi_hosted_repos | length > 0
-  tags:
-    - pypi
-    - pypi-hosted
-
-- name: Update configured PyPi Proxy repositories using Nexus API
-  ansible.builtin.include_tasks: repositories-api.yml
-  vars:
-    repos: "{{ item | default([]) }}"
-    format: pypi
-    type: proxy
-    method: PUT
-  with_items:
-    - "{{ nxs_update_pypi_proxy_repos | default([]) }}"
-  when: nxs_update_pypi_proxy_repos | length > 0
-  tags:
-    - pypi
-    - pypi-proxy
-
-- name: Update configured PyPi Group repositories using Nexus API
-  ansible.builtin.include_tasks: repositories-api.yml
-  vars:
-    repos: "{{ item | default([]) }}"
-    format: pypi
-    type: group
-    method: PUT
-  with_items:
-    - "{{ nxs_update_pypi_group_repos | default([]) }}"
-  when: nxs_update_pypi_group_repos | length > 0
-  tags: pypi
-
-- name: Delete PyPi Hosted repositories using Nexus API
-  ansible.builtin.include_tasks: repositories-api.yml
-  vars:
-    repos: "{{ nxs_delete_pypi_hosted_repos | default([]) }}"
-    format: pypi
-    type: hosted
-    method: DELETE
-  with_items:
-    - "{{ nxs_delete_pypi_hosted_repos | default([]) }}"
-  when: nxs_delete_pypi_hosted_repos | length > 0
-  tags:
-    - pypi
-    - pypi-hosted
-
-- name: Delete PyPi Proxy repositories using Nexus API
-  ansible.builtin.include_tasks: repositories-api.yml
-  vars:
-    repos: "{{ nxs_delete_pypi_proxy_repos | default([]) }}"
-    format: pypi
-    type: proxy
-    method: DELETE
-  with_items:
-    - "{{ nxs_delete_pypi_proxy_repos | default([]) }}"
-  when: nxs_delete_pypi_proxy_repos | length > 0
-  tags:
-    - pypi
-    - pypi-proxy
-
-- name: Delete PyPi Group repositories using Nexus API
-  ansible.builtin.include_tasks: repositories-api.yml
-  vars:
-    repos: "{{ nxs_delete_pypi_group_repos | default([]) }}"
-    format: pypi
-    type: group
-    method: DELETE
-  with_items:
-    - "{{ nxs_delete_pypi_group_repos | default([]) }}"
-  when: nxs_delete_pypi_group_repos | length > 0
-  tags: pypi

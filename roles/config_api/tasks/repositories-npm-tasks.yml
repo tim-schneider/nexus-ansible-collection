@@ -148,177 +148,193 @@
 
 - name: Show nxs_create_npm_hosted_repos
   ansible.builtin.debug:
-    var: nxs_create_npm_hosted_repos | length
+    var: nxs_create_npm_hosted_repos
+  when: nexus_config_dry_run
   tags:
     - npm
     - npm-hosted
 
 - name: Show nxs_update_npm_hosted_repos
   ansible.builtin.debug:
-    var: nxs_update_npm_hosted_repos | length
+    var: nxs_update_npm_hosted_repos
+  when: nexus_config_dry_run
   tags:
     - npm
     - npm-hosted
 
 - name: Show nxs_delete_npm_hosted_repos
   ansible.builtin.debug:
-    var: nxs_delete_npm_hosted_repos | length
+    var: nxs_delete_npm_hosted_repos
+  when: nexus_config_dry_run
   tags:
     - npm
     - npm-hosted
 
 - name: Show nxs_create_npm_proxy_repos
   ansible.builtin.debug:
-    var: nxs_create_npm_proxy_repos | length
+    var: nxs_create_npm_proxy_repos
+  when: nexus_config_dry_run
   tags:
     - npm
     - npm-proxy
 
 - name: Show nxs_update_npm_proxy_repos
   ansible.builtin.debug:
-    var: nxs_update_npm_proxy_repos | length
+    var: nxs_update_npm_proxy_repos
+  when: nexus_config_dry_run
   tags:
     - npm
     - npm-proxy
 
 - name: Show nxs_delete_npm_proxy_repos
   ansible.builtin.debug:
-    var: nxs_delete_npm_proxy_repos | length
+    var: nxs_delete_npm_proxy_repos
+  when: nexus_config_dry_run
   tags:
     - npm
     - npm-proxy
 
 - name: Show nxs_create_npm_group_repos
   ansible.builtin.debug:
-    var: nxs_create_npm_group_repos | length
+    var: nxs_create_npm_group_repos
+  when: nexus_config_dry_run
   tags: npm
 
 - name: Show nxs_update_npm_group_repos
   ansible.builtin.debug:
-    var: nxs_update_npm_group_repos | length
+    var: nxs_update_npm_group_repos
+  when: nexus_config_dry_run
   tags: npm
 
 - name: Show nxs_delete_npm_group_repos
   ansible.builtin.debug:
-    var: nxs_delete_npm_group_repos | length
+    var: nxs_delete_npm_group_repos
+  when: nexus_config_dry_run
   tags: npm
 
-- name: Create configured NPM Hosted repositories using Nexus API
-  ansible.builtin.include_tasks: repositories-api.yml
-  vars:
-    repos: "{{ item | default([]) }}"
-    format: npm
-    type: hosted
-    method: POST
-  with_items:
-    - "{{ nxs_create_npm_hosted_repos | default([]) }}"
-  when: nxs_create_npm_hosted_repos | length > 0
+- name: Apply NPM repository changes
+  block:
+    - name: Create configured NPM Hosted repositories using Nexus API
+      ansible.builtin.include_tasks: repositories-api.yml
+      vars:
+        repos: "{{ item | default([]) }}"
+        format: npm
+        type: hosted
+        method: POST
+      with_items:
+        - "{{ nxs_create_npm_hosted_repos | default([]) }}"
+      when: nxs_create_npm_hosted_repos | length > 0
+      tags:
+        - npm
+        - npm-hosted
+
+    - name: Create configured NPM Proxy repositories using Nexus API
+      ansible.builtin.include_tasks: repositories-api.yml
+      vars:
+        repos: "{{ item | default([]) }}"
+        format: npm
+        type: proxy
+        method: POST
+      with_items:
+        - "{{ nxs_create_npm_proxy_repos | default([]) }}"
+      when: nxs_create_npm_proxy_repos | length > 0
+      tags:
+        - npm
+        - npm-proxy
+
+    - name: Create configured NPM Group repositories using Nexus API
+      ansible.builtin.include_tasks: repositories-api.yml
+      vars:
+        repos: "{{ item | default([]) }}"
+        format: npm
+        type: group
+        method: POST
+      with_items:
+        - "{{ nxs_create_npm_group_repos | default([]) }}"
+      when: nxs_create_npm_group_repos | length > 0
+      tags: npm
+
+    - name: Update configured NPM Hosted repositories using Nexus API
+      ansible.builtin.include_tasks: repositories-api.yml
+      vars:
+        repos: "{{ item | default([]) }}"
+        format: npm
+        type: hosted
+        method: PUT
+      with_items:
+        - "{{ nxs_update_npm_hosted_repos | default([]) }}"
+      when: nxs_update_npm_hosted_repos | length > 0
+      tags:
+        - npm
+        - npm-hosted
+
+    - name: Update configured NPM Proxy repositories using Nexus API
+      ansible.builtin.include_tasks: repositories-api.yml
+      vars:
+        repos: "{{ item | default([]) }}"
+        format: npm
+        type: proxy
+        method: PUT
+      with_items:
+        - "{{ nxs_update_npm_proxy_repos | default([]) }}"
+      when: nxs_update_npm_proxy_repos | length > 0
+      tags:
+        - npm
+        - npm-proxy
+
+    - name: Update configured NPM Group repositories using Nexus API
+      ansible.builtin.include_tasks: repositories-api.yml
+      vars:
+        repos: "{{ item | default([]) }}"
+        format: npm
+        type: group
+        method: PUT
+      with_items:
+        - "{{ nxs_update_npm_group_repos | default([]) }}"
+      when: nxs_update_npm_group_repos | length > 0
+      tags: npm
+
+    - name: Delete NPM Hosted repositories using Nexus API
+      ansible.builtin.include_tasks: repositories-api.yml
+      vars:
+        repos: "{{ nxs_delete_npm_hosted_repos | default([]) }}"
+        format: npm
+        type: hosted
+        method: DELETE
+      with_items:
+        - "{{ nxs_delete_npm_hosted_repos | default([]) }}"
+      when: nxs_delete_npm_hosted_repos | length > 0
+      tags:
+        - npm
+        - npm-hosted
+
+    - name: Delete NPM Proxy repositories using Nexus API
+      ansible.builtin.include_tasks: repositories-api.yml
+      vars:
+        repos: "{{ nxs_delete_npm_proxy_repos | default([]) }}"
+        format: npm
+        type: proxy
+        method: DELETE
+      with_items:
+        - "{{ nxs_delete_npm_proxy_repos | default([]) }}"
+      when: nxs_delete_npm_proxy_repos | length > 0
+      tags:
+        - npm
+        - npm-proxy
+
+    - name: Delete NPM Group repositories using Nexus API
+      ansible.builtin.include_tasks: repositories-api.yml
+      vars:
+        repos: "{{ nxs_delete_npm_group_repos | default([]) }}"
+        format: npm
+        type: group
+        method: DELETE
+      with_items:
+        - "{{ nxs_delete_npm_group_repos | default([]) }}"
+      when: nxs_delete_npm_group_repos | length > 0
+      tags: npm
+  when: not nexus_config_dry_run
   tags:
     - npm
     - npm-hosted
-
-- name: Create configured NPM Proxy repositories using Nexus API
-  ansible.builtin.include_tasks: repositories-api.yml
-  vars:
-    repos: "{{ item | default([]) }}"
-    format: npm
-    type: proxy
-    method: POST
-  with_items:
-    - "{{ nxs_create_npm_proxy_repos | default([]) }}"
-  when: nxs_create_npm_proxy_repos | length > 0
-  tags:
-    - npm
     - npm-proxy
-
-- name: Create configured NPM Group repositories using Nexus API
-  ansible.builtin.include_tasks: repositories-api.yml
-  vars:
-    repos: "{{ item | default([]) }}"
-    format: npm
-    type: group
-    method: POST
-  with_items:
-    - "{{ nxs_create_npm_group_repos | default([]) }}"
-  when: nxs_create_npm_group_repos | length > 0
-  tags: npm
-
-- name: Update configured NPM Hosted repositories using Nexus API
-  ansible.builtin.include_tasks: repositories-api.yml
-  vars:
-    repos: "{{ item | default([]) }}"
-    format: npm
-    type: hosted
-    method: PUT
-  with_items:
-    - "{{ nxs_update_npm_hosted_repos | default([]) }}"
-  when: nxs_update_npm_hosted_repos | length > 0
-  tags:
-    - npm
-    - npm-hosted
-
-- name: Update configured NPM Proxy repositories using Nexus API
-  ansible.builtin.include_tasks: repositories-api.yml
-  vars:
-    repos: "{{ item | default([]) }}"
-    format: npm
-    type: proxy
-    method: PUT
-  with_items:
-    - "{{ nxs_update_npm_proxy_repos | default([]) }}"
-  when: nxs_update_npm_proxy_repos | length > 0
-  tags:
-    - npm
-    - npm-proxy
-
-- name: Update configured NPM Group repositories using Nexus API
-  ansible.builtin.include_tasks: repositories-api.yml
-  vars:
-    repos: "{{ item | default([]) }}"
-    format: npm
-    type: group
-    method: PUT
-  with_items:
-    - "{{ nxs_update_npm_group_repos | default([]) }}"
-  when: nxs_update_npm_group_repos | length > 0
-  tags: npm
-
-- name: Delete NPM Hosted repositories using Nexus API
-  ansible.builtin.include_tasks: repositories-api.yml
-  vars:
-    repos: "{{ nxs_delete_npm_hosted_repos | default([]) }}"
-    format: npm
-    type: hosted
-    method: DELETE
-  with_items:
-    - "{{ nxs_delete_npm_hosted_repos | default([]) }}"
-  when: nxs_delete_npm_hosted_repos | length > 0
-  tags:
-    - npm
-    - npm-hosted
-
-- name: Delete NPM Proxy repositories using Nexus API
-  ansible.builtin.include_tasks: repositories-api.yml
-  vars:
-    repos: "{{ nxs_delete_npm_proxy_repos | default([]) }}"
-    format: npm
-    type: proxy
-    method: DELETE
-  with_items:
-    - "{{ nxs_delete_npm_proxy_repos | default([]) }}"
-  when: nxs_delete_npm_proxy_repos | length > 0
-  tags:
-    - npm
-    - npm-proxy
-
-- name: Delete NPM Group repositories using Nexus API
-  ansible.builtin.include_tasks: repositories-api.yml
-  vars:
-    repos: "{{ nxs_delete_npm_group_repos | default([]) }}"
-    format: npm
-    type: group
-    method: DELETE
-  with_items:
-    - "{{ nxs_delete_npm_group_repos | default([]) }}"
-  when: nxs_delete_npm_group_repos | length > 0
-  tags: npm
