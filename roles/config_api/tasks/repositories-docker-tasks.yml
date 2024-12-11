@@ -169,177 +169,193 @@
 
 - name: Show nxs_create_docker_hosted_repos
   ansible.builtin.debug:
-    var: nxs_create_docker_hosted_repos | length
+    var: nxs_create_docker_hosted_repos
+  when: nexus_config_dry_run
   tags:
     - docker
     - docker-hosted
 
 - name: Show nxs_update_docker_hosted_repos
   ansible.builtin.debug:
-    var: nxs_update_docker_hosted_repos | length
+    var: nxs_update_docker_hosted_repos
+  when: nexus_config_dry_run
   tags:
     - docker
     - docker-hosted
 
 - name: Show nxs_delete_docker_hosted_repos
   ansible.builtin.debug:
-    var: nxs_delete_docker_hosted_repos | length
+    var: nxs_delete_docker_hosted_repos
+  when: nexus_config_dry_run
   tags:
     - docker
     - docker-hosted
 
 - name: Show nxs_create_docker_proxy_repos
   ansible.builtin.debug:
-    var: nxs_create_docker_proxy_repos | length
+    var: nxs_create_docker_proxy_repos
+  when: nexus_config_dry_run
   tags:
     - docker
     - docker-proxy
 
 - name: Show nxs_update_docker_proxy_repos
   ansible.builtin.debug:
-    var: nxs_update_docker_proxy_repos | length
+    var: nxs_update_docker_proxy_repos
+  when: nexus_config_dry_run
   tags:
     - docker
     - docker-proxy
 
 - name: Show nxs_delete_docker_proxy_repos
   ansible.builtin.debug:
-    var: nxs_delete_docker_proxy_repos | length
+    var: nxs_delete_docker_proxy_repos
+  when: nexus_config_dry_run
   tags:
     - docker
     - docker-proxy
 
 - name: Show nxs_create_docker_group_repos
   ansible.builtin.debug:
-    var: nxs_create_docker_group_repos | length
+    var: nxs_create_docker_group_repos
+  when: nexus_config_dry_run
   tags: docker
 
 - name: Show nxs_update_docker_group_repos
   ansible.builtin.debug:
-    var: nxs_update_docker_group_repos | length
+    var: nxs_update_docker_group_repos
+  when: nexus_config_dry_run
   tags: docker
 
 - name: Show nxs_delete_docker_group_repos
   ansible.builtin.debug:
-    var: nxs_delete_docker_group_repos | length
+    var: nxs_delete_docker_group_repos
+  when: nexus_config_dry_run
   tags: docker
 
-- name: Create configured Docker Hosted repositories using Nexus API
-  ansible.builtin.include_tasks: repositories-api.yml
-  vars:
-    repos: "{{ item | default([]) }}"
-    format: docker
-    type: hosted
-    method: POST
-  with_items:
-    - "{{ nxs_create_docker_hosted_repos | default([]) }}"
-  when: nxs_create_docker_hosted_repos | length > 0
+- name: Apply Docker repository changes
+  block:
+    - name: Create configured Docker Hosted repositories using Nexus API
+      ansible.builtin.include_tasks: repositories-api.yml
+      vars:
+        repos: "{{ item | default([]) }}"
+        format: docker
+        type: hosted
+        method: POST
+      with_items:
+        - "{{ nxs_create_docker_hosted_repos | default([]) }}"
+      when: nxs_create_docker_hosted_repos | length > 0
+      tags:
+        - docker
+        - docker-hosted
+
+    - name: Create configured Docker Proxy repositories using Nexus API
+      ansible.builtin.include_tasks: repositories-api.yml
+      vars:
+        repos: "{{ item | default([]) }}"
+        format: docker
+        type: proxy
+        method: POST
+      with_items:
+        - "{{ nxs_create_docker_proxy_repos | default([]) }}"
+      when: nxs_create_docker_proxy_repos | length > 0
+      tags:
+        - docker
+        - docker-proxy
+
+    - name: Create configured Docker Group repositories using Nexus API
+      ansible.builtin.include_tasks: repositories-api.yml
+      vars:
+        repos: "{{ item | default([]) }}"
+        format: docker
+        type: group
+        method: POST
+      with_items:
+        - "{{ nxs_create_docker_group_repos | default([]) }}"
+      when: nxs_create_docker_group_repos | length > 0
+      tags: docker
+
+    - name: Update configured Docker Hosted repositories using Nexus API
+      ansible.builtin.include_tasks: repositories-api.yml
+      vars:
+        repos: "{{ item | default([]) }}"
+        format: docker
+        type: hosted
+        method: PUT
+      with_items:
+        - "{{ nxs_update_docker_hosted_repos | default([]) }}"
+      when: nxs_update_docker_hosted_repos | length > 0
+      tags:
+        - docker
+        - docker-hosted
+
+    - name: Update configured Docker Proxy repositories using Nexus API
+      ansible.builtin.include_tasks: repositories-api.yml
+      vars:
+        repos: "{{ item | default([]) }}"
+        format: docker
+        type: proxy
+        method: PUT
+      with_items:
+        - "{{ nxs_update_docker_proxy_repos | default([]) }}"
+      when: nxs_update_docker_proxy_repos | length > 0
+      tags:
+        - docker
+        - docker-proxy
+
+    - name: Update configured Docker Group repositories using Nexus API
+      ansible.builtin.include_tasks: repositories-api.yml
+      vars:
+        repos: "{{ item | default([]) }}"
+        format: docker
+        type: group
+        method: PUT
+      with_items:
+        - "{{ nxs_update_docker_group_repos | default([]) }}"
+      when: nxs_update_docker_group_repos | length > 0
+      tags: docker
+
+    - name: Delete Docker Hosted repositories using Nexus API
+      ansible.builtin.include_tasks: repositories-api.yml
+      vars:
+        repos: "{{ nxs_delete_docker_hosted_repos | default([]) }}"
+        format: docker
+        type: hosted
+        method: DELETE
+      with_items:
+        - "{{ nxs_delete_docker_hosted_repos | default([]) }}"
+      when: nxs_delete_docker_hosted_repos | length > 0
+      tags:
+        - docker
+        - docker-hosted
+
+    - name: Delete Docker Proxy repositories using Nexus API
+      ansible.builtin.include_tasks: repositories-api.yml
+      vars:
+        repos: "{{ nxs_delete_docker_proxy_repos | default([]) }}"
+        format: docker
+        type: proxy
+        method: DELETE
+      with_items:
+        - "{{ nxs_delete_docker_proxy_repos | default([]) }}"
+      when: nxs_delete_docker_proxy_repos | length > 0
+      tags:
+        - docker
+        - docker-proxy
+
+    - name: Delete Docker Group repositories using Nexus API
+      ansible.builtin.include_tasks: repositories-api.yml
+      vars:
+        repos: "{{ nxs_delete_docker_group_repos | default([]) }}"
+        format: docker
+        type: group
+        method: DELETE
+      with_items:
+        - "{{ nxs_delete_docker_group_repos | default([]) }}"
+      when: nxs_delete_docker_group_repos | length > 0
+      tags: docker
+  when: not nexus_config_dry_run | bool
   tags:
     - docker
     - docker-hosted
-
-- name: Create configured Docker Proxy repositories using Nexus API
-  ansible.builtin.include_tasks: repositories-api.yml
-  vars:
-    repos: "{{ item | default([]) }}"
-    format: docker
-    type: proxy
-    method: POST
-  with_items:
-    - "{{ nxs_create_docker_proxy_repos | default([]) }}"
-  when: nxs_create_docker_proxy_repos | length > 0
-  tags:
-    - docker
     - docker-proxy
-
-- name: Create configured Docker Group repositories using Nexus API
-  ansible.builtin.include_tasks: repositories-api.yml
-  vars:
-    repos: "{{ item | default([]) }}"
-    format: docker
-    type: group
-    method: POST
-  with_items:
-    - "{{ nxs_create_docker_group_repos | default([]) }}"
-  when: nxs_create_docker_group_repos | length > 0
-  tags: docker
-
-- name: Update configured Docker Hosted repositories using Nexus API
-  ansible.builtin.include_tasks: repositories-api.yml
-  vars:
-    repos: "{{ item | default([]) }}"
-    format: docker
-    type: hosted
-    method: PUT
-  with_items:
-    - "{{ nxs_update_docker_hosted_repos | default([]) }}"
-  when: nxs_update_docker_hosted_repos | length > 0
-  tags:
-    - docker
-    - docker-hosted
-
-- name: Update configured Docker Proxy repositories using Nexus API
-  ansible.builtin.include_tasks: repositories-api.yml
-  vars:
-    repos: "{{ item | default([]) }}"
-    format: docker
-    type: proxy
-    method: PUT
-  with_items:
-    - "{{ nxs_update_docker_proxy_repos | default([]) }}"
-  when: nxs_update_docker_proxy_repos | length > 0
-  tags:
-    - docker
-    - docker-proxy
-
-- name: Update configured Docker Group repositories using Nexus API
-  ansible.builtin.include_tasks: repositories-api.yml
-  vars:
-    repos: "{{ item | default([]) }}"
-    format: docker
-    type: group
-    method: PUT
-  with_items:
-    - "{{ nxs_update_docker_group_repos | default([]) }}"
-  when: nxs_update_docker_group_repos | length > 0
-  tags: docker
-
-- name: Delete Docker Hosted repositories using Nexus API
-  ansible.builtin.include_tasks: repositories-api.yml
-  vars:
-    repos: "{{ nxs_delete_docker_hosted_repos | default([]) }}"
-    format: docker
-    type: hosted
-    method: DELETE
-  with_items:
-    - "{{ nxs_delete_docker_hosted_repos | default([]) }}"
-  when: nxs_delete_docker_hosted_repos | length > 0
-  tags:
-    - docker
-    - docker-hosted
-
-- name: Delete Docker Proxy repositories using Nexus API
-  ansible.builtin.include_tasks: repositories-api.yml
-  vars:
-    repos: "{{ nxs_delete_docker_proxy_repos | default([]) }}"
-    format: docker
-    type: proxy
-    method: DELETE
-  with_items:
-    - "{{ nxs_delete_docker_proxy_repos | default([]) }}"
-  when: nxs_delete_docker_proxy_repos | length > 0
-  tags:
-    - docker
-    - docker-proxy
-
-- name: Delete Docker Group repositories using Nexus API
-  ansible.builtin.include_tasks: repositories-api.yml
-  vars:
-    repos: "{{ nxs_delete_docker_group_repos | default([]) }}"
-    format: docker
-    type: group
-    method: DELETE
-  with_items:
-    - "{{ nxs_delete_docker_group_repos | default([]) }}"
-  when: nxs_delete_docker_group_repos | length > 0
-  tags: docker

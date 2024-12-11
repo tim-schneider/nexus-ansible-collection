@@ -141,11 +141,20 @@ When no tags are specified, all tasks will be executed.
 There are no `*-group` tags! Groups are always depending on either hosted or proxy repos. Therefore group repos can be configured using the format tag of a group, for example `--tags="repositories,maven"`
 {{< /callout >}}
 
+### Dry run
+
+Sometimes you want to see what will be changed before proceeding. By setting the `nexus_config_dry_run: true` variable, the role will still show you what would have been changed upon a regular playbook run, without making any changes to your repositories.
+
 #### Examples for execution strategies
 
 ```bash
 # Only configure cleanup policies
 ansible-playbook -i all --tags cleanup-policies playbook.yml
+```
+
+```bash
+# Only show possible changes
+ansible-playbook -i all playbook.yml -e nexus_config_dry_run=true
 ```
 
 ### [Optional] Enabling Nexus Repository Manager Pro

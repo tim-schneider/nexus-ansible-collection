@@ -148,177 +148,193 @@
 
 - name: Show nxs_create_yum_hosted_repos
   ansible.builtin.debug:
-    var: nxs_create_yum_hosted_repos | length
+    var: nxs_create_yum_hosted_repos
+  when: nexus_config_dry_run
   tags:
     - yum
     - yum-hosted
 
 - name: Show nxs_update_yum_hosted_repos
   ansible.builtin.debug:
-    var: nxs_update_yum_hosted_repos | length
+    var: nxs_update_yum_hosted_repos
+  when: nexus_config_dry_run
   tags:
     - yum
     - yum-hosted
 
 - name: Show nxs_delete_yum_hosted_repos
   ansible.builtin.debug:
-    var: nxs_delete_yum_hosted_repos | length
+    var: nxs_delete_yum_hosted_repos
+  when: nexus_config_dry_run
   tags:
     - yum
     - yum-hosted
 
 - name: Show nxs_create_yum_proxy_repos
   ansible.builtin.debug:
-    var: nxs_create_yum_proxy_repos | length
+    var: nxs_create_yum_proxy_repos
+  when: nexus_config_dry_run
   tags:
     - yum
     - yum-proxy
 
 - name: Show nxs_update_yum_proxy_repos
   ansible.builtin.debug:
-    var: nxs_update_yum_proxy_repos | length
+    var: nxs_update_yum_proxy_repos
+  when: nexus_config_dry_run
   tags:
     - yum
     - yum-proxy
 
 - name: Show nxs_delete_yum_proxy_repos
   ansible.builtin.debug:
-    var: nxs_delete_yum_proxy_repos | length
+    var: nxs_delete_yum_proxy_repos
+  when: nexus_config_dry_run
   tags:
     - yum
     - yum-proxy
 
 - name: Show nxs_create_yum_group_repos
   ansible.builtin.debug:
-    var: nxs_create_yum_group_repos | length
+    var: nxs_create_yum_group_repos
+  when: nexus_config_dry_run
   tags: yum
 
 - name: Show nxs_update_yum_group_repos
   ansible.builtin.debug:
-    var: nxs_update_yum_group_repos | length
+    var: nxs_update_yum_group_repos
+  when: nexus_config_dry_run
   tags: yum
 
 - name: Show nxs_delete_yum_group_repos
   ansible.builtin.debug:
-    var: nxs_delete_yum_group_repos | length
+    var: nxs_delete_yum_group_repos
+  when: nexus_config_dry_run
   tags: yum
 
-- name: Create configured Yum Hosted repositories using Nexus API
-  ansible.builtin.include_tasks: repositories-api.yml
-  vars:
-    repos: "{{ item | default([]) }}"
-    format: yum
-    type: hosted
-    method: POST
-  with_items:
-    - "{{ nxs_create_yum_hosted_repos | default([]) }}"
-  when: nxs_create_yum_hosted_repos | length > 0
+- name: Apply Yum repository changes
+  block:
+    - name: Create configured Yum Hosted repositories using Nexus API
+      ansible.builtin.include_tasks: repositories-api.yml
+      vars:
+        repos: "{{ item | default([]) }}"
+        format: yum
+        type: hosted
+        method: POST
+      with_items:
+        - "{{ nxs_create_yum_hosted_repos | default([]) }}"
+      when: nxs_create_yum_hosted_repos | length > 0
+      tags:
+        - yum
+        - yum-hosted
+
+    - name: Create configured Yum Proxy repositories using Nexus API
+      ansible.builtin.include_tasks: repositories-api.yml
+      vars:
+        repos: "{{ item | default([]) }}"
+        format: yum
+        type: proxy
+        method: POST
+      with_items:
+        - "{{ nxs_create_yum_proxy_repos | default([]) }}"
+      when: nxs_create_yum_proxy_repos | length > 0
+      tags:
+        - yum
+        - yum-proxy
+
+    - name: Create configured Yum Group repositories using Nexus API
+      ansible.builtin.include_tasks: repositories-api.yml
+      vars:
+        repos: "{{ item | default([]) }}"
+        format: yum
+        type: group
+        method: POST
+      with_items:
+        - "{{ nxs_create_yum_group_repos | default([]) }}"
+      when: nxs_create_yum_group_repos | length > 0
+      tags: yum
+
+    - name: Update configured Yum Hosted repositories using Nexus API
+      ansible.builtin.include_tasks: repositories-api.yml
+      vars:
+        repos: "{{ item | default([]) }}"
+        format: yum
+        type: hosted
+        method: PUT
+      with_items:
+        - "{{ nxs_update_yum_hosted_repos | default([]) }}"
+      when: nxs_update_yum_hosted_repos | length > 0
+      tags:
+        - yum
+        - yum-hosted
+
+    - name: Update configured Yum Proxy repositories using Nexus API
+      ansible.builtin.include_tasks: repositories-api.yml
+      vars:
+        repos: "{{ item | default([]) }}"
+        format: yum
+        type: proxy
+        method: PUT
+      with_items:
+        - "{{ nxs_update_yum_proxy_repos | default([]) }}"
+      when: nxs_update_yum_proxy_repos | length > 0
+      tags:
+        - yum
+        - yum-proxy
+
+    - name: Update configured Yum Group repositories using Nexus API
+      ansible.builtin.include_tasks: repositories-api.yml
+      vars:
+        repos: "{{ item | default([]) }}"
+        format: yum
+        type: group
+        method: PUT
+      with_items:
+        - "{{ nxs_update_yum_group_repos | default([]) }}"
+      when: nxs_update_yum_group_repos | length > 0
+      tags: yum
+
+    - name: Delete Yum Hosted repositories using Nexus API
+      ansible.builtin.include_tasks: repositories-api.yml
+      vars:
+        repos: "{{ nxs_delete_yum_hosted_repos | default([]) }}"
+        format: yum
+        type: hosted
+        method: DELETE
+      with_items:
+        - "{{ nxs_delete_yum_hosted_repos | default([]) }}"
+      when: nxs_delete_yum_hosted_repos | length > 0
+      tags:
+        - yum
+        - yum-hosted
+
+    - name: Delete Yum Proxy repositories using Nexus API
+      ansible.builtin.include_tasks: repositories-api.yml
+      vars:
+        repos: "{{ nxs_delete_yum_proxy_repos | default([]) }}"
+        format: yum
+        type: proxy
+        method: DELETE
+      with_items:
+        - "{{ nxs_delete_yum_proxy_repos | default([]) }}"
+      when: nxs_delete_yum_proxy_repos | length > 0
+      tags:
+        - yum
+        - yum-proxy
+
+    - name: Delete Yum Group repositories using Nexus API
+      ansible.builtin.include_tasks: repositories-api.yml
+      vars:
+        repos: "{{ nxs_delete_yum_group_repos | default([]) }}"
+        format: yum
+        type: group
+        method: DELETE
+      with_items:
+        - "{{ nxs_delete_yum_group_repos | default([]) }}"
+      when: nxs_delete_yum_group_repos | length > 0
+      tags: yum
+  when: not nexus_config_dry_run | bool
   tags:
     - yum
     - yum-hosted
-
-- name: Create configured Yum Proxy repositories using Nexus API
-  ansible.builtin.include_tasks: repositories-api.yml
-  vars:
-    repos: "{{ item | default([]) }}"
-    format: yum
-    type: proxy
-    method: POST
-  with_items:
-    - "{{ nxs_create_yum_proxy_repos | default([]) }}"
-  when: nxs_create_yum_proxy_repos | length > 0
-  tags:
-    - yum
     - yum-proxy
-
-- name: Create configured Yum Group repositories using Nexus API
-  ansible.builtin.include_tasks: repositories-api.yml
-  vars:
-    repos: "{{ item | default([]) }}"
-    format: yum
-    type: group
-    method: POST
-  with_items:
-    - "{{ nxs_create_yum_group_repos | default([]) }}"
-  when: nxs_create_yum_group_repos | length > 0
-  tags: yum
-
-- name: Update configured Yum Hosted repositories using Nexus API
-  ansible.builtin.include_tasks: repositories-api.yml
-  vars:
-    repos: "{{ item | default([]) }}"
-    format: yum
-    type: hosted
-    method: PUT
-  with_items:
-    - "{{ nxs_update_yum_hosted_repos | default([]) }}"
-  when: nxs_update_yum_hosted_repos | length > 0
-  tags:
-    - yum
-    - yum-hosted
-
-- name: Update configured Yum Proxy repositories using Nexus API
-  ansible.builtin.include_tasks: repositories-api.yml
-  vars:
-    repos: "{{ item | default([]) }}"
-    format: yum
-    type: proxy
-    method: PUT
-  with_items:
-    - "{{ nxs_update_yum_proxy_repos | default([]) }}"
-  when: nxs_update_yum_proxy_repos | length > 0
-  tags:
-    - yum
-    - yum-proxy
-
-- name: Update configured Yum Group repositories using Nexus API
-  ansible.builtin.include_tasks: repositories-api.yml
-  vars:
-    repos: "{{ item | default([]) }}"
-    format: yum
-    type: group
-    method: PUT
-  with_items:
-    - "{{ nxs_update_yum_group_repos | default([]) }}"
-  when: nxs_update_yum_group_repos | length > 0
-  tags: yum
-
-- name: Delete Yum Hosted repositories using Nexus API
-  ansible.builtin.include_tasks: repositories-api.yml
-  vars:
-    repos: "{{ nxs_delete_yum_hosted_repos | default([]) }}"
-    format: yum
-    type: hosted
-    method: DELETE
-  with_items:
-    - "{{ nxs_delete_yum_hosted_repos | default([]) }}"
-  when: nxs_delete_yum_hosted_repos | length > 0
-  tags:
-    - yum
-    - yum-hosted
-
-- name: Delete Yum Proxy repositories using Nexus API
-  ansible.builtin.include_tasks: repositories-api.yml
-  vars:
-    repos: "{{ nxs_delete_yum_proxy_repos | default([]) }}"
-    format: yum
-    type: proxy
-    method: DELETE
-  with_items:
-    - "{{ nxs_delete_yum_proxy_repos | default([]) }}"
-  when: nxs_delete_yum_proxy_repos | length > 0
-  tags:
-    - yum
-    - yum-proxy
-
-- name: Delete Yum Group repositories using Nexus API
-  ansible.builtin.include_tasks: repositories-api.yml
-  vars:
-    repos: "{{ nxs_delete_yum_group_repos | default([]) }}"
-    format: yum
-    type: group
-    method: DELETE
-  with_items:
-    - "{{ nxs_delete_yum_group_repos | default([]) }}"
-  when: nxs_delete_yum_group_repos | length > 0
-  tags: yum

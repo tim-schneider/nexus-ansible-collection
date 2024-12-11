@@ -3,6 +3,7 @@
 ### Added
 - **config_api** Added support for Composer proxy repositories
 - **nexus_oss** Added support for Composer proxy repositories
+- **config_api** Introduced new variable `nexus_config_dry_run` with a default of `false` to control if repos need to be created, updated or deleted. When setting the value to `true` it will only show what will be changed during a regular play.
 
 ### Changed
 - **nexus_oss** Cleanup policies will only be created using the API if ALL cleanup policies are in the proper API format and `nexus_enable_pro_version` is `true` since the cleanup API endpoint is a Pro feature.

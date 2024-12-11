@@ -153,177 +153,193 @@
 
 - name: Show nxs_create_mvn_hosted_repos
   ansible.builtin.debug:
-    var: nxs_create_mvn_hosted_repos | length
+    var: nxs_create_mvn_hosted_repos
+  when: nexus_config_dry_run
   tags:
     - maven
     - maven-hosted
 
 - name: Show nxs_update_mvn_hosted_repos
   ansible.builtin.debug:
-    var: nxs_update_mvn_hosted_repos | length
+    var: nxs_update_mvn_hosted_repos
+  when: nexus_config_dry_run
   tags:
     - maven
     - maven-hosted
 
 - name: Show nxs_delete_mvn_hosted_repos
   ansible.builtin.debug:
-    var: nxs_delete_mvn_hosted_repos | length
+    var: nxs_delete_mvn_hosted_repos
+  when: nexus_config_dry_run
   tags:
     - maven
     - maven-hosted
 
 - name: Show nxs_create_mvn_proxy_repos
   ansible.builtin.debug:
-    var: nxs_create_mvn_proxy_repos | length
+    var: nxs_create_mvn_proxy_repos
+  when: nexus_config_dry_run
   tags:
     - maven
     - maven-proxy
 
 - name: Show nxs_update_mvn_proxy_repos
   ansible.builtin.debug:
-    var: nxs_update_mvn_proxy_repos | length
+    var: nxs_update_mvn_proxy_repos
+  when: nexus_config_dry_run
   tags:
     - maven
     - maven-proxy
 
 - name: Show nxs_delete_mvn_proxy_repos
   ansible.builtin.debug:
-    var: nxs_delete_mvn_proxy_repos | length
+    var: nxs_delete_mvn_proxy_repos
+  when: nexus_config_dry_run
   tags:
     - maven
     - maven-proxy
 
 - name: Show nxs_create_mvn_group_repos
   ansible.builtin.debug:
-    var: nxs_create_mvn_group_repos | length
+    var: nxs_create_mvn_group_repos
+  when: nexus_config_dry_run
   tags: maven
 
 - name: Show nxs_update_mvn_group_repos
   ansible.builtin.debug:
-    var: nxs_update_mvn_group_repos | length
+    var: nxs_update_mvn_group_repos
+  when: nexus_config_dry_run
   tags: maven
 
 - name: Show nxs_delete_mvn_group_repos
   ansible.builtin.debug:
-    var: nxs_delete_mvn_group_repos | length
+    var: nxs_delete_mvn_group_repos
+  when: nexus_config_dry_run
   tags: maven
 
-- name: Create configured Maven Hosted repositories using Nexus API
-  ansible.builtin.include_tasks: repositories-api.yml
-  vars:
-    repos: "{{ item | default([]) }}"
-    format: maven
-    type: hosted
-    method: POST
-  with_items:
-    - "{{ nxs_create_mvn_hosted_repos | default([]) }}"
-  when: nxs_create_mvn_hosted_repos | length > 0
+- name: Apply Maven repository changes
+  block:
+    - name: Create configured Maven Hosted repositories using Nexus API
+      ansible.builtin.include_tasks: repositories-api.yml
+      vars:
+        repos: "{{ item | default([]) }}"
+        format: maven
+        type: hosted
+        method: POST
+      with_items:
+        - "{{ nxs_create_mvn_hosted_repos | default([]) }}"
+      when: nxs_create_mvn_hosted_repos | length > 0
+      tags:
+        - maven
+        - maven-hosted
+
+    - name: Create configured Maven Proxy repositories using Nexus API
+      ansible.builtin.include_tasks: repositories-api.yml
+      vars:
+        repos: "{{ item | default([]) }}"
+        format: maven
+        type: proxy
+        method: POST
+      with_items:
+        - "{{ nxs_create_mvn_proxy_repos | default([]) }}"
+      when: nxs_create_mvn_proxy_repos | length > 0
+      tags:
+        - maven
+        - maven-proxy
+
+    - name: Create configured Maven Group repositories using Nexus API
+      ansible.builtin.include_tasks: repositories-api.yml
+      vars:
+        repos: "{{ item | default([]) }}"
+        format: maven
+        type: group
+        method: POST
+      with_items:
+        - "{{ nxs_create_mvn_group_repos | default([]) }}"
+      when: nxs_create_mvn_group_repos | length > 0
+      tags: maven
+
+    - name: Update configured Maven Hosted repositories using Nexus API
+      ansible.builtin.include_tasks: repositories-api.yml
+      vars:
+        repos: "{{ item | default([]) }}"
+        format: maven
+        type: hosted
+        method: PUT
+      with_items:
+        - "{{ nxs_update_mvn_hosted_repos | default([]) }}"
+      when: nxs_update_mvn_hosted_repos | length > 0
+      tags:
+        - maven
+        - maven-hosted
+
+    - name: Update configured Maven Proxy repositories using Nexus API
+      ansible.builtin.include_tasks: repositories-api.yml
+      vars:
+        repos: "{{ item | default([]) }}"
+        format: maven
+        type: proxy
+        method: PUT
+      with_items:
+        - "{{ nxs_update_mvn_proxy_repos | default([]) }}"
+      when: nxs_update_mvn_proxy_repos | length > 0
+      tags:
+        - maven
+        - maven-proxy
+
+    - name: Update configured Maven Group repositories using Nexus API
+      ansible.builtin.include_tasks: repositories-api.yml
+      vars:
+        repos: "{{ item | default([]) }}"
+        format: maven
+        type: group
+        method: PUT
+      with_items:
+        - "{{ nxs_update_mvn_group_repos | default([]) }}"
+      when: nxs_update_mvn_group_repos | length > 0
+      tags: maven
+
+    - name: Delete Maven Hosted repositories using Nexus API
+      ansible.builtin.include_tasks: repositories-api.yml
+      vars:
+        repos: "{{ nxs_delete_mvn_hosted_repos | default([]) }}"
+        format: maven
+        type: hosted
+        method: DELETE
+      with_items:
+        - "{{ nxs_delete_mvn_hosted_repos | default([]) }}"
+      when: nxs_delete_mvn_hosted_repos | length > 0
+      tags:
+        - maven
+        - maven-hosted
+
+    - name: Delete Maven Proxy repositories using Nexus API
+      ansible.builtin.include_tasks: repositories-api.yml
+      vars:
+        repos: "{{ nxs_delete_mvn_proxy_repos | default([]) }}"
+        format: maven
+        type: proxy
+        method: DELETE
+      with_items:
+        - "{{ nxs_delete_mvn_proxy_repos | default([]) }}"
+      when: nxs_delete_mvn_proxy_repos | length > 0
+      tags:
+        - maven
+        - maven-proxy
+
+    - name: Delete Maven Group repositories using Nexus API
+      ansible.builtin.include_tasks: repositories-api.yml
+      vars:
+        repos: "{{ nxs_delete_mvn_group_repos | default([]) }}"
+        format: maven
+        type: group
+        method: DELETE
+      with_items:
+        - "{{ nxs_delete_mvn_group_repos | default([]) }}"
+      when: nxs_delete_mvn_group_repos | length > 0
+      tags: maven
+  when: not nexus_config_dry_run | bool
   tags:
     - maven
     - maven-hosted
-
-- name: Create configured Maven Proxy repositories using Nexus API
-  ansible.builtin.include_tasks: repositories-api.yml
-  vars:
-    repos: "{{ item | default([]) }}"
-    format: maven
-    type: proxy
-    method: POST
-  with_items:
-    - "{{ nxs_create_mvn_proxy_repos | default([]) }}"
-  when: nxs_create_mvn_proxy_repos | length > 0
-  tags:
-    - maven
     - maven-proxy
-
-- name: Create configured Maven Group repositories using Nexus API
-  ansible.builtin.include_tasks: repositories-api.yml
-  vars:
-    repos: "{{ item | default([]) }}"
-    format: maven
-    type: group
-    method: POST
-  with_items:
-    - "{{ nxs_create_mvn_group_repos | default([]) }}"
-  when: nxs_create_mvn_group_repos | length > 0
-  tags: maven
-
-- name: Update configured Maven Hosted repositories using Nexus API
-  ansible.builtin.include_tasks: repositories-api.yml
-  vars:
-    repos: "{{ item | default([]) }}"
-    format: maven
-    type: hosted
-    method: PUT
-  with_items:
-    - "{{ nxs_update_mvn_hosted_repos | default([]) }}"
-  when: nxs_update_mvn_hosted_repos | length > 0
-  tags:
-    - maven
-    - maven-hosted
-
-- name: Update configured Maven Proxy repositories using Nexus API
-  ansible.builtin.include_tasks: repositories-api.yml
-  vars:
-    repos: "{{ item | default([]) }}"
-    format: maven
-    type: proxy
-    method: PUT
-  with_items:
-    - "{{ nxs_update_mvn_proxy_repos | default([]) }}"
-  when: nxs_update_mvn_proxy_repos | length > 0
-  tags:
-    - maven
-    - maven-proxy
-
-- name: Update configured Maven Group repositories using Nexus API
-  ansible.builtin.include_tasks: repositories-api.yml
-  vars:
-    repos: "{{ item | default([]) }}"
-    format: maven
-    type: group
-    method: PUT
-  with_items:
-    - "{{ nxs_update_mvn_group_repos | default([]) }}"
-  when: nxs_update_mvn_group_repos | length > 0
-  tags: maven
-
-- name: Delete Maven Hosted repositories using Nexus API
-  ansible.builtin.include_tasks: repositories-api.yml
-  vars:
-    repos: "{{ nxs_delete_mvn_hosted_repos | default([]) }}"
-    format: maven
-    type: hosted
-    method: DELETE
-  with_items:
-    - "{{ nxs_delete_mvn_hosted_repos | default([]) }}"
-  when: nxs_delete_mvn_hosted_repos | length > 0
-  tags:
-    - maven
-    - maven-hosted
-
-- name: Delete Maven Proxy repositories using Nexus API
-  ansible.builtin.include_tasks: repositories-api.yml
-  vars:
-    repos: "{{ nxs_delete_mvn_proxy_repos | default([]) }}"
-    format: maven
-    type: proxy
-    method: DELETE
-  with_items:
-    - "{{ nxs_delete_mvn_proxy_repos | default([]) }}"
-  when: nxs_delete_mvn_proxy_repos | length > 0
-  tags:
-    - maven
-    - maven-proxy
-
-- name: Delete Maven Group repositories using Nexus API
-  ansible.builtin.include_tasks: repositories-api.yml
-  vars:
-    repos: "{{ nxs_delete_mvn_group_repos | default([]) }}"
-    format: maven
-    type: group
-    method: DELETE
-  with_items:
-    - "{{ nxs_delete_mvn_group_repos | default([]) }}"
-  when: nxs_delete_mvn_group_repos | length > 0
-  tags: maven

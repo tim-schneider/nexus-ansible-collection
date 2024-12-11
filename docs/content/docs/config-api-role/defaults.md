@@ -12,6 +12,7 @@ nexus_api_timeout: 60
 nexus_admin_username: admin
 nexus_admin_password: changeme
 nexus_enable_pro_version: false
+nexus_config_dry_run: false
 nexus_ssl_truststore: []
 ldap_connections: []
 nexus_security_realms:

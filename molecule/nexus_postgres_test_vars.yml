@@ -9,6 +9,8 @@ nexus_db_migrator_download_url: https://download.sonatype.com/nexus/nxrm3-migrat
 nexus_enable_pro_version: true
 nexus_cluster_enabled: true
 
+nexus_config_dry_run: true
+
 # Postgres migration settings
 nexus_migrate_database: false
 nexus_migration_type: postgres
