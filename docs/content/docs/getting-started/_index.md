@@ -145,16 +145,28 @@ There are no `*-group` tags! Groups are always depending on either hosted or pro
 
 Sometimes you want to see what will be changed before proceeding. By setting the `nexus_config_dry_run: true` variable, the role will still show you what would have been changed upon a regular playbook run, without making any changes to your repositories.
 
+To only show changed items in your Ansible logs you can do the following:
+
+```ini {filename="ansible.cfg"}
+[defaults]
+display_skipped_hosts = false
+display_ok_hosts = false
+```
+
+or in your terminal session:
+
+```bash
+# Only show possible changes
+export ANSIBLE_DISPLAY_SKIPPED_HOSTS=false
+export ANSIBLE_DISPLAY_OK_HOSTS=false
+ansible-playbook -i all playbook.yml -e nexus_config_dry_run=true
+```
+
 #### Examples for execution strategies
 
 ```bash
 # Only configure cleanup policies
 ansible-playbook -i all --tags cleanup-policies playbook.yml
-```
-
-```bash
-# Only show possible changes
-ansible-playbook -i all playbook.yml -e nexus_config_dry_run=true
 ```
 
 ### [Optional] Enabling Nexus Repository Manager Pro
