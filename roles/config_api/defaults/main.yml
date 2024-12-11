@@ -235,7 +235,7 @@ nexus_repos_format_defaults:
     maven:
       versionPolicy: RELEASE
       layoutPolicy: STRICT
-      contentDisposition: ATTACHMENT
+      contentDisposition: INLINE
   pypi:
     storage:
       blobStoreName: "{{ nexus_blob_names.pypi.blob | default('default') }}"

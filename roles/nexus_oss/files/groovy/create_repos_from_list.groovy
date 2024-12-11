@@ -143,12 +143,12 @@ parsed_args.each { currentRepo ->
             ]
         }
 
-        // Configure content disposition for maven and raw proxy repos
-        if (currentRepo.type == 'proxy' && currentRepo.format == 'maven2' || currentRepo.format == 'raw'){
-                configuration.attributes['raw'] = [
+        // Configs for all raw repos
+        if (currentRepo.format == 'raw') {
+            configuration.attributes['raw'] = [
                     contentDisposition: currentRepo.content_disposition ? currentRepo.content_disposition.toUpperCase() : "INLINE"
-                ]
-            }
+            ]
+        }
 
         // Configure cleanup policy
         if (currentRepo.type == 'proxy' || currentRepo.type == 'hosted') {
@@ -190,7 +190,8 @@ parsed_args.each { currentRepo ->
         if (currentRepo.format == 'maven2') {
             configuration.attributes['maven'] = [
                     versionPolicy: currentRepo.version_policy.toUpperCase(),
-                    layoutPolicy : currentRepo.get('layout_policy','strict').toUpperCase()
+                    layoutPolicy : currentRepo.get('layout_policy','strict').toUpperCase(),
+                    contentDisposition: currentRepo.content_disposition ? currentRepo.content_disposition.toUpperCase() : "INLINE"
             ]
         }
 

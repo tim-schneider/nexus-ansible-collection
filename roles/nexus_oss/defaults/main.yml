@@ -327,6 +327,7 @@ _nexus_repos_maven_defaults:
   version_policy: release # release, snapshot or mixed
   layout_policy: strict # strict or permissive
   write_policy: allow_once # one of "allow", "allow_once" or "deny"
+  content_disposition: inline
   maximum_component_age: -1 # Nexus gui default. For proxies only
   maximum_metadata_age: 1440 # Nexus gui default. For proxies only
   negative_cache_enabled: true # Nexus gui default. For proxies only
@@ -358,6 +359,7 @@ _nexus_repos_raw_defaults:
   version_policy: release # release, snapshot or mixed
   layout_policy: strict # strict or permissive
   write_policy: allow_once # one of "allow", "allow_once" or "deny"
+  content_disposition: attachment
   maximum_component_age: 1440 # Nexus gui default. For proxies only
   maximum_metadata_age: 1440 # Nexus gui default. For proxies only
   negative_cache_enabled: true # Nexus gui default. For proxies only
