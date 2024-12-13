@@ -698,6 +698,9 @@ nexus_roles:
     description: team2
     privileges:
       - docker-private-team2-rw
+  - name: role-no-priviliges
+    id: role-no-privs
+    description: role without privileges assigned
 
 nexus_local_users:
   - username: jenkins

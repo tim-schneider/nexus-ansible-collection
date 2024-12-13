@@ -1,4 +1,8 @@
 # Changelog
+## [1.16.1] - 2024-12-12
+### Fixed
+- **config_api** Ensure only roles within the default source are managed by this role. Leaving roles created by Nexus as-is.
+
 ## [1.16.0] - 2024-12-10
 ### Added
 - **config_api** Introduced new variable `nexus_config_dry_run` with a default of `false` to control if repos need to be created, updated or deleted. When setting the value to `true` it will only show what will be changed during a regular play.
