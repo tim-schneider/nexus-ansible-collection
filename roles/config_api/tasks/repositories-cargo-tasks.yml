@@ -150,6 +150,7 @@
   ansible.builtin.debug:
     var: nxs_create_cargo_hosted_repos
   when: nexus_config_dry_run
+  changed_when: nxs_create_cargo_hosted_repos | length > 0
   tags:
     - cargo
     - cargo-hosted
@@ -158,6 +159,7 @@
   ansible.builtin.debug:
     var: nxs_create_cargo_proxy_repos
   when: nexus_config_dry_run
+  changed_when: nxs_create_cargo_proxy_repos | length > 0
   tags:
     - cargo
     - cargo-proxy
@@ -166,12 +168,14 @@
   ansible.builtin.debug:
     var: nxs_create_cargo_group_repos
   when: nexus_config_dry_run
+  changed_when: nxs_create_cargo_group_repos | length > 0
   tags: cargo
 
 - name: Show nxs_update_cargo_hosted_repos
   ansible.builtin.debug:
     var: nxs_update_cargo_hosted_repos
   when: nexus_config_dry_run
+  changed_when: nxs_update_cargo_hosted_repos | length > 0
   tags:
     - cargo
     - cargo-hosted
@@ -180,6 +184,7 @@
   ansible.builtin.debug:
     var: nxs_update_cargo_proxy_repos
   when: nexus_config_dry_run
+  changed_when: nxs_update_cargo_proxy_repos | length > 0
   tags:
     - cargo
     - cargo-proxy
@@ -188,12 +193,14 @@
   ansible.builtin.debug:
     var: nxs_update_cargo_group_repos
   when: nexus_config_dry_run
+  changed_when: nxs_update_cargo_group_repos | length > 0
   tags: cargo
 
 - name: Show nxs_delete_cargo_hosted_repos
   ansible.builtin.debug:
     var: nxs_delete_cargo_hosted_repos
   when: nexus_config_dry_run
+  changed_when: nxs_delete_cargo_hosted_repos | length > 0
   tags:
     - cargo
     - cargo-hosted
@@ -202,6 +209,7 @@
   ansible.builtin.debug:
     var: nxs_delete_cargo_proxy_repos
   when: nexus_config_dry_run
+  changed_when: nxs_delete_cargo_proxy_repos | length > 0
   tags:
     - cargo
     - cargo-proxy
@@ -210,6 +218,7 @@
   ansible.builtin.debug:
     var: nxs_delete_cargo_group_repos
   when: nexus_config_dry_run
+  changed_when: nxs_delete_cargo_group_repos | length > 0
   tags: cargo
 
 - name: Apply Cargo repository changes

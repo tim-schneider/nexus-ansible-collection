@@ -150,6 +150,7 @@
   ansible.builtin.debug:
     var: nxs_create_yum_hosted_repos
   when: nexus_config_dry_run
+  changed_when: nxs_create_yum_hosted_repos | length > 0
   tags:
     - yum
     - yum-hosted
@@ -158,6 +159,7 @@
   ansible.builtin.debug:
     var: nxs_update_yum_hosted_repos
   when: nexus_config_dry_run
+  changed_when: nxs_update_yum_hosted_repos | length > 0
   tags:
     - yum
     - yum-hosted
@@ -166,6 +168,7 @@
   ansible.builtin.debug:
     var: nxs_delete_yum_hosted_repos
   when: nexus_config_dry_run
+  changed_when: nxs_delete_yum_hosted_repos | length > 0
   tags:
     - yum
     - yum-hosted
@@ -174,6 +177,7 @@
   ansible.builtin.debug:
     var: nxs_create_yum_proxy_repos
   when: nexus_config_dry_run
+  changed_when: nxs_create_yum_proxy_repos | length > 0
   tags:
     - yum
     - yum-proxy
@@ -182,6 +186,7 @@
   ansible.builtin.debug:
     var: nxs_update_yum_proxy_repos
   when: nexus_config_dry_run
+  changed_when: nxs_update_yum_proxy_repos | length > 0
   tags:
     - yum
     - yum-proxy
@@ -190,6 +195,7 @@
   ansible.builtin.debug:
     var: nxs_delete_yum_proxy_repos
   when: nexus_config_dry_run
+  changed_when: nxs_delete_yum_proxy_repos | length > 0
   tags:
     - yum
     - yum-proxy
@@ -198,18 +204,21 @@
   ansible.builtin.debug:
     var: nxs_create_yum_group_repos
   when: nexus_config_dry_run
+  changed_when: nxs_create_yum_group_repos | length > 0
   tags: yum
 
 - name: Show nxs_update_yum_group_repos
   ansible.builtin.debug:
     var: nxs_update_yum_group_repos
   when: nexus_config_dry_run
+  changed_when: nxs_update_yum_group_repos | length > 0
   tags: yum
 
 - name: Show nxs_delete_yum_group_repos
   ansible.builtin.debug:
     var: nxs_delete_yum_group_repos
   when: nexus_config_dry_run
+  changed_when: nxs_delete_yum_group_repos | length > 0
   tags: yum
 
 - name: Apply Yum repository changes

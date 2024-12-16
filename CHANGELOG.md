@@ -1,4 +1,8 @@
 # Changelog
+### Changed
+- **config_api** When doing a dry-run, the role will report `changed` if there are differences between the current and desired state, but it will not make changes to your Nexus instance.
+
+
 ## [1.16.2] - 2024-12-15
 ## Changed
 - **config_api** Newly created repos will not be updated in the same run, all attributes are already set during the create operation. Making the role 30% faster.

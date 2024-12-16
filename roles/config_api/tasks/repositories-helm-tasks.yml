@@ -118,6 +118,7 @@
   ansible.builtin.debug:
     var: nxs_create_helm_hosted_repos
   when: nexus_config_dry_run
+  changed_when: nxs_create_helm_hosted_repos | length > 0
   tags:
     - helm
     - helm-hosted
@@ -126,6 +127,7 @@
   ansible.builtin.debug:
     var: nxs_update_helm_hosted_repos
   when: nexus_config_dry_run
+  changed_when: nxs_update_helm_hosted_repos | length > 0
   tags:
     - helm
     - helm-hosted
@@ -134,6 +136,7 @@
   ansible.builtin.debug:
     var: nxs_delete_helm_hosted_repos
   when: nexus_config_dry_run
+  changed_when: nxs_delete_helm_hosted_repos | length > 0
   tags:
     - helm
     - helm-hosted
@@ -142,6 +145,7 @@
   ansible.builtin.debug:
     var: nxs_create_helm_proxy_repos
   when: nexus_config_dry_run
+  changed_when: nxs_create_helm_proxy_repos | length > 0
   tags:
     - helm
     - helm-proxy
@@ -150,6 +154,7 @@
   ansible.builtin.debug:
     var: nxs_update_helm_proxy_repos
   when: nexus_config_dry_run
+  changed_when: nxs_update_helm_proxy_repos | length > 0
   tags:
     - helm
     - helm-proxy
@@ -158,6 +163,7 @@
   ansible.builtin.debug:
     var: nxs_delete_helm_proxy_repos
   when: nexus_config_dry_run
+  changed_when: nxs_delete_helm_proxy_repos | length > 0
   tags:
     - helm
     - helm-proxy

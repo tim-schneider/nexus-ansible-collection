@@ -82,6 +82,7 @@
   ansible.builtin.debug:
     var: nxs_create_composer_proxy_repos
   when: nexus_config_dry_run
+  changed_when: nxs_create_composer_proxy_repos | length > 0
   tags:
     - composer
     - composer-proxy
@@ -90,6 +91,7 @@
   ansible.builtin.debug:
     var: nxs_update_composer_proxy_repos
   when: nexus_config_dry_run
+  changed_when: nxs_update_composer_proxy_repos | length > 0
   tags:
     - composer
     - composer-proxy
@@ -98,6 +100,7 @@
   ansible.builtin.debug:
     var: nxs_delete_composer_proxy_repos
   when: nexus_config_dry_run
+  changed_when: nxs_delete_composer_proxy_repos | length > 0
   tags:
     - composer
     - composer-proxy

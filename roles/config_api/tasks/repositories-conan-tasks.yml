@@ -118,6 +118,7 @@
   ansible.builtin.debug:
     var: nxs_create_conan_hosted_repos
   when: nexus_config_dry_run
+  changed_when: nxs_create_conan_hosted_repos | length > 0
   tags:
     - conan
     - conan-hosted
@@ -126,6 +127,7 @@
   ansible.builtin.debug:
     var: nxs_create_conan_proxy_repos
   when: nexus_config_dry_run
+  changed_when: nxs_create_conan_proxy_repos | length > 0
   tags:
     - conan
     - conan-proxy
@@ -134,6 +136,7 @@
   ansible.builtin.debug:
     var: nxs_update_conan_hosted_repos
   when: nexus_config_dry_run
+  changed_when: nxs_update_conan_hosted_repos | length > 0
   tags:
     - conan
     - conan-hosted
@@ -142,6 +145,7 @@
   ansible.builtin.debug:
     var: nxs_update_conan_proxy_repos
   when: nexus_config_dry_run
+  changed_when: nxs_update_conan_proxy_repos | length > 0
   tags:
     - conan
     - conan-proxy
@@ -150,6 +154,7 @@
   ansible.builtin.debug:
     var: nxs_delete_conan_hosted_repos
   when: nexus_config_dry_run
+  changed_when: nxs_delete_conan_hosted_repos | length > 0
   tags:
     - conan
     - conan-hosted
@@ -158,6 +163,7 @@
   ansible.builtin.debug:
     var: nxs_delete_conan_proxy_repos
   when: nexus_config_dry_run
+  changed_when: nxs_delete_conan_proxy_repos | length > 0
   tags:
     - conan
     - conan-proxy

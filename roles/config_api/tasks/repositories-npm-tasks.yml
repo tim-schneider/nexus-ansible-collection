@@ -150,6 +150,7 @@
   ansible.builtin.debug:
     var: nxs_create_npm_hosted_repos
   when: nexus_config_dry_run
+  changed_when: nxs_create_npm_hosted_repos | length > 0
   tags:
     - npm
     - npm-hosted
@@ -158,6 +159,7 @@
   ansible.builtin.debug:
     var: nxs_update_npm_hosted_repos
   when: nexus_config_dry_run
+  changed_when: nxs_update_npm_hosted_repos | length > 0
   tags:
     - npm
     - npm-hosted
@@ -166,6 +168,7 @@
   ansible.builtin.debug:
     var: nxs_delete_npm_hosted_repos
   when: nexus_config_dry_run
+  changed_when: nxs_delete_npm_hosted_repos | length > 0
   tags:
     - npm
     - npm-hosted
@@ -174,6 +177,7 @@
   ansible.builtin.debug:
     var: nxs_create_npm_proxy_repos
   when: nexus_config_dry_run
+  changed_when: nxs_create_npm_proxy_repos | length > 0
   tags:
     - npm
     - npm-proxy
@@ -182,6 +186,7 @@
   ansible.builtin.debug:
     var: nxs_update_npm_proxy_repos
   when: nexus_config_dry_run
+  changed_when: nxs_update_npm_proxy_repos | length > 0
   tags:
     - npm
     - npm-proxy
@@ -190,6 +195,7 @@
   ansible.builtin.debug:
     var: nxs_delete_npm_proxy_repos
   when: nexus_config_dry_run
+  changed_when: nxs_delete_npm_proxy_repos | length > 0
   tags:
     - npm
     - npm-proxy
@@ -198,18 +204,21 @@
   ansible.builtin.debug:
     var: nxs_create_npm_group_repos
   when: nexus_config_dry_run
+  changed_when: nxs_create_npm_group_repos | length > 0
   tags: npm
 
 - name: Show nxs_update_npm_group_repos
   ansible.builtin.debug:
     var: nxs_update_npm_group_repos
   when: nexus_config_dry_run
+  changed_when: nxs_update_npm_group_repos | length > 0
   tags: npm
 
 - name: Show nxs_delete_npm_group_repos
   ansible.builtin.debug:
     var: nxs_delete_npm_group_repos
   when: nexus_config_dry_run
+  changed_when: nxs_delete_npm_group_repos | length > 0
   tags: npm
 
 - name: Apply NPM repository changes

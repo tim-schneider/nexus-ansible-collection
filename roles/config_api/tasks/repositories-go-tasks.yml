@@ -114,6 +114,7 @@
   ansible.builtin.debug:
     var: nxs_create_go_proxy_repos
   when: nexus_config_dry_run
+  changed_when: nxs_create_go_proxy_repos | length > 0
   tags:
     - go
     - go-proxy
@@ -122,12 +123,14 @@
   ansible.builtin.debug:
     var: nxs_create_go_group_repos
   when: nexus_config_dry_run
+  changed_when: nxs_create_go_group_repos | length > 0
   tags: go
 
 - name: Show nxs_update_go_proxy_repos
   ansible.builtin.debug:
     var: nxs_update_go_proxy_repos
   when: nexus_config_dry_run
+  changed_when: nxs_update_go_proxy_repos | length > 0
   tags:
     - go
     - go-proxy
@@ -136,12 +139,14 @@
   ansible.builtin.debug:
     var: nxs_update_go_group_repos
   when: nexus_config_dry_run
+  changed_when: nxs_update_go_group_repos | length > 0
   tags: go
 
 - name: Show nxs_delete_go_proxy_repos
   ansible.builtin.debug:
     var: nxs_delete_go_proxy_repos
   when: nexus_config_dry_run
+  changed_when: nxs_delete_go_proxy_repos | length > 0
   tags:
     - go
     - go-proxy
@@ -150,6 +155,7 @@
   ansible.builtin.debug:
     var: nxs_delete_go_group_repos
   when: nexus_config_dry_run
+  changed_when: nxs_delete_go_group_repos | length > 0
   tags: go
 
 - name: Apply Go repository changes
