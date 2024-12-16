@@ -34,45 +34,55 @@
 
 - name: Show nxs_create_routingrules
   ansible.builtin.debug:
-    var: nxs_create_routingrules | length
+    var: nxs_create_routingrules
+  when: nexus_config_dry_run
+  changed_when: nxs_create_routingrules | length > 0
   tags: routing-rules
 
 - name: Show nxs_update_routingrules
   ansible.builtin.debug:
-    var: nxs_update_routingrules | length
+    var: nxs_update_routingrules
+  when: nexus_config_dry_run
+  changed_when: nxs_update_routingrules | length > 0
   tags: routing-rules
 
 - name: Show nxs_delete_routingrules
   ansible.builtin.debug:
-    var: nxs_delete_routingrules | length
+    var: nxs_delete_routingrules
+  when: nexus_config_dry_run
+  changed_when: nxs_delete_routingrules | length > 0
   tags: routing-rules
 
-- name: Create configured Routing Rules using Nexus API
-  ansible.builtin.include_tasks: routing-rules-api.yml
-  vars:
-    rules: "{{ item | default([]) }}"
-    method: POST
-  with_items:
-    - "{{ nexus_repos_routing_rules | default([]) }}"
-  when: nxs_create_routingrules | length > 0
-  tags: routing-rules
+- name: Apply Routing Rule changes
+  block:
+    - name: Create configured Routing Rules using Nexus API
+      ansible.builtin.include_tasks: routing-rules-api.yml
+      vars:
+        rules: "{{ item | default([]) }}"
+        method: POST
+      with_items:
+        - "{{ nexus_repos_routing_rules | default([]) }}"
+      when: nxs_create_routingrules | length > 0
+      tags: routing-rules
 
-- name: Update configured Routing Rules using Nexus API
-  ansible.builtin.include_tasks: routing-rules-api.yml
-  vars:
-    rules: "{{ item | default([]) }}"
-    method: PUT
-  with_items:
-    - "{{ nxs_update_routingrules | default([]) }}"
-  when: nxs_update_routingrules | length > 0
-  tags: routing-rules
+    - name: Update configured Routing Rules using Nexus API
+      ansible.builtin.include_tasks: routing-rules-api.yml
+      vars:
+        rules: "{{ item | default([]) }}"
+        method: PUT
+      with_items:
+        - "{{ nxs_update_routingrules | default([]) }}"
+      when: nxs_update_routingrules | length > 0
+      tags: routing-rules
 
-- name: Delete Routing Rules using Nexus API
-  ansible.builtin.include_tasks: routing-rules-api.yml
-  vars:
-    rules: "{{ item | default([]) }}"
-    method: DELETE
-  with_items:
-    - "{{ nxs_delete_routingrules | default([]) }}"
-  when: nxs_delete_routingrules | length > 0
+    - name: Delete Routing Rules using Nexus API
+      ansible.builtin.include_tasks: routing-rules-api.yml
+      vars:
+        rules: "{{ item | default([]) }}"
+        method: DELETE
+      with_items:
+        - "{{ nxs_delete_routingrules | default([]) }}"
+      when: nxs_delete_routingrules | length > 0
+      tags: routing-rules
+  when: not nexus_config_dry_run
   tags: routing-rules

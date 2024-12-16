@@ -82,47 +82,64 @@
 
 - name: Show LDAP connections to be created
   ansible.builtin.debug:
-    var: nxs_create_ldap_connetions | length
+    var: nxs_create_ldap_connetions
+  when: nexus_config_dry_run
+  changed_when: nxs_create_ldap_connetions | length > 0
   tags: ldap
 
 - name: Show LDAP connections to be updated
   ansible.builtin.debug:
     var: nxs_update_ldap_connections
+  when: nexus_config_dry_run
+  changed_when: nxs_update_ldap_connections | length > 0
   tags: ldap
 
 - name: Show LDAP connections to be deleted
   ansible.builtin.debug:
-    var: nxs_delete_ldap_connetions | length
+    var: nxs_delete_ldap_connetions
+  when: nexus_config_dry_run
+  changed_when: nxs_delete_ldap_connetions | length > 0
   tags: ldap
 
-- name: Create configured LDAP connections using Nexus API
-  ansible.builtin.include_tasks: ldap-api.yml
-  vars:
-    ldap_connections: "{{ item | default([]) }}"
-    method: POST
-  with_items:
-    - "{{ nxs_create_ldap_connetions | default([]) }}"
-  when: nxs_create_ldap_connetions | length > 0
+- name: Apply LDAP connection changes
+  block:
+    - name: Create configured LDAP connections using Nexus API
+      ansible.builtin.include_tasks: ldap-api.yml
+      vars:
+        ldap_connections: "{{ item | default([]) }}"
+        method: POST
+      with_items:
+        - "{{ nxs_create_ldap_connetions | default([]) }}"
+      when: nxs_create_ldap_connetions | length > 0
+      tags: ldap
+
+    - name: Update configured LDAP connections using Nexus API
+      ansible.builtin.include_tasks: ldap-api.yml
+      vars:
+        ldap_connections: "{{ item | default([]) }}"
+        method: PUT
+      with_items:
+        - "{{ nxs_update_ldap_connections | default([]) }}"
+      when: nxs_update_ldap_connections | length > 0
+      tags: ldap
+
+    - name: Delete unconfigured LDAP connections using Nexus API
+      ansible.builtin.include_tasks: ldap-api.yml
+      vars:
+        ldap_connections: "{{ item | default([]) }}"
+        method: DELETE
+      with_items:
+        - "{{ nxs_delete_ldap_connetions | default([]) }}"
+      when: nxs_delete_ldap_connetions | length > 0
+      tags: ldap
+  when: not nexus_config_dry_run
   tags: ldap
 
-- name: Update configured LDAP connections using Nexus API
-  ansible.builtin.include_tasks: ldap-api.yml
-  vars:
-    ldap_connections: "{{ item | default([]) }}"
-    method: PUT
-  with_items:
-    - "{{ nxs_update_ldap_connections | default([]) }}"
-  when: nxs_update_ldap_connections | length > 0
-  tags: ldap
-
-- name: Delete unconfigured LDAP connections using Nexus API
-  ansible.builtin.include_tasks: ldap-api.yml
-  vars:
-    ldap_connections: "{{ item | default([]) }}"
-    method: DELETE
-  with_items:
-    - "{{ nxs_delete_ldap_connetions | default([]) }}"
-  when: nxs_delete_ldap_connetions | length > 0
+- name: Show if LDAP connections order is changed
+  ansible.builtin.debug:
+    var: ldap_connections_normalized
+  when: nexus_config_dry_run
+  changed_when: ldap_connections_normalized | map(attribute='name') | list != current_nexus_ldap_config | map(attribute='name') | list
   tags: ldap
 
 - name: Ensure LDAP connections are in desired order
@@ -144,5 +161,5 @@
   # So we need to check if the order is changed to be idempotent
   changed_when: >
     ldap_connections_normalized | map(attribute='name') | list != current_nexus_ldap_config | map(attribute='name') | list
-  when: ldap_connections_normalized | length > 0
+  when: not nexus_config_dry_run and ldap_connections_normalized | length > 0
   tags: ldap

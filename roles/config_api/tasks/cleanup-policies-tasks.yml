@@ -45,45 +45,55 @@
 
 - name: Show nxs_create_cleanuppolicies
   ansible.builtin.debug:
-    var: nxs_create_cleanuppolicies | length
+    var: nxs_create_cleanuppolicies
+  when: nexus_config_dry_run
+  changed_when: nxs_create_cleanuppolicies | length > 0
   tags: cleanup-policies
 
 - name: Show nxs_update_cleanuppolicies
   ansible.builtin.debug:
-    var: nxs_update_cleanuppolicies | length
+    var: nxs_update_cleanuppolicies
+  when: nexus_config_dry_run
+  changed_when: nxs_update_cleanuppolicies | length > 0
   tags: cleanup-policies
 
 - name: Show nxs_delete_cleanuppolicies
   ansible.builtin.debug:
-    var: nxs_delete_cleanuppolicies | length
+    var: nxs_delete_cleanuppolicies
+  when: nexus_config_dry_run
+  changed_when: nxs_delete_cleanuppolicies | length > 0
   tags: cleanup-policies
 
-- name: Create configured Cleanup Policies using Nexus API
-  ansible.builtin.include_tasks: cleanup-policies-api.yml
-  vars:
-    policies: "{{ item | default([]) }}"
-    method: POST
-  with_items:
-    - "{{ nxs_create_cleanuppolicies | default([]) }}"
-  when: nxs_create_cleanuppolicies | length > 0
-  tags: cleanup-policies
+- name: Apply Cleanup Policy changes
+  block:
+    - name: Create configured Cleanup Policies using Nexus API
+      ansible.builtin.include_tasks: cleanup-policies-api.yml
+      vars:
+        policies: "{{ item | default([]) }}"
+        method: POST
+      with_items:
+        - "{{ nxs_create_cleanuppolicies | default([]) }}"
+      when: nxs_create_cleanuppolicies | length > 0
+      tags: cleanup-policies
 
-- name: Update configured Cleanup Policies using Nexus API
-  ansible.builtin.include_tasks: cleanup-policies-api.yml
-  vars:
-    policies: "{{ item | default([]) }}"
-    method: PUT
-  with_items:
-    - "{{ nxs_update_cleanuppolicies | default([]) }}"
-  when: nxs_update_cleanuppolicies | length > 0
-  tags: cleanup-policies
+    - name: Update configured Cleanup Policies using Nexus API
+      ansible.builtin.include_tasks: cleanup-policies-api.yml
+      vars:
+        policies: "{{ item | default([]) }}"
+        method: PUT
+      with_items:
+        - "{{ nxs_update_cleanuppolicies | default([]) }}"
+      when: nxs_update_cleanuppolicies | length > 0
+      tags: cleanup-policies
 
-- name: Delete Cleanup Policies using Nexus API
-  ansible.builtin.include_tasks: cleanup-policies-api.yml
-  vars:
-    policies: "{{ item | default([]) }}"
-    method: DELETE
-  with_items:
-    - "{{ nxs_delete_cleanuppolicies | default([]) }}"
-  when: nxs_delete_cleanuppolicies | length > 0
+    - name: Delete Cleanup Policies using Nexus API
+      ansible.builtin.include_tasks: cleanup-policies-api.yml
+      vars:
+        policies: "{{ item | default([]) }}"
+        method: DELETE
+      with_items:
+        - "{{ nxs_delete_cleanuppolicies | default([]) }}"
+      when: nxs_delete_cleanuppolicies | length > 0
+      tags: cleanup-policies
+  when: not nexus_config_dry_run
   tags: cleanup-policies

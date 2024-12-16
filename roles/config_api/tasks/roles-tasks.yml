@@ -64,56 +64,57 @@
     ( filtered_nexus_roles | selectattr('id', 'equalto', item.id) | first).roles | default([]) | sort != item.roles | default([]) | sort
   tags: roles
 
-- name: Show nexus_roles_normalized
-  ansible.builtin.debug:
-    var: nexus_roles_normalized
-  when: nexus_config_dry_run
-  tags: roles
-
 - name: Show nxs_create_roles
   ansible.builtin.debug:
     var: nxs_create_roles
   when: nexus_config_dry_run
+  changed_when: nxs_create_roles | length > 0
   tags: roles
 
 - name: Show nxs_update_roles
   ansible.builtin.debug:
     var: nxs_update_roles
   when: nexus_config_dry_run
+  changed_when: nxs_update_roles | length > 0
   tags: roles
 
 - name: Show nxs_delete_roles
   ansible.builtin.debug:
     var: nxs_delete_roles
   when: nexus_config_dry_run
+  changed_when: nxs_delete_roles | length > 0
   tags: roles
 
-- name: Create configured Roles using Nexus API
-  ansible.builtin.include_tasks: roles-api.yml
-  vars:
-    nexus_roles: "{{ item | default([]) }}"
-    method: POST
-  with_items:
-    - "{{ nxs_create_roles | default([]) }}"
-  when: not nexus_config_dry_run and nxs_create_roles | length > 0
-  tags: roles
+- name: Apply role changes
+  block:
+    - name: Create configured Roles using Nexus API
+      ansible.builtin.include_tasks: roles-api.yml
+      vars:
+        nexus_roles: "{{ item | default([]) }}"
+        method: POST
+      with_items:
+        - "{{ nxs_create_roles | default([]) }}"
+      when: nxs_create_roles | length > 0
+      tags: roles
 
-- name: Update configured Roles using Nexus API
-  ansible.builtin.include_tasks: roles-api.yml
-  vars:
-    nexus_roles: "{{ item | default([]) }}"
-    method: PUT
-  with_items:
-    - "{{ nxs_update_roles | default([]) }}"
-  when: not nexus_config_dry_run and nxs_update_roles | length > 0
-  tags: roles
+    - name: Update configured Roles using Nexus API
+      ansible.builtin.include_tasks: roles-api.yml
+      vars:
+        nexus_roles: "{{ item | default([]) }}"
+        method: PUT
+      with_items:
+        - "{{ nxs_update_roles | default([]) }}"
+      when: nxs_update_roles | length > 0
+      tags: roles
 
-- name: Delete Roles using Nexus API
-  ansible.builtin.include_tasks: roles-api.yml
-  vars:
-    nexus_roles: "{{ item | default([]) }}"
-    method: DELETE
-  with_items:
-    - "{{ nxs_delete_roles | default([]) }}"
-  when: not nexus_config_dry_run and nxs_delete_roles | length > 0
+    - name: Delete Roles using Nexus API
+      ansible.builtin.include_tasks: roles-api.yml
+      vars:
+        nexus_roles: "{{ item | default([]) }}"
+        method: DELETE
+      with_items:
+        - "{{ nxs_delete_roles | default([]) }}"
+      when: nxs_delete_roles | length > 0
+      tags: roles
+  when: not nexus_config_dry_run
   tags: roles

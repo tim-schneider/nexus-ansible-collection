@@ -44,45 +44,55 @@
 
 - name: Show nxs_create_users
   ansible.builtin.debug:
-    var: nxs_create_users | length
+    var: nxs_create_users
+  when: nexus_config_dry_run
+  changed_when: nxs_create_users | length > 0
   tags: users
 
 - name: Show nxs_update_users
   ansible.builtin.debug:
-    var: nxs_update_users | length
+    var: nxs_update_users
+  when: nexus_config_dry_run
+  changed_when: nxs_update_users | length > 0
   tags: users
 
 - name: Show nxs_delete_users
   ansible.builtin.debug:
-    var: nxs_delete_users | length
+    var: nxs_delete_users
+  when: nexus_config_dry_run
+  changed_when: nxs_delete_users | length > 0
   tags: users
 
-- name: Create configured Users using Nexus API
-  ansible.builtin.include_tasks: users-api.yml
-  vars:
-    users: "{{ item | default([]) }}"
-    method: POST
-  with_items:
-    - "{{ nxs_create_users | default([]) }}"
-  when: nxs_create_users | length > 0
-  tags: users
+- name: Apply User changes
+  block:
+    - name: Create configured Users using Nexus API
+      ansible.builtin.include_tasks: users-api.yml
+      vars:
+        users: "{{ item | default([]) }}"
+        method: POST
+      with_items:
+        - "{{ nxs_create_users | default([]) }}"
+      when: nxs_create_users | length > 0
+      tags: users
 
-- name: Update configured Users using Nexus API
-  ansible.builtin.include_tasks: users-api.yml
-  vars:
-    users: "{{ item | default([]) }}"
-    method: PUT
-  with_items:
-    - "{{ nxs_update_users | default([]) }}"
-  when: nxs_update_users | length > 0
-  tags: users
+    - name: Update configured Users using Nexus API
+      ansible.builtin.include_tasks: users-api.yml
+      vars:
+        users: "{{ item | default([]) }}"
+        method: PUT
+      with_items:
+        - "{{ nxs_update_users | default([]) }}"
+      when: nxs_update_users | length > 0
+      tags: users
 
-- name: Delete Users using Nexus API
-  ansible.builtin.include_tasks: users-api.yml
-  vars:
-    users: "{{ item | default([]) }}"
-    method: DELETE
-  with_items:
-    - "{{ nxs_delete_users | default([]) }}"
-  when: nxs_delete_users | length > 0
+    - name: Delete Users using Nexus API
+      ansible.builtin.include_tasks: users-api.yml
+      vars:
+        users: "{{ item | default([]) }}"
+        method: DELETE
+      with_items:
+        - "{{ nxs_delete_users | default([]) }}"
+      when: nxs_delete_users | length > 0
+      tags: users
+  when: not nexus_config_dry_run
   tags: users

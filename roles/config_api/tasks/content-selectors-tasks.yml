@@ -39,45 +39,55 @@
 
 - name: Show nxs_create_content_selectors
   ansible.builtin.debug:
-    var: nxs_create_content_selectors | length
+    var: nxs_create_content_selectors
+  when: nexus_config_dry_run
+  changed_when: nxs_create_content_selectors | length > 0
   tags: content-selectors
 
 - name: Show nxs_update_content_selectors
   ansible.builtin.debug:
-    var: nxs_update_content_selectors | length
+    var: nxs_update_content_selectors
+  when: nexus_config_dry_run
+  changed_when: nxs_update_content_selectors | length > 0
   tags: content-selectors
 
 - name: Show nxs_delete_content_selectors
   ansible.builtin.debug:
-    var: nxs_delete_content_selectors | length
+    var: nxs_delete_content_selectors
+  when: nexus_config_dry_run
+  changed_when: nxs_delete_content_selectors | length > 0
   tags: content-selectors
 
-- name: Create configured Content Selectors using Nexus API
-  ansible.builtin.include_tasks: content-selectors-api.yml
-  vars:
-    selectors: "{{ item | default([]) }}"
-    method: POST
-  with_items:
-    - "{{ nxs_create_content_selectors | default([]) }}"
-  when: nxs_create_content_selectors | length > 0
-  tags: content-selectors
+- name: Apply Content Selector changes
+  block:
+    - name: Create configured Content Selectors using Nexus API
+      ansible.builtin.include_tasks: content-selectors-api.yml
+      vars:
+        selectors: "{{ item | default([]) }}"
+        method: POST
+      with_items:
+        - "{{ nxs_create_content_selectors | default([]) }}"
+      when: nxs_create_content_selectors | length > 0
+      tags: content-selectors
 
-- name: Update configured Content Selectors using Nexus API
-  ansible.builtin.include_tasks: content-selectors-api.yml
-  vars:
-    selectors: "{{ item | default([]) }}"
-    method: PUT
-  with_items:
-    - "{{ nxs_update_content_selectors | default([]) }}"
-  when: nxs_update_content_selectors | length > 0
-  tags: content-selectors
+    - name: Update configured Content Selectors using Nexus API
+      ansible.builtin.include_tasks: content-selectors-api.yml
+      vars:
+        selectors: "{{ item | default([]) }}"
+        method: PUT
+      with_items:
+        - "{{ nxs_update_content_selectors | default([]) }}"
+      when: nxs_update_content_selectors | length > 0
+      tags: content-selectors
 
-- name: Delete Content Selectors using Nexus API
-  ansible.builtin.include_tasks: content-selectors-api.yml
-  vars:
-    selectors: "{{ item | default([]) }}"
-    method: DELETE
-  with_items:
-    - "{{ nxs_delete_content_selectors | default([]) }}"
-  when: nxs_delete_content_selectors | length > 0
+    - name: Delete Content Selectors using Nexus API
+      ansible.builtin.include_tasks: content-selectors-api.yml
+      vars:
+        selectors: "{{ item | default([]) }}"
+        method: DELETE
+      with_items:
+        - "{{ nxs_delete_content_selectors | default([]) }}"
+      when: nxs_delete_content_selectors | length > 0
+      tags: content-selectors
+  when: not nexus_config_dry_run
   tags: content-selectors
