@@ -68,7 +68,7 @@
 - name: Compare rubygems hosted repositories for changes
   ansible.builtin.set_fact:
     nxs_update_rubygems_hosted_repos: "{{ nxs_update_rubygems_hosted_repos + [item] }}"
-  loop: "{{ nexus_repos_rubygems_hosted_normalized | list }}"
+  loop: "{{ nexus_repos_rubygems_hosted_normalized | rejectattr('name', 'in', nxs_create_rubygems_hosted_repos | map(attribute='name') | list) | list }}"
   when: >
     (__nxs_crnt_rubygems_hstd__ | selectattr('name', 'equalto', item.name) | first) is not defined or
     (__nxs_crnt_rubygems_hstd__ | selectattr('name', 'equalto', item.name) | first).format | default('rubygems') != item.format | default('rubygems') or
@@ -86,7 +86,7 @@
 - name: Compare rubygems proxy repositories for changes
   ansible.builtin.set_fact:
     nxs_update_rubygems_proxy_repos: "{{ nxs_update_rubygems_proxy_repos + [item] }}"
-  loop: "{{ nexus_repos_rubygems_proxy_normalized | list }}"
+  loop: "{{ nexus_repos_rubygems_proxy_normalized | rejectattr('name', 'in', nxs_create_rubygems_proxy_repos | map(attribute='name') | list) | list }}"
   # TODO: implement replication
   when: >
     (__nxs_crnt_rubygems_prxy__ | selectattr('name', 'equalto', item.name) | first) is not defined or
@@ -135,7 +135,7 @@
 - name: Compare rubygems group repositories for changes
   ansible.builtin.set_fact:
     nxs_update_rubygems_group_repos: "{{ nxs_update_rubygems_group_repos + [item] }}"
-  loop: "{{ nexus_repos_rubygems_group_normalized | list }}"
+  loop: "{{ nexus_repos_rubygems_group_normalized | rejectattr('name', 'in', nxs_create_rubygems_group_repos | map(attribute='name') | list) | list }}"
   when: >
     (__nxs_crnt_rubygems_grp__ | selectattr('name', 'equalto', item.name) | first) is not defined or
     (__nxs_crnt_rubygems_grp__ | selectattr('name', 'equalto', item.name) | first).format | default('rubygems') != item.format | default('rubygems') or

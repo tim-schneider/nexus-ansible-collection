@@ -68,7 +68,7 @@
 - name: Compare R hosted repositories for changes
   ansible.builtin.set_fact:
     nxs_update_r_hosted_repos: "{{ nxs_update_r_hosted_repos + [item] }}"
-  loop: "{{ nexus_repos_r_hosted_normalized | list }}"
+  loop: "{{ nexus_repos_r_hosted_normalized | rejectattr('name', 'in', nxs_create_r_hosted_repos | map(attribute='name') | list) | list }}"
   when: >
     (__nxs_crnt_r_hstd__ | selectattr('name', 'equalto', item.name) | first) is not defined or
     (__nxs_crnt_r_hstd__ | selectattr('name', 'equalto', item.name) | first).format | default('r') != item.format | default('r') or
@@ -86,7 +86,7 @@
 - name: Compare R proxy repositories for changes
   ansible.builtin.set_fact:
     nxs_update_r_proxy_repos: "{{ nxs_update_r_proxy_repos + [item] }}"
-  loop: "{{ nexus_repos_r_proxy_normalized | list }}"
+  loop: "{{ nexus_repos_r_proxy_normalized | rejectattr('name', 'in', nxs_create_r_proxy_repos | map(attribute='name') | list) | list }}"
   # TODO: implement replication
   when: >
     (__nxs_crnt_r_prxy__ | selectattr('name', 'equalto', item.name) | first) is not defined or
@@ -135,7 +135,7 @@
 - name: Compare R group repositories for changes
   ansible.builtin.set_fact:
     nxs_update_r_group_repos: "{{ nxs_update_r_group_repos + [item] }}"
-  loop: "{{ nexus_repos_r_group_normalized | list }}"
+  loop: "{{ nexus_repos_r_group_normalized | rejectattr('name', 'in', nxs_create_r_group_repos | map(attribute='name') | list) | list }}"
   when: >
     (__nxs_crnt_r_grp__ | selectattr('name', 'equalto', item.name) | first) is not defined or
     (__nxs_crnt_r_grp__ | selectattr('name', 'equalto', item.name) | first).format | default('r') != item.format | default('r') or

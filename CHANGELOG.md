@@ -1,4 +1,9 @@
 # Changelog
+## [1.16.2] - 2024-12-15
+## Changed
+- **config_api** Newly created repos will not be updated in the same run, all attributes are already set during the create operation. Making the role 30% faster.
+
+
 ## [1.16.1] - 2024-12-12
 ### Fixed
 - **config_api** Ensure only roles within the default source are managed by this role. Leaving roles created by Nexus as-is.

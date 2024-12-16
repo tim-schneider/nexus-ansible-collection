@@ -32,7 +32,7 @@
 - name: Compare GitLFS hosted repositories for changes
   ansible.builtin.set_fact:
     nxs_update_gitlfs_hosted_repos: "{{ nxs_update_gitlfs_hosted_repos + [item] }}"
-  loop: "{{ nexus_repos_gitlfs_hosted_normalized | list }}"
+  loop: "{{ nexus_repos_gitlfs_hosted_normalized | rejectattr('name', 'in', nxs_create_gitlfs_hosted_repos | map(attribute='name') | list) | list }}"
   when: >
     (__nxs_crnt_gitlfs_hstd__ | selectattr('name', 'equalto', item.name) | first) is not defined or
     (__nxs_crnt_gitlfs_hstd__ | selectattr('name', 'equalto', item.name) | first).format | default('gitlfs') != item.format | default('gitlfs') or

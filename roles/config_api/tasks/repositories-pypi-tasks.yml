@@ -66,7 +66,7 @@
 - name: Compare PyPi hosted repositories for changes
   ansible.builtin.set_fact:
     nxs_update_pypi_hosted_repos: "{{ nxs_update_pypi_hosted_repos + [item] }}"
-  loop: "{{ nexus_repos_pypi_hosted_normalized | list }}"
+  loop: "{{ nexus_repos_pypi_hosted_normalized | rejectattr('name', 'in', nxs_create_pypi_hosted_repos | map(attribute='name') | list) | list }}"
   when: >
     (__nxs_crnt_pypi_hstd__ | selectattr('name', 'equalto', item.name) | first) is not defined or
     (__nxs_crnt_pypi_hstd__ | selectattr('name', 'equalto', item.name) | first).format | default('pypi') != item.format | default('pypi') or
@@ -84,7 +84,7 @@
 - name: Compare PyPi proxy repositories for changes
   ansible.builtin.set_fact:
     nxs_update_pypi_proxy_repos: "{{ nxs_update_pypi_proxy_repos + [item] }}"
-  loop: "{{ nexus_repos_pypi_proxy_normalized | list }}"
+  loop: "{{ nexus_repos_pypi_proxy_normalized | rejectattr('name', 'in', nxs_create_pypi_proxy_repos | map(attribute='name') | list) | list }}"
   # TODO: implement replication
   when: >
     (__nxs_crnt_pypi_prxy__ | selectattr('name', 'equalto', item.name) | first) is not defined or
@@ -134,7 +134,7 @@
 - name: Compare PyPi group repositories for changes
   ansible.builtin.set_fact:
     nxs_update_pypi_group_repos: "{{ nxs_update_pypi_group_repos + [item] }}"
-  loop: "{{ nexus_repos_pypi_group_normalized | list }}"
+  loop: "{{ nexus_repos_pypi_group_normalized | rejectattr('name', 'in', nxs_create_pypi_group_repos | map(attribute='name') | list) | list }}"
   when: >
     (__nxs_crnt_pypi_grp__ | selectattr('name', 'equalto', item.name) | first) is not defined or
     (__nxs_crnt_pypi_grp__ | selectattr('name', 'equalto', item.name) | first).format | default('pypi') != item.format | default('pypi') or
