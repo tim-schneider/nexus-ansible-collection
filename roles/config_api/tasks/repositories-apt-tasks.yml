@@ -50,7 +50,7 @@
 - name: Compare APT hosted repositories for changes
   ansible.builtin.set_fact:
     nxs_update_apt_hosted_repos: "{{ nxs_update_apt_hosted_repos + [item] }}"
-  loop: "{{ nexus_repos_apt_hosted_normalized | list }}"
+  loop: "{{ nexus_repos_apt_hosted_normalized | rejectattr('name', 'in', nxs_create_apt_hosted_repos | map(attribute='name') | list) | list }}"
   when: >
     (__nxs_crnt_apt_hstd__ | selectattr('name', 'equalto', item.name) | first) is not defined or
     (__nxs_crnt_apt_hstd__ | selectattr('name', 'equalto', item.name) | first).format | default('apt') != item.format | default('apt') or
@@ -69,7 +69,7 @@
 - name: Compare APT proxy repositories for changes
   ansible.builtin.set_fact:
     nxs_update_apt_proxy_repos: "{{ nxs_update_apt_proxy_repos + [item] }}"
-  loop: "{{ nexus_repos_apt_proxy_normalized | list }}"
+  loop: "{{ nexus_repos_apt_proxy_normalized | rejectattr('name', 'in', nxs_create_apt_proxy_repos | map(attribute='name') | list) | list }}"
   # TODO: Implement replication
   when: >
     (__nxs_crnt_apt_prxy__ | selectattr('name', 'equalto', item.name) | first) is not defined or

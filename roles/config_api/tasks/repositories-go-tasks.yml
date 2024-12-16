@@ -50,7 +50,7 @@
 - name: Compare go proxy repositories for changes
   ansible.builtin.set_fact:
     nxs_update_go_proxy_repos: "{{ nxs_update_go_proxy_repos + [item] }}"
-  loop: "{{ nexus_repos_go_proxy_normalized | list }}"
+  loop: "{{ nexus_repos_go_proxy_normalized | rejectattr('name', 'in', nxs_create_go_proxy_repos | map(attribute='name') | list) | list }}"
   # TODO: implement replication
   when: >
     (__nxs_crnt_go_prxy__ | selectattr('name', 'equalto', item.name) | first) is not defined or
@@ -99,7 +99,7 @@
 - name: Compare go group repositories for changes
   ansible.builtin.set_fact:
     nxs_update_go_group_repos: "{{ nxs_update_go_group_repos + [item] }}"
-  loop: "{{ nexus_repos_go_group_normalized | list }}"
+  loop: "{{ nexus_repos_go_group_normalized | rejectattr('name', 'in', nxs_create_go_group_repos | map(attribute='name') | list) | list }}"
   when: >
     (__nxs_crnt_go_grp__ | selectattr('name', 'equalto', item.name) | first) is not defined or
     (__nxs_crnt_go_grp__ | selectattr('name', 'equalto', item.name) | first).format | default('go') != item.format | default('go') or

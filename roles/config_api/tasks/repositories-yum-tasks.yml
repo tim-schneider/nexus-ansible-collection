@@ -66,7 +66,7 @@
 - name: Compare Yum hosted repositories for changes
   ansible.builtin.set_fact:
     nxs_update_yum_hosted_repos: "{{ nxs_update_yum_hosted_repos + [item] }}"
-  loop: "{{ nexus_repos_yum_hosted_normalized | list }}"
+  loop: "{{ nexus_repos_yum_hosted_normalized | rejectattr('name', 'in', nxs_create_yum_hosted_repos | map(attribute='name') | list) | list }}"
   when: >
     (__nxs_crnt_yum_hstd__ | selectattr('name', 'equalto', item.name) | first) is not defined or
     (__nxs_crnt_yum_hstd__ | selectattr('name', 'equalto', item.name) | first).format | default('yum') != item.format | default('yum') or
@@ -86,7 +86,7 @@
 - name: Compare Yum proxy repositories for changes
   ansible.builtin.set_fact:
     nxs_update_yum_proxy_repos: "{{ nxs_update_yum_proxy_repos + [item] }}"
-  loop: "{{ nexus_repos_yum_proxy_normalized | list }}"
+  loop: "{{ nexus_repos_yum_proxy_normalized | rejectattr('name', 'in', nxs_create_yum_proxy_repos | map(attribute='name') | list) | list }}"
   # TODO: Implement replication
   when: >
     (__nxs_crnt_yum_prxy__ | selectattr('name', 'equalto', item.name) | first) is not defined or
@@ -135,7 +135,7 @@
 - name: Compare Yum group repositories for changes
   ansible.builtin.set_fact:
     nxs_update_yum_group_repos: "{{ nxs_update_yum_group_repos + [item] }}"
-  loop: "{{ nexus_repos_yum_group_normalized | list }}"
+  loop: "{{ nexus_repos_yum_group_normalized | rejectattr('name', 'in', nxs_create_yum_group_repos | map(attribute='name') | list) | list }}"
   when: >
     (__nxs_crnt_yum_grp__ | selectattr('name', 'equalto', item.name) | first) is not defined or
     (__nxs_crnt_yum_grp__ | selectattr('name', 'equalto', item.name) | first).format | default('yum') != item.format | default('yum') or

@@ -66,7 +66,7 @@
 - name: Compare maven hosted repositories for changes
   ansible.builtin.set_fact:
     nxs_update_mvn_hosted_repos: "{{ nxs_update_mvn_hosted_repos + [item] }}"
-  loop: "{{ nexus_repos_maven_hosted_normalized | list }}"
+  loop: "{{ nexus_repos_maven_hosted_normalized | rejectattr('name', 'in', nxs_create_mvn_hosted_repos | map(attribute='name') | list) | list }}"
   when: >
     (__nxs_crnt_mvn_hstd__ | selectattr('name', 'equalto', item.name) | first) is not defined or
     (__nxs_crnt_mvn_hstd__ | selectattr('name', 'equalto', item.name) | first).format | default('maven2') != item.format | default('maven2') or
@@ -87,7 +87,7 @@
 - name: Compare maven proxy repositories for changes
   ansible.builtin.set_fact:
     nxs_update_mvn_proxy_repos: "{{ nxs_update_mvn_proxy_repos + [item] }}"
-  loop: "{{ nexus_repos_maven_proxy_normalized | list }}"
+  loop: "{{ nexus_repos_maven_proxy_normalized | rejectattr('name', 'in', nxs_create_mvn_proxy_repos | map(attribute='name') | list) | list }}"
   # TODO: implement replication
   when: >
     (__nxs_crnt_mvn_prxy__ | selectattr('name', 'equalto', item.name) | first) is not defined or
@@ -140,7 +140,7 @@
 - name: Compare maven group repositories for changes
   ansible.builtin.set_fact:
     nxs_update_mvn_group_repos: "{{ nxs_update_mvn_group_repos + [item] }}"
-  loop: "{{ nexus_repos_maven_group_normalized | list }}"
+  loop: "{{ nexus_repos_maven_group_normalized | rejectattr('name', 'in', nxs_create_mvn_group_repos | map(attribute='name') | list) | list }}"
   when: >
     (__nxs_crnt_mvn_grp__ | selectattr('name', 'equalto', item.name) | first) is not defined or
     (__nxs_crnt_mvn_grp__ | selectattr('name', 'equalto', item.name) | first).format | default('maven2') != item.format | default('maven2') or

@@ -32,7 +32,7 @@
 - name: Compare Conda proxy repositories for changes
   ansible.builtin.set_fact:
     nxs_update_conda_proxy_repos: "{{ nxs_update_conda_proxy_repos + [item] }}"
-  loop: "{{ nexus_repos_conda_proxy_normalized | list }}"
+  loop: "{{ nexus_repos_conda_proxy_normalized | rejectattr('name', 'in', nxs_create_conda_proxy_repos | map(attribute='name') | list) | list }}"
   # TODO: implement replication
   when: >
     (__nxs_crnt_conda_prxy__ | selectattr('name', 'equalto', item.name) | first) is not defined or

@@ -55,7 +55,7 @@
 - name: Compare roles for changes
   ansible.builtin.set_fact:
     nxs_update_roles: "{{ nxs_update_roles + [item] }}"
-  loop: "{{ nexus_roles_normalized | list }}"
+  loop: "{{ nexus_roles_normalized | rejectattr('name', 'in', nxs_create_roles | map(attribute='name') | list) | list }}"
   when: >
     ( filtered_nexus_roles | selectattr('id', 'equalto', item.id) | first) is not defined or
     ( filtered_nexus_roles | selectattr('id', 'equalto', item.id) | first).name | default(omit) != item.name | default(omit) or

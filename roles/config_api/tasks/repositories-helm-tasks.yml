@@ -50,7 +50,7 @@
 - name: Compare Helm hosted repositories for changes
   ansible.builtin.set_fact:
     nxs_update_helm_hosted_repos: "{{ nxs_update_helm_hosted_repos + [item] }}"
-  loop: "{{ nexus_repos_helm_hosted_normalized | list }}"
+  loop: "{{ nexus_repos_helm_hosted_normalized | rejectattr('name', 'in', nxs_create_helm_hosted_repos | map(attribute='name') | list) | list }}"
   when: >
     (__nxs_crnt_helm_hstd__ | selectattr('name', 'equalto', item.name) | first) is not defined or
     (__nxs_crnt_helm_hstd__ | selectattr('name', 'equalto', item.name) | first).format | default('helm') != item.format | default('helm') or
@@ -68,7 +68,7 @@
 - name: Compare Helm proxy repositories for changes
   ansible.builtin.set_fact:
     nxs_update_helm_proxy_repos: "{{ nxs_update_helm_proxy_repos + [item] }}"
-  loop: "{{ nexus_repos_helm_proxy_normalized | list }}"
+  loop: "{{ nexus_repos_helm_proxy_normalized | rejectattr('name', 'in', nxs_create_helm_proxy_repos | map(attribute='name') | list) | list }}"
   # TODO: implement replication
   when: >
     (__nxs_crnt_helm_prxy__ | selectattr('name', 'equalto', item.name) | first) is not defined or
