@@ -32,15 +32,15 @@
 - name: Compare cleanup policies for changes
   ansible.builtin.set_fact:
     nxs_update_cleanuppolicies: "{{ nxs_update_cleanuppolicies + [item] }}"
-  loop: "{{ nexus_repos_cleanup_policies_normalized | list }}"
+  loop: "{{ nexus_repos_cleanup_policies_normalized | rejectattr('name', 'in', nxs_create_cleanuppolicies | map(attribute='name') | list) | list }}"
   when: >
     ( __nxs_crnt_cln_plcy__.json | selectattr('name', 'equalto', item.name) | first) is not defined or
-    ( __nxs_crnt_cln_plcy__.json | selectattr('name', 'equalto', item.name) | first).criteriaLastBlobUpdated | default(omit) != item.criteriaLastBlobUpdated | default(None) or
-    ( __nxs_crnt_cln_plcy__.json | selectattr('name', 'equalto', item.name) | first).criteriaLastDownloaded | default(omit) != item.criteriaLastDownloaded | default(None) or
-    ( __nxs_crnt_cln_plcy__.json | selectattr('name', 'equalto', item.name) | first).criteriaAssetRegex | default(omit) != item.criteriaAssetRegex | default(None) or
-    ( __nxs_crnt_cln_plcy__.json | selectattr('name', 'equalto', item.name) | first).criteriaReleaseType | default(omit) != item.criteriaReleaseType | default(None) or
-    ( __nxs_crnt_cln_plcy__.json | selectattr('name', 'equalto', item.name) | first).notes | default(omit) != item.notes | default(None) or
-    ( __nxs_crnt_cln_plcy__.json | selectattr('name', 'equalto', item.name) | first).format | default(omit) != item.format | default(None)
+    ( __nxs_crnt_cln_plcy__.json | selectattr('name', 'equalto', item.name) | first).criteriaLastBlobUpdated | default(None) | int != item.criteriaLastBlobUpdated | default(None) | int or
+    ( __nxs_crnt_cln_plcy__.json | selectattr('name', 'equalto', item.name) | first).criteriaLastDownloaded | default(None) | int != item.criteriaLastDownloaded | default(None) | int or
+    ( __nxs_crnt_cln_plcy__.json | selectattr('name', 'equalto', item.name) | first).criteriaAssetRegex | default(None) != item.criteriaAssetRegex | default(None) or
+    ( __nxs_crnt_cln_plcy__.json | selectattr('name', 'equalto', item.name) | first).criteriaReleaseType | default(None) != item.criteriaReleaseType | default(None) or
+    ( __nxs_crnt_cln_plcy__.json | selectattr('name', 'equalto', item.name) | first).notes | default(None) != item.notes | default(None) or
+    ( __nxs_crnt_cln_plcy__.json | selectattr('name', 'equalto', item.name) | first).format | default(None) != item.format | default(None)
   tags: cleanup-policies
 
 - name: Show nxs_create_cleanuppolicies

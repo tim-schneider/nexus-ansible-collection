@@ -1,4 +1,9 @@
 # Changelog
+## [1.16.4] - 2024-12-22
+### Fixed
+- **config_api** Cleanup policies are now idempotent.
+
+
 ## [1.16.3] - 2024-12-16
 ### Added
 - **config_api** Added support for dry-run for the User, Routing Rules, Cleanup Policy, Content Selectors and LDAP tasks.
