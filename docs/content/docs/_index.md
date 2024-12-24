@@ -43,17 +43,14 @@ This result in some features not to work as expected, or may seem broken.
 
 Here's an overview of attributes that are not fully supported on the Nexus API, either to set those attributes, or to update them.
 
-- Setting `content disposition` on `maven groups` (and therefore can not be set through this role)
-- Setting `layout policy` on `maven groups` (and therefore can not be set through this role)
-- Setting `version policy` on `maven groups` (and therefore can not be set through this role)
 - `httpclient.authentication.password` cant be fetched through API (and therefore can not be updated through this role) However you can set it for new repos
-- Create `cleanup policy` for `format 'all'` (and therefore can not be created through this role)
+- Create `cleanup policy` for `format 'all'` (and therefore can not be created through this role) https://sonatype.atlassian.net/issues/NEXUS-43742
 - `useTrustStoreForIndexAccess` for `docker proxy` (and therefore can not be set through this role)
 - `yumsigning` cant be fetched through the API (and therefore not updated through this role) However you can set it for new repos
-- `raw.contentdisposition` for `raw groups` cant be fetched through api (and therefore not updated through this role) but it can be set for new repos
+- `raw.contentdisposition` for `raw groups` cant be fetched through api (and therefore not updated through this role) but it can be set for new repos https://sonatype.atlassian.net/issues/NEXUS-45431
 - `aptSigning` cant be fetched through api (and therefore not updated through this role) but it can be set for new repos
 - `conanProxy.conanVersion` cant be fetched through API (and therefore not updated through this role) but it can be set for new repos
-- `preemptive beartoken` can not be set for `cargo proxy` and `npm proxy`
+- `preemptive beartoken` can not be set for `cargo proxy` and `npm proxy` https://ideas.sonatype.com/ideas/IDEAS-I-2449 and https://sonatype.atlassian.net/issues/NEXUS-30725
 
 ## Questions or Feedback?
 
