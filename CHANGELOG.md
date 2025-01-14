@@ -1,7 +1,7 @@
 # Changelog
 ## [1.17.0] - 2025-01-14
 ### Added
-- **config_api** Added support to create and delete custom priviliges
+- **config_api** Added support to create and delete custom privileges
 
 ## Changed
 - **nexus_oss** Default for privilege 'type' has been changed to `application` to be in line with how privilege defaults are handled in the **config_api** role.
