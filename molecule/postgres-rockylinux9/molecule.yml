@@ -58,6 +58,9 @@ platforms:
 
 provisioner:
   name: ansible
+  config_options:
+    defaults:
+      callbacks_enabled: timer, profile_roles, profile_tasks
 
 scenario:
   check_sequence:

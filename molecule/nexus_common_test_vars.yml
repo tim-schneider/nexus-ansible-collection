@@ -735,8 +735,6 @@ nexus_local_users:
     password: s3cr3t
     roles:
       - developers
-  - username: olduser # make sure this old account is removed
-    state: absent
   - username: test_roles
     first_name: Test
     last_name: Roles

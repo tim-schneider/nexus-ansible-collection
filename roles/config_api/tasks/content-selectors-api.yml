@@ -9,7 +9,7 @@
       {% endif %}
   tags: content-selectors
 
-- name: "{{ method }} {{ item.name }} content seelctor"
+- name: "{{ method }} {{ item.name }} content selector"
   ansible.builtin.uri:
     url: "{{ api_url }}"
     method: "{{ method }}"
