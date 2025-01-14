@@ -23,7 +23,7 @@
 
 - name: Determine users to delete
   ansible.builtin.set_fact:
-    nxs_delete_users: "{{ __nxs_crnt_usrs__.json | rejectattr('userId', 'in', nexus_local_users_normalized | map(attribute='userId') | list) | list }}"
+    nxs_delete_users: "{{ __nxs_crnt_usrs__.json | rejectattr('userId', 'in', nexus_local_users_normalized | map(attribute='userId') | list) | selectattr('source', 'equalto', 'default') | list }}"
   tags: users
 
 - name: Compare users for changes
