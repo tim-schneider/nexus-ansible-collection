@@ -47,6 +47,12 @@
   ansible.builtin.include_tasks: repositories-tasks.yml
   tags: repositories
 
+# Priviliges always need to be created BEFORE the roles and AFTER the repositories
+# This is because the roles can have privileges that are created when repositories are created
+- name: Include privileges-tasks
+  ansible.builtin.include_tasks: privileges-tasks.yml
+  tags: privileges
+
 # Roles always need to be created after the repositories
 # This is because the roles can have privileges that are created when repositories are created
 - name: Include roles-tasks

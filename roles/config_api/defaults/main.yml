@@ -184,6 +184,8 @@ nexus_roles:
       - "nx-repository-view-*-*-browse"
     roles: []
 
+nexus_privileges: []
+
 nexus_content_selectors: []
 
 # Global Defaults
