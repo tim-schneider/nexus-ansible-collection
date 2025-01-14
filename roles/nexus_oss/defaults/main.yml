@@ -317,7 +317,7 @@ nexus_scheduled_tasks: []
 #      age: "24"
 
 _nexus_privilege_defaults:
-  type: repository-view
+  type: application
   format: maven2
   actions:
     - read

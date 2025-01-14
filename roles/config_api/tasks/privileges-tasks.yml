@@ -29,10 +29,10 @@
       {{
         {
           'name': nx_app_privilege.name,
-          'type': nx_app_privilege.type | default('application'),
+          'type': nx_app_privilege.type | default(_nexus_privilege_defaults.type),
           'description': nx_app_privilege.description | default(''),
           'domain': nx_app_privilege.domain | default('default'),
-          'actions': nx_app_privilege.actions | default([])
+          'actions': nx_app_privilege.actions | default(_nexus_privilege_defaults.actions)
         }
       }}
   loop: "{{ nexus_privileges | selectattr('type', 'equalto', 'application') | list }}"
@@ -50,7 +50,7 @@
           'name': nx_script_privilege.name,
           'description': nx_script_privilege.description | default(''),
           'scriptName': nx_script_privilege.scriptName | default(nx_script_privilege.script_name),
-          'actions': nx_script_privilege.actions | default([])
+          'actions': nx_script_privilege.actions | default(_nexus_privilege_defaults.actions)
         }
       }}
   loop: "{{ nexus_privileges | selectattr('type', 'equalto', 'script') | list }}"
@@ -86,8 +86,8 @@
           'description': nx_repository_content_selector_privilege.description | default(''),
           'repository': nx_repository_content_selector_privilege.repository | default(''),
           'contentSelector': nx_repository_content_selector_privilege.contentSelector | default(''),
-          'format': nx_repository_content_selector_privilege.format | default(''),
-          'actions': nx_repository_content_selector_privilege.actions | default([])
+          'format': nx_repository_content_selector_privilege.format | default(_nexus_privilege_defaults.format),
+          'actions': nx_repository_content_selector_privilege.actions | default(_nexus_privilege_defaults.actions)
         }
       }}
   loop: "{{ nexus_privileges | selectattr('type', 'equalto', 'repository-content-selector') | list }}"
@@ -105,8 +105,8 @@
           'name': nx_repository_admin_privilege.name,
           'description': nx_repository_admin_privilege.description | default(''),
           'repository': nx_repository_admin_privilege.repository | default(''),
-          'format': nx_repository_admin_privilege.format | default(''),
-          'actions': nx_repository_admin_privilege.actions | default([])
+          'format': nx_repository_admin_privilege.format | default(_nexus_privilege_defaults.format),
+          'actions': nx_repository_admin_privilege.actions | default(_nexus_privilege_defaults.actions)
         }
       }}
   loop: "{{ nexus_privileges | selectattr('type', 'equalto', 'repository-admin') | list }}"
@@ -124,8 +124,8 @@
           'name': nx_repository_view_privilege.name,
           'description': nx_repository_view_privilege.description | default(''),
           'repository': nx_repository_view_privilege.repository | default(''),
-          'format': nx_repository_view_privilege.format | default(''),
-          'actions': nx_repository_view_privilege.actions | default([])
+          'format': nx_repository_view_privilege.format | default(_nexus_privilege_defaults.format),
+          'actions': nx_repository_view_privilege.actions | default(_nexus_privilege_defaults.actions)
         }
       }}
   loop: "{{ nexus_privileges | selectattr('type', 'equalto', 'repository-view') | list }}"

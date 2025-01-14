@@ -188,6 +188,12 @@ nexus_privileges: []
 
 nexus_content_selectors: []
 
+_nexus_privilege_defaults:
+  type: application
+  format: maven2
+  actions:
+    - read
+
 # Global Defaults
 nexus_repos_global_defaults:
   online: true

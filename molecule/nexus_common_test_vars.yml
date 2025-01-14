@@ -632,6 +632,10 @@ nexus_privileges:
     actions:
       - read
       - browse
+  - name: all-repos-read-default
+    description: Read & Browse access to all repos
+    type: repository-view
+    repository: "*"
   - name: wildcard1
     type: wildcard
     description: first wilcard
