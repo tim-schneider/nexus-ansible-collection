@@ -6,6 +6,9 @@
 ## Changed
 - **nexus_oss** Default for privilege 'type' has been changed to `application` to be in line with how privilege defaults are handled in the **config_api** role.
 
+## Fixed
+- **config_api** fixed an issue where creating blobstore return wrong status code.
+
 ## [1.16.4] - 2024-12-22
 ### Fixed
 - **config_api** Cleanup policies are now idempotent.

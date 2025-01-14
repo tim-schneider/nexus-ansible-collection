@@ -16,9 +16,9 @@
     method: "{{ method }}"
     validate_certs: "{{ nexus_api_validate_certs }}"
     status_code: >
-      {% if method == 'POST' and item.type == 'S3' %}
+      {% if method == 'POST' and item.type | lower == 's3' %}
         201
-      {% elif method == 'POST' and item.type in ['Group', 'File'] %}
+      {% elif method == 'POST' and item.type | lower in ['group', 'file'] %}
         204
       {% elif method == 'DELETE' %}
         204
