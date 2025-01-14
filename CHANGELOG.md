@@ -1,14 +1,18 @@
 # Changelog
+## [1.17.1] - 2025-01-14
+### Changed
+- **nexus_oss** Privileges will no longer be created when `nexus_use_api_for_provisioning` is set to `true`. Please use the `config_api` role to manage privileges. See: https://nexus.cloudkrafter.org/docs/config-api-role/privileges/
+
 ## [1.17.0] - 2025-01-14
 ### Added
 - **config_api** Added support to create and delete custom privileges
 
-## Changed
+### Changed
 - **nexus_oss** Default for privilege 'type' has been changed to `application` to be in line with how privilege defaults are handled in the **config_api** role.
 - **config_api** Exclude users that are not in the default source. Nexus API can't manage users in another IAM system.
 - **config_api** The anonymous and admin user are defined in `nexus_local_users` by default.
 
-## Fixed
+### Fixed
 - **config_api** fixed an issue where creating blobstore return wrong status code.
 
 ## [1.16.4] - 2024-12-22

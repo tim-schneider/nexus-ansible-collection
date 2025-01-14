@@ -106,6 +106,7 @@
             {{ result.append(_nexus_privilege_defaults | combine(privilege)) }}
           {%- endfor -%}
           {{ result | to_json | from_json }}
+      when: not nexus_use_api_for_provisioning | default(false) | bool
 
     - name: Create/Check blobstores
       when: nexus_restore_point is undefined
@@ -323,7 +324,7 @@
       vars:
         script_name: setup_privileges_from_list
         call_args: "{{ nexus_privileges }}"
-      when: nexus_privileges | length > 0
+      when: nexus_privileges | length > 0 and not nexus_use_api_for_provisioning | default(false) | bool
       tags: privileges
 
     - name: Create/check roles
