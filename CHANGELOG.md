@@ -6,6 +6,7 @@
 ## Changed
 - **nexus_oss** Default for privilege 'type' has been changed to `application` to be in line with how privilege defaults are handled in the **config_api** role.
 - **config_api** Exclude users that are not in the default source. Nexus API can't manage users in another IAM system.
+- **config_api** The anonymous and admin user are defined in `nexus_local_users` by default.
 
 ## Fixed
 - **config_api** fixed an issue where creating blobstore return wrong status code.

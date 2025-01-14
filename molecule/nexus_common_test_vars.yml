@@ -728,6 +728,20 @@ nexus_roles:
     description: role without privileges assigned
 
 nexus_local_users:
+  - username: anonymous
+    first_name: Anonymous
+    last_name: User
+    email: anonymous@example.org
+    password: s3cr3t
+    roles:
+      - nx-anonymous
+  - username: admin
+    first_name: Administrator
+    last_name: User
+    email: admin@example.org
+    password: s3cr3t
+    roles:
+      - nx-admin
   - username: jenkins
     first_name: Jenkins
     last_name: CI

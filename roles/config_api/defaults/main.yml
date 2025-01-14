@@ -150,7 +150,22 @@ nexus_repos_routing_rules: []
 # Default user password used when creating new users. This is only used if the user does not already exist.
 # It will not change the password of an existing user.
 nexus_default_user_password: changeme
-nexus_local_users: []
+
+nexus_local_users:
+  - username: anonymous
+    first_name: Anonymous
+    last_name: User
+    email: anonymous@example.org
+    password: s3cr3t
+    roles:
+      - nx-anonymous
+  - username: admin
+    first_name: Administrator
+    last_name: User
+    email: admin@example.org
+    password: s3cr3t
+    roles:
+      - nx-admin
 
 # If you set nexus_enable_pro to true, you must provide a base64 encoded license file
 # Either by setting the NEXUS_LICENSE_B64 environment variable or by providing the base64 encoded license string directly below.
