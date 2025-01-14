@@ -124,6 +124,17 @@ Nexus privileges that are created initially or automatically by Nexus will not b
   {{< /tab >}}
 {{< /tabs >}}
 
+For some attributes you can set global defaults:
+```yaml {filename="group_vars/all.yml"}
+_nexus_privilege_defaults:
+  type: application
+  format: maven2
+  actions:
+    - read
+```
+If you define a custom privilege without specifying it's `type` the value `application` will be used.
+Same principle applies to `format` and `actions`.
+
 {{< callout emoji="💡" >}}
 set `nexus_config_dry_run: true` to see what will be changed, without making any changes to your Nexus instance.
 {{< /callout >}}
