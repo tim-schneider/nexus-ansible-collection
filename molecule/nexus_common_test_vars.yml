@@ -626,7 +626,9 @@ nexus_content_selectors:
 nexus_privileges:
   - name: all-repos-read
     description: Read & Browse access to all repos
+    type: repository-view
     repository: "*"
+    format: "*"
     actions:
       - read
       - browse
@@ -639,15 +641,22 @@ nexus_privileges:
     description: some nexus configuration
     domain: some_nexus_domain
     actions:
-      - some action
+      - all
   - name: script1
     type: script
     description: first script
-    script_name: the_script_name
+    script_name: setup_realms
     actions:
-      - some actions
+      - all
+  - name: script-new-syntax
+    type: script
+    description: second script
+    scriptName: create_task
+    actions:
+      - all
   - name: docker-login-search-all
     type: repository-content-selector
+    format: docker
     contentSelector: docker-login-search
     description: Login to and search docker registry
     repository: "*"
@@ -655,17 +664,29 @@ nexus_privileges:
       - read
   - name: docker-private-team1-rw
     type: repository-content-selector
+    format: docker
     contentSelector: docker-private-team1
     description: write access to /team1 namespace on docker-private
     repository: docker-private
     actions:
-      - read,
+      - read
       - add
       - edit
       - browse
   - name: docker-private-team2-rw
     type: repository-content-selector
+    format: docker
     contentSelector: docker-private-team2
+    description: write access to /team2 namespace on docker-hosted
+    repository: docker-private
+    actions:
+      - read
+      - add
+      - edit
+      - browse
+  - name: admin-docker-private-team2-rw
+    type: repository-admin
+    format: docker
     description: write access to /team2 namespace on docker-hosted
     repository: docker-private
     actions:

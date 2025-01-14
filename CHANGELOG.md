@@ -1,4 +1,8 @@
 # Changelog
+## [1.17.0] - 2025-01-14
+### Added
+- **config_api** Added support to create and delete custom priviliges
+
 ## [1.16.4] - 2024-12-22
 ### Fixed
 - **config_api** Cleanup policies are now idempotent.

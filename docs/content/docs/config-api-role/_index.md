@@ -24,6 +24,7 @@ Looking for one of the following?
   {{< card link="routing-rules" title="Routing Rules" icon="arrows-expand" >}}
   {{< card link="content-selectors" title="Content Selectors" icon="bookmark" >}}
   {{< card link="user-tokens" title="User Tokens" icon="finger-print" >}}
+  {{< card link="privileges" title="Privileges" icon="key" >}}
   {{< card link="roles" title="Roles" icon="user-group" >}}
   {{< card link="users" title="Users" icon="users" >}}
   {{< card link="repositories" title="Repositories" icon="folder-open" >}}

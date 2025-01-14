@@ -17,7 +17,6 @@ Some features and API endpoints are not supported yet.
 - Security Management SAML
 - Email endpoint + normalize
 - Security Atlassian Cloud
-- Security Management Privileges + normalize
 - Tags
 - Azure Blob store endpoint
 - Google Blob store endpoint

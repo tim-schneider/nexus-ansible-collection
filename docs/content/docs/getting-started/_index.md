@@ -76,6 +76,7 @@ Available tags:
 {{< badge "routing-rules" >}}
 {{< badge "content-selectors" >}}
 {{< badge "blobstores" >}}
+{{< badge content="privileges" type="warning">}}
 {{< badge content="roles" type="warning">}}
 {{< badge content="users" type="warning">}}
 {{< badge content="repositories" type="warning">}}
