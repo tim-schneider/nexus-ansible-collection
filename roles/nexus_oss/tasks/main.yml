@@ -479,3 +479,8 @@
   ansible.builtin.include_tasks: migrate_database.yml
   tags: nexus-migrate, nexus-healthcheck
   when: nexus_migrate_database | default(false) | bool
+
+- name: Encrypt Nexus data
+  ansible.builtin.include_tasks: encrypt_nexus_data.yml
+  tags: nexus-encrypt
+  when: nexus_encryption_keys | length > 0
