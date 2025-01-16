@@ -483,4 +483,4 @@
 - name: Encrypt Nexus data
   ansible.builtin.include_tasks: encrypt_nexus_data.yml
   tags: nexus-encrypt
-  when: nexus_encryption_key_id is defined and nexus_encryption_key_value is defined
+  when: nexus_encryption_keys | length > 0

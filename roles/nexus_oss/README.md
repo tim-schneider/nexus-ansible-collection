@@ -28,6 +28,7 @@ _(Created with [gh-md-toc](https://github.com/ekalinin/github-markdown-toc))_
       * [General variables](#general-variables)
       * [Postgres Database](#postgres-database)
       * [Nexus HA Cluster](#nexus-ha-cluster)
+      * [Secrets Encryption](#secrets-encryption)
       * [Download dir for nexus package](#download-dir-for-nexus-package)
       * [Nexus port, context path and listening IP](#nexus-port-context-path-and-listening-ip)
       * [Nexus OS user and group](#nexus-os-user-and-group)
@@ -210,12 +211,25 @@ nexus_cluster_enabled: false
 
 Any new node/instance with the same postgres database credentials will automatically be added to the cluster.
 
-### Encrypting Nexus data
+### Secrets Encryption
+With NXRM Pro, you can re-encrypt all stored secrets using your own encryption keys. Note that only one encryption key can be active at any given time.
+
+You can define new encryption keys side by side with existing ones and update the active key when you're ready to switch.
+
+Changing ANY these variables will trigger a reboot of the NXRM service!
 
 ```yaml
-nexus_encryption_key_id:
-nexus_encryption_key_value: some-encryption-key
+nexus_encryption_keys:
+  - id: custom-key1
+    secret: some-encryption-key
+  - id: custom-key2
+    secret: another-encryption-key
+nexus_active_encryption_key_id: custom-key1
+nexus_encryption_key_file: /var/nexus/encryption-key.json
 ```
+The encryption settings, including keys and the active encryption key, will be stored in the JSON file specified by `nexus_encryption_key_file`. This file will be generated on the Nexus host.
+
+To avoid storing your encryption keys in source control, consider using Ansible Vault or, preferably, secret replacement in your CI/CD process.
 
 ### Download dir for nexus package
 ```yaml
