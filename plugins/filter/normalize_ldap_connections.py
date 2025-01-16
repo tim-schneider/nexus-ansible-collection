@@ -33,7 +33,9 @@ def normalize_ldap_connections(connections):
                 "userIdAttribute": conn.get("ldap_user_id_attribute", ""),
                 "userRealNameAttribute": conn.get("ldap_user_real_name_attribute", ""),
                 "userEmailAddressAttribute": conn.get("ldap_user_email_attribute", ""),
-                "userPasswordAttribute": conn.get("ldap_auth_password", ""),
+                "userPasswordAttribute": conn.get("ldap_user_password_attribute", ""),
+                "authUsername": conn.get("ldap_auth_username", ""),
+                "authPassword": conn.get("ldap_auth_password", ""),
                 "userObjectClass": conn.get("ldap_user_object_class", ""),
                 "ldapGroupsAsRoles": True,
                 "groupBaseDn": conn.get("ldap_group_base_dn", ""),
@@ -53,7 +55,7 @@ def normalize_ldap_connections(connections):
             elif "userMemberOfAttribute" in conn:
                 normalized.update({
                     "groupType": "DYNAMIC",
-                    "userMemberOfAttribute": conn.get("userMemberOfAttribute", "memberOf"),
+                    "userMemberOfAttribute": conn.get("ldap_user_member_attribute", "memberOf"),
                 })
 
         # API format: Keep as-is but clean empty attributes
