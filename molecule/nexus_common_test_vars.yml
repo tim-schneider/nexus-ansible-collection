@@ -24,6 +24,11 @@ nexus_backup_configure: true
 nexus_delete_default_repos: true
 nexus_delete_default_blobstore: true
 
+# Nexus encryption key
+nexus_encryption_key_id: custom-key4
+nexus_encryption_key_value: some-encryption-key
+nexus_encryption_key_file: /var/nexus/encryption-key.json
+
 nexus_blob_split: true
 
 nexus_config_maven: true

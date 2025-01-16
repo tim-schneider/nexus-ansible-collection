@@ -210,6 +210,13 @@ nexus_cluster_enabled: false
 
 Any new node/instance with the same postgres database credentials will automatically be added to the cluster.
 
+### Encrypting Nexus data
+
+```yaml
+nexus_encryption_key_id:
+nexus_encryption_key_value: some-encryption-key
+```
+
 ### Download dir for nexus package
 ```yaml
     nexus_download_dir: '/tmp'
