@@ -39,8 +39,8 @@ def normalize_ldap_connections(connections):
                 "userObjectClass": conn.get("ldap_user_object_class", ""),
                 "ldapGroupsAsRoles": True,
                 "groupBaseDn": conn.get("ldap_group_base_dn", ""),
-                "groupSubtree": False,
-                "userSubtree": False,
+                "groupSubtree": conn.get("ldap_group_subtree", False),
+                "userSubtree": conn.get("ldap_user_subtree", False),
             }
 
             # Determine group type
@@ -55,7 +55,7 @@ def normalize_ldap_connections(connections):
             elif "userMemberOfAttribute" in conn:
                 normalized.update({
                     "groupType": "DYNAMIC",
-                    "userMemberOfAttribute": conn.get("ldap_user_member_attribute", "memberOf"),
+                    "userMemberOfAttribute": conn.get("userMemberOfAttribute", "memberOf"),
                 })
 
         # API format: Keep as-is but clean empty attributes
