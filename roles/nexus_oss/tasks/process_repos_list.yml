@@ -69,9 +69,9 @@
               }
             } -%}
             {%- if use_api -%}
-              {{ result.append(transformed_repo) }}
+              {% set result = result.append(transformed_repo) %}
             {%- else -%}
-              {{ result.append(combined_repo) }}
+              {% set result = result.append(combined_repo) %}
             {%- endif -%}
           {%- endfor -%}
           {{ result | to_json | from_json }}
@@ -103,9 +103,9 @@
               }
             } -%}
             {%- if use_api -%}
-              {{ result.append(transformed_repo) }}
+              {% set result = result.append(transformed_repo) %}
             {%- else -%}
-              {{ result.append(combined_repo) }}
+              {% set result = result.append(combined_repo) %}
             {%- endif -%}
           {%- endfor -%}
           {{ result | to_json | from_json }}
@@ -128,9 +128,9 @@
               }
             } -%}
             {%- if use_api -%}
-              {{ result.append(transformed_repo) }}
+              {% set result = result.append(transformed_repo) %}
             {%- else -%}
-              {{ result.append(combined_repo) }}
+              {% set result = result.append(combined_repo) %}
             {%- endif -%}
           {%- endfor -%}
           {{ result | to_json | from_json }}
@@ -236,9 +236,9 @@
               }
             } -%}
             {%- if use_api -%}
-              {{ result.append(transformed_repo) }}
+              {% set result = result.append(transformed_repo) %}
             {%- else -%}
-              {{ result.append(combined_repo) }}
+              {% set result = result.append(combined_repo) %}
             {%- endif -%}
           {%- endfor -%}
           {{ result | to_json | from_json }}
@@ -273,9 +273,9 @@
               }
             } -%}
             {%- if use_api -%}
-              {{ result.append(transformed_repo) }}
+              {% set result = result.append(transformed_repo) %}
             {%- else -%}
-              {{ result.append(combined_repo) }}
+              {% set result = result.append(combined_repo) %}
             {%- endif -%}
           {%- endfor -%}
           {{ result | to_json | from_json }}
@@ -306,9 +306,9 @@
               }
             } -%}
             {%- if use_api -%}
-              {{ result.append(transformed_repo) }}
+              {% set result = result.append(transformed_repo) %}
             {%- else -%}
-              {{ result.append(combined_repo) }}
+              {% set result = result.append(combined_repo) %}
             {%- endif -%}
           {%- endfor -%}
           {{ result | to_json | from_json }}
@@ -403,9 +403,9 @@
               }
             } -%}
             {%- if use_api -%}
-              {{ result.append(transformed_repo) }}
+              {% set result = result.append(transformed_repo) %}
             {%- else -%}
-              {{ result.append(combined_repo) }}
+              {% set result = result.append(combined_repo) %}
             {%- endif -%}
           {%- endfor -%}
           {{ result | to_json | from_json }}
@@ -432,9 +432,9 @@
               }
             } -%}
             {%- if use_api -%}
-              {{ result.append(transformed_repo) }}
+              {% set result = result.append(transformed_repo) %}
             {%- else -%}
-              {{ result.append(combined_repo) }}
+              {% set result = result.append(combined_repo) %}
             {%- endif -%}
           {%- endfor -%}
           {{ result | to_json | from_json }}
@@ -457,9 +457,9 @@
               }
             } -%}
             {%- if use_api -%}
-              {{ result.append(transformed_repo) }}
+              {% set result = result.append(transformed_repo) %}
             {%- else -%}
-              {{ result.append(combined_repo) }}
+              {% set result = result.append(combined_repo) %}
             {%- endif -%}
           {%- endfor -%}
           {{ result | to_json | from_json }}
@@ -555,9 +555,9 @@
               }
             } -%}
             {%- if use_api -%}
-              {{ result.append(transformed_repo) }}
+              {% set result = result.append(transformed_repo) %}
             {%- else -%}
-              {{ result.append(combined_repo) }}
+              {% set result = result.append(combined_repo) %}
             {%- endif -%}
           {%- endfor -%}
           {{ result | to_json | from_json }}
@@ -587,9 +587,9 @@
               }
             } -%}
             {%- if use_api -%}
-              {{ result.append(transformed_repo) }}
+              {% set result = result.append(transformed_repo) %}
             {%- else -%}
-              {{ result.append(combined_repo) }}
+              {% set result = result.append(combined_repo) %}
             {%- endif -%}
           {%- endfor -%}
           {{ result | to_json | from_json }}
@@ -612,9 +612,9 @@
               }
             } -%}
             {%- if use_api -%}
-              {{ result.append(transformed_repo) }}
+              {% set result = result.append(transformed_repo) %}
             {%- else -%}
-              {{ result.append(combined_repo) }}
+              {% set result = result.append(combined_repo) %}
             {%- endif -%}
           {%- endfor -%}
           {{ result | to_json | from_json }}
@@ -706,9 +706,9 @@
               'routingRule': combined_repo.routing_rule | default(omit)
             } -%}
             {%- if use_api -%}
-              {{ result.append(transformed_repo) }}
+              {% set result = result.append(transformed_repo) %}
             {%- else -%}
-              {{ result.append(combined_repo) }}
+              {% set result = result.append(combined_repo) %}
             {%- endif -%}
           {%- endfor -%}
           {{ result | to_json | from_json }}
@@ -735,9 +735,9 @@
               }
             } -%}
             {%- if use_api -%}
-              {{ result.append(transformed_repo) }}
+              {% set result = result.append(transformed_repo) %}
             {%- else -%}
-              {{ result.append(combined_repo) }}
+              {% set result = result.append(combined_repo) %}
             {%- endif -%}
           {%- endfor -%}
           {{ result | to_json | from_json }}
@@ -760,9 +760,9 @@
               }
             } -%}
             {%- if use_api -%}
-              {{ result.append(transformed_repo) }}
+              {% set result = result.append(transformed_repo) %}
             {%- else -%}
-              {{ result.append(combined_repo) }}
+              {% set result = result.append(combined_repo) %}
             {%- endif -%}
           {%- endfor -%}
           {{ result | to_json | from_json }}
@@ -857,9 +857,9 @@
               }
             } -%}
             {%- if use_api -%}
-              {{ result.append(transformed_repo) }}
+              {% set result = result.append(transformed_repo) %}
             {%- else -%}
-              {{ result.append(combined_repo) }}
+              {% set result = result.append(combined_repo) %}
             {%- endif -%}
           {%- endfor -%}
           {{ result | to_json | from_json }}
@@ -886,9 +886,9 @@
               }
             } -%}
             {%- if use_api -%}
-              {{ result.append(transformed_repo) }}
+              {% set result = result.append(transformed_repo) %}
             {%- else -%}
-              {{ result.append(combined_repo) }}
+              {% set result = result.append(combined_repo) %}
             {%- endif -%}
           {%- endfor -%}
           {{ result | to_json | from_json }}
@@ -911,9 +911,9 @@
               }
             } -%}
             {%- if use_api -%}
-              {{ result.append(transformed_repo) }}
+              {% set result = result.append(transformed_repo) %}
             {%- else -%}
-              {{ result.append(combined_repo) }}
+              {% set result = result.append(combined_repo) %}
             {%- endif -%}
           {%- endfor -%}
           {{ result | to_json | from_json }}
@@ -1007,7 +1007,7 @@
                 'removeQuarantined': combined_repo.removeQuarantined | default(omit)
               }
             } -%}
-            {{ result.append(combined_repo) }}
+            {% set result = result.append(combined_repo) %}
           {%- endfor -%}
           {{ result | to_json | from_json }}
 
@@ -1033,9 +1033,9 @@
               }
             } -%}
             {%- if use_api -%}
-              {{ result.append(transformed_repo) }}
+              {% set result = result.append(transformed_repo) %}
             {%- else -%}
-              {{ result.append(combined_repo) }}
+              {% set result = result.append(combined_repo) %}
             {%- endif -%}
           {%- endfor -%}
           {{ result | to_json | from_json }}
@@ -1059,9 +1059,9 @@
               'writableMember': combined_repo.writable_member_repo | default(omit)
             } -%}
             {%- if use_api -%}
-              {{ result.append(transformed_repo) }}
+              {% set result = result.append(transformed_repo) %}
             {%- else -%}
-              {{ result.append(combined_repo) }}
+              {% set result = result.append(combined_repo) %}
             {%- endif -%}
           {%- endfor -%}
           {{ result | to_json | from_json }}
@@ -1157,9 +1157,9 @@
               }
             } -%}
             {%- if use_api -%}
-              {{ result.append(transformed_repo) }}
+              {% set result = result.append(transformed_repo) %}
             {%- else -%}
-              {{ result.append(combined_repo) }}
+              {% set result = result.append(combined_repo) %}
             {%- endif -%}
           {%- endfor -%}
           {{ result | to_json | from_json }}
@@ -1186,9 +1186,9 @@
               }
             } -%}
             {%- if use_api -%}
-              {{ result.append(transformed_repo) }}
+              {% set result = result.append(transformed_repo) %}
             {%- else -%}
-              {{ result.append(combined_repo) }}
+              {% set result = result.append(combined_repo) %}
             {%- endif -%}
           {%- endfor -%}
           {{ result | to_json | from_json }}
@@ -1211,9 +1211,9 @@
               }
             } -%}
             {%- if use_api -%}
-              {{ result.append(transformed_repo) }}
+              {% set result = result.append(transformed_repo) %}
             {%- else -%}
-              {{ result.append(combined_repo) }}
+              {% set result = result.append(combined_repo) %}
             {%- endif -%}
           {%- endfor -%}
           {{ result | to_json | from_json }}
@@ -1274,9 +1274,9 @@
               }
             } -%}
             {%- if use_api -%}
-              {{ result.append(transformed_repo) }}
+              {% set result = result.append(transformed_repo) %}
             {%- else -%}
-              {{ result.append(combined_repo) }}
+              {% set result = result.append(combined_repo) %}
             {%- endif -%}
           {%- endfor -%}
           {{ result | to_json | from_json }}
@@ -1356,9 +1356,9 @@
               }
             } -%}
             {%- if use_api -%}
-              {{ result.append(transformed_repo) }}
+              {% set result = result.append(transformed_repo) %}
             {%- else -%}
-              {{ result.append(combined_repo) }}
+              {% set result = result.append(combined_repo) %}
             {%- endif -%}
           {%- endfor -%}
           {{ result | to_json | from_json }}
@@ -1389,9 +1389,9 @@
               }
             } -%}
             {%- if use_api -%}
-              {{ result.append(transformed_repo) }}
+              {% set result = result.append(transformed_repo) %}
             {%- else -%}
-              {{ result.append(combined_repo) }}
+              {% set result = result.append(combined_repo) %}
             {%- endif -%}
           {%- endfor -%}
           {{ result | to_json | from_json }}
@@ -1418,9 +1418,9 @@
               }
             } -%}
             {%- if use_api -%}
-              {{ result.append(transformed_repo) }}
+              {% set result = result.append(transformed_repo) %}
             {%- else -%}
-              {{ result.append(combined_repo) }}
+              {% set result = result.append(combined_repo) %}
             {%- endif -%}
           {%- endfor -%}
           {{ result | to_json | from_json }}
@@ -1516,9 +1516,9 @@
               }
             } -%}
             {%- if use_api -%}
-              {{ result.append(transformed_repo) }}
+              {% set result = result.append(transformed_repo) %}
             {%- else -%}
-              {{ result.append(combined_repo) }}
+              {% set result = result.append(combined_repo) %}
             {%- endif -%}
           {%- endfor -%}
           {{ result | to_json | from_json }}
@@ -1552,9 +1552,9 @@
               }
             } -%}
             {%- if use_api -%}
-              {{ result.append(transformed_repo) }}
+              {% set result = result.append(transformed_repo) %}
             {%- else -%}
-              {{ result.append(combined_repo) }}
+              {% set result = result.append(combined_repo) %}
             {%- endif -%}
           {%- endfor -%}
           {{ result | to_json | from_json }}
@@ -1638,9 +1638,9 @@
               'routingRule': combined_repo.routing_rule | default(omit)
             } -%}
             {%- if use_api -%}
-              {{ result.append(transformed_repo) }}
+              {% set result = result.append(transformed_repo) %}
             {%- else -%}
-              {{ result.append(combined_repo) }}
+              {% set result = result.append(combined_repo) %}
             {%- endif -%}
           {%- endfor -%}
           {{ result | to_json | from_json }}
@@ -1667,9 +1667,9 @@
               }
             } -%}
             {%- if use_api -%}
-              {{ result.append(transformed_repo) }}
+              {% set result = result.append(transformed_repo) %}
             {%- else -%}
-              {{ result.append(combined_repo) }}
+              {% set result = result.append(combined_repo) %}
             {%- endif -%}
           {%- endfor -%}
           {{ result | to_json | from_json }}
@@ -1753,9 +1753,9 @@
               'routingRule': combined_repo.routing_rule | default(omit)
             } -%}
             {%- if use_api -%}
-              {{ result.append(transformed_repo) }}
+              {% set result = result.append(transformed_repo) %}
             {%- else -%}
-              {{ result.append(combined_repo) }}
+              {% set result = result.append(combined_repo) %}
             {%- endif -%}
           {%- endfor -%}
           {{ result | to_json | from_json }}
@@ -1782,9 +1782,9 @@
               }
             } -%}
             {%- if use_api -%}
-              {{ result.append(transformed_repo) }}
+              {% set result = result.append(transformed_repo) %}
             {%- else -%}
-              {{ result.append(combined_repo) }}
+              {% set result = result.append(combined_repo) %}
             {%- endif -%}
           {%- endfor -%}
           {{ result | to_json | from_json }}
@@ -1807,9 +1807,9 @@
               }
             } -%}
             {%- if use_api -%}
-              {{ result.append(transformed_repo) }}
+              {% set result = result.append(transformed_repo) %}
             {%- else -%}
-              {{ result.append(combined_repo) }}
+              {% set result = result.append(combined_repo) %}
             {%- endif -%}
           {%- endfor -%}
           {{ result | to_json | from_json }}
@@ -1901,9 +1901,9 @@
               'routingRule': combined_repo.routing_rule | default(omit)
             } -%}
             {%- if use_api -%}
-              {{ result.append(transformed_repo) }}
+              {% set result = result.append(transformed_repo) %}
             {%- else -%}
-              {{ result.append(combined_repo) }}
+              {% set result = result.append(combined_repo) %}
             {%- endif -%}
           {%- endfor -%}
           {{ result | to_json | from_json }}
@@ -1979,9 +1979,9 @@
               'routingRule': combined_repo.routing_rule | default(omit)
             } -%}
             {%- if use_api -%}
-              {{ result.append(transformed_repo) }}
+              {% set result = result.append(transformed_repo) %}
             {%- else -%}
-              {{ result.append(combined_repo) }}
+              {% set result = result.append(combined_repo) %}
             {%- endif -%}
           {%- endfor -%}
           {{ result | to_json | from_json }}
@@ -2057,9 +2057,9 @@
               'routingRule': combined_repo.routing_rule | default(omit)
             } -%}
             {%- if use_api -%}
-              {{ result.append(transformed_repo) }}
+              {% set result = result.append(transformed_repo) %}
             {%- else -%}
-              {{ result.append(combined_repo) }}
+              {% set result = result.append(combined_repo) %}
             {%- endif -%}
           {%- endfor -%}
           {{ result | to_json | from_json }}
@@ -2135,9 +2135,9 @@
               'routingRule': combined_repo.routing_rule | default(omit)
             } -%}
             {%- if use_api -%}
-              {{ result.append(transformed_repo) }}
+              {% set result = result.append(transformed_repo) %}
             {%- else -%}
-              {{ result.append(combined_repo) }}
+              {% set result = result.append(combined_repo) %}
             {%- endif -%}
           {%- endfor -%}
           {{ result | to_json | from_json }}
@@ -2213,9 +2213,9 @@
               'routingRule': combined_repo.routing_rule | default(omit)
             } -%}
             {%- if use_api -%}
-              {{ result.append(transformed_repo) }}
+              {% set result = result.append(transformed_repo) %}
             {%- else -%}
-              {{ result.append(combined_repo) }}
+              {% set result = result.append(combined_repo) %}
             {%- endif -%}
           {%- endfor -%}
           {{ result | to_json | from_json }}
@@ -2291,9 +2291,9 @@
               'routingRule': combined_repo.routing_rule | default(omit)
             } -%}
             {%- if use_api -%}
-              {{ result.append(transformed_repo) }}
+              {% set result = result.append(transformed_repo) %}
             {%- else -%}
-              {{ result.append(combined_repo) }}
+              {% set result = result.append(combined_repo) %}
             {%- endif -%}
           {%- endfor -%}
           {{ result | to_json | from_json }}
@@ -2316,9 +2316,9 @@
               }
             } -%}
             {%- if use_api -%}
-              {{ result.append(transformed_repo) }}
+              {% set result = result.append(transformed_repo) %}
             {%- else -%}
-              {{ result.append(combined_repo) }}
+              {% set result = result.append(combined_repo) %}
             {%- endif -%}
           {%- endfor -%}
           {{ result | to_json | from_json }}
