@@ -1,4 +1,12 @@
 # Changelog
+## [1.18.0] - 2025-02-01
+### Added
+- **nexus_oss** Adding support for using custom encryption keys
+
+### Fixed
+- **config_api** Fixed python filter to enhance LDAP connection normalization
+- **nexus_oss** Enhanced Jinja templating for processing repos. Fixes #14 by @caroldx
+
 ## [1.17.1] - 2025-01-14
 ### Changed
 - **nexus_oss** Privileges will no longer be created when `nexus_use_api_for_provisioning` is set to `true`. Please use the `config_api` role to manage privileges. See: https://nexus.cloudkrafter.org/docs/config-api-role/privileges/
