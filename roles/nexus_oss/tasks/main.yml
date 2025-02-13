@@ -319,12 +319,18 @@
       when: nexus_use_api_for_provisioning | default(false) | bool
       tags: repos
 
-    - name: Create/check privileges
-      ansible.builtin.include_tasks: call_script.yml
-      vars:
-        script_name: setup_privileges_from_list
-        call_args: "{{ nexus_privileges }}"
-      when: nexus_privileges | length > 0 and not nexus_use_api_for_provisioning | default(false) | bool
+    - name: Import task from role
+      ansible.builtin.include_role:
+        name: cloudkrafter.nexus.config_api
+        tasks_from: privileges-tasks.yml
+      tags: privileges
+      when: nexus_privileges | length > 0
+
+    - name: Import Privileges tasks from config_api
+      ansible.builtin.include_role:
+        name: cloudkrafter.nexus.config_api
+        tasks_from: privileges-tasks.yml
+      when: nexus_privileges | length > 0
       tags: privileges
 
     - name: Create/check roles

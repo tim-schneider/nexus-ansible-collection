@@ -144,7 +144,7 @@
         method: DELETE
       with_items:
         - "{{ nxs_delete_composer_proxy_repos | default([]) }}"
-      when: nxs_delete_composer_proxy_repos | length > 0
+      when: nxs_delete_composer_proxy_repos | length > 0 and nexus_enforce_desired_state | bool
       tags:
         - composer
         - composer-proxy

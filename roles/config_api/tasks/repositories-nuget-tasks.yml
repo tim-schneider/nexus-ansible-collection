@@ -314,7 +314,7 @@
         method: DELETE
       with_items:
         - "{{ nxs_delete_nuget_hosted_repos | default([]) }}"
-      when: nxs_delete_nuget_hosted_repos | length > 0
+      when: nxs_delete_nuget_hosted_repos | length > 0 and nexus_enforce_desired_state | bool
       tags:
         - nuget
         - nuget-hosted
@@ -328,7 +328,7 @@
         method: DELETE
       with_items:
         - "{{ nxs_delete_nuget_proxy_repos | default([]) }}"
-      when: nxs_delete_nuget_proxy_repos | length > 0
+      when: nxs_delete_nuget_proxy_repos | length > 0 and nexus_enforce_desired_state | bool
       tags:
         - nuget
         - nuget-proxy
@@ -342,7 +342,7 @@
         method: DELETE
       with_items:
         - "{{ nxs_delete_nuget_group_repos | default([]) }}"
-      when: nxs_delete_nuget_group_repos | length > 0
+      when: nxs_delete_nuget_group_repos | length > 0 and nexus_enforce_desired_state | bool
       tags: nuget
   when: not nexus_config_dry_run
   tags:

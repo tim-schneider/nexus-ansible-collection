@@ -9,7 +9,7 @@
     force_basic_auth: true
     timeout: "{{ nexus_api_timeout }}"
     status_code: 204
-  when: not nexus_enable_pro_version
+  when: not nexus_enable_pro_version and nexus_enforce_desired_state | bool
   changed_when: true
   tags: license
 

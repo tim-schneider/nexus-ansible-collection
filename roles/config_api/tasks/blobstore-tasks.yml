@@ -58,5 +58,5 @@
     method: DELETE
   with_items:
     - "{{ nxs_delete_blobstores | default([]) }}"
-  when: nxs_delete_blobstores | length > 0
+  when: nxs_delete_blobstores | length > 0 and nexus_enforce_desired_state | bool
   tags: blobstores

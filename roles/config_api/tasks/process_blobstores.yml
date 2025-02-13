@@ -148,6 +148,6 @@
   loop: "{{ nxs_delete_blobstores }}"
   loop_control:
     loop_var: blobstore
-  when: nxs_delete_blobstores | length > 0
+  when: nxs_delete_blobstores | length > 0 and nexus_enforce_desired_state | bool
   changed_when: true
   tags: blobstores

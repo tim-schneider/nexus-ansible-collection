@@ -82,7 +82,7 @@
         method: DELETE
       with_items:
         - "{{ nxs_delete_routingrules | default([]) }}"
-      when: nxs_delete_routingrules | length > 0
+      when: nxs_delete_routingrules | length > 0 and nexus_enforce_desired_state | bool
       tags: routing-rules
   when: not nexus_config_dry_run
   tags: routing-rules

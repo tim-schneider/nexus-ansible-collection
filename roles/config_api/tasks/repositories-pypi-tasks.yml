@@ -311,7 +311,7 @@
         method: DELETE
       with_items:
         - "{{ nxs_delete_pypi_hosted_repos | default([]) }}"
-      when: nxs_delete_pypi_hosted_repos | length > 0
+      when: nxs_delete_pypi_hosted_repos | length > 0 and nexus_enforce_desired_state | bool
       tags:
         - pypi
         - pypi-hosted
@@ -325,7 +325,7 @@
         method: DELETE
       with_items:
         - "{{ nxs_delete_pypi_proxy_repos | default([]) }}"
-      when: nxs_delete_pypi_proxy_repos | length > 0
+      when: nxs_delete_pypi_proxy_repos | length > 0 and nexus_enforce_desired_state | bool
       tags:
         - pypi
         - pypi-proxy
@@ -339,7 +339,7 @@
         method: DELETE
       with_items:
         - "{{ nxs_delete_pypi_group_repos | default([]) }}"
-      when: nxs_delete_pypi_group_repos | length > 0
+      when: nxs_delete_pypi_group_repos | length > 0 and nexus_enforce_desired_state | bool
       tags: pypi
   when: not nexus_config_dry_run
   tags:
