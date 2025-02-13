@@ -131,7 +131,7 @@
 - name: Ensure Nexus o/s group exists
   ansible.builtin.group:
     name: "{{ nexus_os_group }}"
-    uid: "{{ nexus_os_gid | default(omit) }}"
+    gid: "{{ nexus_os_gid | default(omit) }}"
     state: present
 
 - name: Ensure Nexus o/s user exists
