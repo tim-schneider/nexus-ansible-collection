@@ -333,7 +333,7 @@
         method: DELETE
       with_items:
         - "{{ nxs_delete_docker_hosted_repos | default([]) }}"
-      when: nxs_delete_docker_hosted_repos | length > 0
+      when: nxs_delete_docker_hosted_repos | length > 0 and nexus_enforce_desired_state | bool
       tags:
         - docker
         - docker-hosted
@@ -347,7 +347,7 @@
         method: DELETE
       with_items:
         - "{{ nxs_delete_docker_proxy_repos | default([]) }}"
-      when: nxs_delete_docker_proxy_repos | length > 0
+      when: nxs_delete_docker_proxy_repos | length > 0 and nexus_enforce_desired_state | bool
       tags:
         - docker
         - docker-proxy
@@ -361,7 +361,7 @@
         method: DELETE
       with_items:
         - "{{ nxs_delete_docker_group_repos | default([]) }}"
-      when: nxs_delete_docker_group_repos | length > 0
+      when: nxs_delete_docker_group_repos | length > 0 and nexus_enforce_desired_state | bool
       tags: docker
   when: not nexus_config_dry_run | bool
   tags:

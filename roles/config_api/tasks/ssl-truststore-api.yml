@@ -121,6 +121,6 @@
     timeout: "{{ nexus_api_timeout }}"
     status_code: 204
   loop: "{{ certificates_to_remove }}"
-  when: certificates_to_remove | length > 0
+  when: certificates_to_remove | length > 0 and nexus_enforce_desired_state | bool
   changed_when: true
   tags: ssl-truststore

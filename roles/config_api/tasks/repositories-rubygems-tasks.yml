@@ -312,7 +312,7 @@
         method: DELETE
       with_items:
         - "{{ nxs_delete_rubygems_hosted_repos | default([]) }}"
-      when: nxs_delete_rubygems_hosted_repos | length > 0
+      when: nxs_delete_rubygems_hosted_repos | length > 0 and nexus_enforce_desired_state | bool
       tags:
         - rubygems
         - rubygems-hosted
@@ -326,7 +326,7 @@
         method: DELETE
       with_items:
         - "{{ nxs_delete_rubygems_proxy_repos | default([]) }}"
-      when: nxs_delete_rubygems_proxy_repos | length > 0
+      when: nxs_delete_rubygems_proxy_repos | length > 0 and nexus_enforce_desired_state | bool
       tags:
         - rubygems
         - rubygems-proxy
@@ -340,7 +340,7 @@
         method: DELETE
       with_items:
         - "{{ nxs_delete_rubygems_group_repos | default([]) }}"
-      when: nxs_delete_rubygems_group_repos | length > 0
+      when: nxs_delete_rubygems_group_repos | length > 0 and nexus_enforce_desired_state | bool
       tags: rubygems
   when: not nexus_config_dry_run
   tags:

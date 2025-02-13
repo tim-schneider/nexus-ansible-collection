@@ -314,7 +314,7 @@
         method: DELETE
       with_items:
         - "{{ nxs_delete_app_privileges | default([]) }}"
-      when: nxs_delete_app_privileges | length > 0
+      when: nxs_delete_app_privileges | length > 0 and nexus_enforce_desired_state | bool
       tags: privileges
     - name: Delete Script Privileges using Nexus API
       ansible.builtin.include_tasks: privileges-api.yml
@@ -324,7 +324,7 @@
         method: DELETE
       with_items:
         - "{{ nxs_delete_script_privileges | default([]) }}"
-      when: nxs_delete_script_privileges | length > 0
+      when: nxs_delete_script_privileges | length > 0 and nexus_enforce_desired_state | bool
       tags: privileges
     - name: Delete Wildcard Privileges using Nexus API
       ansible.builtin.include_tasks: privileges-api.yml
@@ -334,8 +334,9 @@
         method: DELETE
       with_items:
         - "{{ nxs_delete_wildcard_privileges | default([]) }}"
-      when: nxs_delete_wildcard_privileges | length > 0
+      when: nxs_delete_wildcard_privileges | length > 0 and nexus_enforce_desired_state | bool
       tags: privileges
+
     - name: Delete Repository Content Selector Privileges using Nexus API
       ansible.builtin.include_tasks: privileges-api.yml
       vars:
@@ -344,7 +345,7 @@
         method: DELETE
       with_items:
         - "{{ nxs_delete_repository_content_selector_privileges | default([]) }}"
-      when: nxs_delete_repository_content_selector_privileges | length > 0
+      when: nxs_delete_repository_content_selector_privileges | length > 0 and nexus_enforce_desired_state | bool
       tags: privileges
     - name: Delete Repository Admin Privileges using Nexus API
       ansible.builtin.include_tasks: privileges-api.yml
@@ -354,7 +355,7 @@
         method: DELETE
       with_items:
         - "{{ nxs_delete_repository_admin_privileges | default([]) }}"
-      when: nxs_delete_repository_admin_privileges | length > 0
+      when: nxs_delete_repository_admin_privileges | length > 0 and nexus_enforce_desired_state | bool
       tags: privileges
     - name: Delete Repository View Privileges using Nexus API
       ansible.builtin.include_tasks: privileges-api.yml
@@ -364,7 +365,7 @@
         method: DELETE
       with_items:
         - "{{ nxs_delete_repository_view_privileges | default([]) }}"
-      when: nxs_delete_repository_view_privileges | length > 0
+      when: nxs_delete_repository_view_privileges | length > 0 and nexus_enforce_desired_state | bool
       tags: privileges
   when: not nexus_config_dry_run
   tags: privileges

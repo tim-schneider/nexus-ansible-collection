@@ -113,7 +113,7 @@
         method: DELETE
       with_items:
         - "{{ nxs_delete_gitlfs_hosted_repos | default([]) }}"
-      when: nxs_delete_gitlfs_hosted_repos | length > 0
+      when: nxs_delete_gitlfs_hosted_repos | length > 0 and nexus_enforce_desired_state | bool
       tags:
         - gitlfs
         - gitlfs-hosted
