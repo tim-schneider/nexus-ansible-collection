@@ -3,10 +3,9 @@
   hosts: localhost
   gather_facts: false
   tasks:
-
     - name: Wait for Nexus writable API endpoint to be available
       ansible.builtin.uri:
-        url: "http://nexus3-community:8081/service/rest/v1/status/writable"
+        url: "http://localhost:8081/service/rest/v1/status/writable"
         method: GET
         validate_certs: false
         status_code: 200
@@ -27,7 +26,7 @@
 
     - name: Update password of admin user
       ansible.builtin.uri:
-        url: "http://nexus3-community:8081/service/rest/v1/security/users/admin/change-password"
+        url: "http://localhost:8081/service/rest/v1/security/users/admin/change-password"
         user: admin
         password: "{{ __nexus_initial_admin_password__.stdout }}"
         method: PUT
@@ -42,7 +41,7 @@
 
     - name: Disable Anonmous access
       ansible.builtin.uri:
-        url: "http://nexus3-community:8081/service/rest/v1/security/anonymous"
+        url: "http://localhost:8081/service/rest/v1/security/anonymous"
         user: admin
         password: changeme
         method: PUT
