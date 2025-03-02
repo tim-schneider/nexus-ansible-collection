@@ -1,4 +1,17 @@
 # Changelog
+## [1.19.0] - 2025-03-02
+
+### Changed
+- **nexus_oss** remove groovy script for privilege setup. Using API now.
+- **config_api** Desired state is no longer enforced by default. To maintain backwards compatibility. Set `nexus_enforce_desired_state: true` to enforce desired state again.
+
+### Added
+- **config_api** new Molecule scenario introduced to be executed during GHA workflows.
+
+### Fixed
+- **nexus_oss** Nexus group now accepts Group ID instead of User ID
+- **config_api** Removing license will be skipped when on Community edition.
+
 ## [1.18.0] - 2025-02-01
 ### Added
 - **nexus_oss** Adding support for using custom encryption keys
