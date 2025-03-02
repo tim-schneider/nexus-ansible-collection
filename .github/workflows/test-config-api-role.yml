@@ -34,5 +34,5 @@ jobs:
         env:
           PY_COLORS: '1'
           ANSIBLE_FORCE_COLOR: '1'
-          MOLECULE_DOCKER_NETWORK: test-network
+          MOLECULE_DOCKER_NETWORK: nexus
   
