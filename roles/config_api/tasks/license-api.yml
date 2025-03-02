@@ -1,18 +1,4 @@
 ---
-- name: Remove license
-  ansible.builtin.uri:
-    url: "{{ nexus_api_scheme }}://{{ nexus_api_hostname }}:{{ nexus_api_port }}/service/rest/v1/system/license"
-    method: DELETE
-    validate_certs: "{{ nexus_api_validate_certs }}"
-    user: "{{ nexus_admin_username }}"
-    password: "{{ nexus_admin_password }}"
-    force_basic_auth: true
-    timeout: "{{ nexus_api_timeout }}"
-    status_code: 204
-  when: not nexus_enable_pro_version and nexus_enforce_desired_state | bool
-  changed_when: true
-  tags: license
-
 - name: Get license information
   ansible.builtin.uri:
     url: "{{ nexus_api_scheme }}://{{ nexus_api_hostname }}:{{ nexus_api_port }}/service/rest/v1/system/license"
@@ -35,6 +21,20 @@
   tags:
     - license
     - always
+
+- name: Remove license
+  ansible.builtin.uri:
+    url: "{{ nexus_api_scheme }}://{{ nexus_api_hostname }}:{{ nexus_api_port }}/service/rest/v1/system/license"
+    method: DELETE
+    validate_certs: "{{ nexus_api_validate_certs }}"
+    user: "{{ nexus_admin_username }}"
+    password: "{{ nexus_admin_password }}"
+    force_basic_auth: true
+    timeout: "{{ nexus_api_timeout }}"
+    status_code: 204
+  when: not nexus_enable_pro_version and nexus_pro_version and nexus_enforce_desired_state | bool
+  changed_when: true
+  tags: license
 
 # Nexus API expects a license file in binary format to be uploaded
 # So we need to decode the base64 encoded license string into a file
