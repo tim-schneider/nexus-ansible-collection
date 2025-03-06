@@ -73,7 +73,7 @@ download_url:
     description: The URL used for downloading the package.
     type: str
     returned: always
-download_dest:
+destination:
     description: The local path where the package was saved.
     type: str
     returned: always
@@ -202,11 +202,11 @@ def download_file(module, url, dest, validate_certs=True):
     if not validate_certs:
         urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-    download_dest = get_dest_path(url, dest)
+    destination = get_dest_path(url, dest)
     
     # Check if file already exists
-    if os.path.exists(download_dest):
-        return False, "File already exists", download_dest, 200
+    if os.path.exists(destination):
+        return False, "File already exists", destination, 200
 
     # Create destination directory if it doesn't exist
     if not os.path.exists(dest):
@@ -223,9 +223,9 @@ def download_file(module, url, dest, validate_certs=True):
         module.fail_json(msg=f"Failed to download file: {info['msg']}")
     
     try:
-        with open(download_dest, 'wb') as f:
+        with open(destination, 'wb') as f:
             f.write(response.read())
-        return True, "File downloaded successfully", download_dest, status_code
+        return True, "File downloaded successfully", destination, status_code
     except Exception as e:
         module.fail_json(msg=f"Failed to write file: {str(e)}")
 
@@ -256,29 +256,29 @@ def main():
         module.fail_json(msg=f"Error determining download URL: {str(e)}")
     
     # Get destination path
-    download_dest = get_dest_path(download_url, dest)
+    destination = get_dest_path(download_url, dest)
     
     # Check if file already exists for both check mode and regular mode
-    file_exists = os.path.exists(download_dest)
+    file_exists = os.path.exists(destination)
     
     # Check mode: report what would be done
     if module.check_mode:
         module.exit_json(
             changed=not file_exists,
             download_url=download_url,
-            download_dest=download_dest,
+            destination=destination,
             status_code=200 if file_exists else None,
             msg="File would be downloaded, if not in check mode." if not file_exists else "File already exists"
         )
     
     # Perform the actual download
-    changed, msg, download_dest, status_code = download_file(module, download_url, dest, validate_certs)
+    changed, msg, destination, status_code = download_file(module, download_url, dest, validate_certs)
     
     module.exit_json(
         changed=changed,
         download_url=download_url,
         msg=msg,
-        download_dest=download_dest,
+        destination=destination,
         status_code=status_code
     )
 
