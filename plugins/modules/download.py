@@ -29,7 +29,7 @@ options:
     description:
       - Destination directory where the file should be saved.
     required: true
-  verify_ssl:
+  validate_certs:
     description:
       - If False, SSL certificates will not be validated.
     type: bool
@@ -43,14 +43,14 @@ EXAMPLES = '''
   cloudkrafter.nexus.download:
     state: latest
     dest: /path/to/download/dir
-    verify_ssl: true
+    validate_certs: true
 
 - name: Download a specific Nexus version without SSL verification
   cloudkrafter.nexus.download:
     state: present
     version: 3.78.0-1
     dest: /path/to/download/dir
-    verify_ssl: false
+    validate_certs: false
 '''
 
 RETURN = '''
@@ -68,16 +68,16 @@ changed:
     returned: always
 '''
 
-def get_latest_version(verify_ssl=False):
+def get_latest_version(validate_certs=False):
     """
     Scrapes the Sonatype download page to find the latest version.
     
     Args:
-        verify_ssl (bool): Whether to verify SSL certificates
+        validate_certs (bool): Whether to verify SSL certificates
     """
     url = "https://help.sonatype.com/en/download-archives---repository-manager-3.html"
     try:
-        response = requests.get(url, verify=verify_ssl)
+        response = requests.get(url, verify=validate_certs)
         response.raise_for_status()
         soup = BeautifulSoup(response.text, 'html.parser')
         
@@ -100,20 +100,20 @@ def get_latest_version(verify_ssl=False):
     except requests.exceptions.RequestException as e:
         raise Exception(f"Failed to fetch download page: {str(e)}")
 
-def get_version_download_url(version, verify_ssl=True):
+def get_version_download_url(version, validate_certs=True):
     """
     Scrapes the download page to find the specific URL for a version.
     
     Args:
         version (str): Version string in format X.Y.Z-NN
-        verify_ssl (bool): Whether to verify SSL certificates
+        validate_certs (bool): Whether to verify SSL certificates
     
     Returns:
         str: Download URL for the specific version
     """
     url = "https://help.sonatype.com/en/download-archives---repository-manager-3.html"
     try:
-        response = requests.get(url, verify=verify_ssl)
+        response = requests.get(url, verify=validate_certs)
         response.raise_for_status()
         soup = BeautifulSoup(response.text, 'html.parser')
         
@@ -128,14 +128,14 @@ def get_version_download_url(version, verify_ssl=True):
     except requests.exceptions.RequestException as e:
         raise Exception(f"Failed to fetch download page: {str(e)}")
 
-def get_download_url(state, version=None, verify_ssl=True):
+def get_download_url(state, version=None, validate_certs=True):
     """
     Determines the download URL based on state and version.
     
     Args:
         state (str): Either 'latest' or 'present'
         version (str): Optional version string (required if state is 'present')
-        verify_ssl (bool): Whether to verify SSL certificates
+        validate_certs (bool): Whether to verify SSL certificates
     
     Returns:
         str: Download URL for the specified version
@@ -145,13 +145,13 @@ def get_download_url(state, version=None, verify_ssl=True):
     """
     try:
         if state == 'latest':
-            version = get_latest_version(verify_ssl=verify_ssl)
+            version = get_latest_version(validate_certs=validate_certs)
         
         # Validate version format
         if not re.match(r'^\d+\.\d+\.\d+-\d+$', version):
             raise ValueError(f"Invalid version format: {version}")
             
-        return get_version_download_url(version, verify_ssl=verify_ssl)
+        return get_version_download_url(version, validate_certs=validate_certs)
         
     except Exception as e:
         raise Exception(f"Error determining download URL: {str(e)}")
@@ -160,9 +160,9 @@ def get_dest_path(url, dest):
     """Helper function to get destination path"""
     return os.path.join(dest, url.split('/')[-1])
 
-def download_file(module, url, dest, verify_ssl=True):
+def download_file(module, url, dest, validate_certs=True):
     """Downloads a file using Ansible's fetch_url utility."""
-    if not verify_ssl:
+    if not validate_certs:
         urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
     download_dest = get_dest_path(url, dest)
@@ -196,7 +196,7 @@ def main():
         state=dict(type='str', required=True, choices=['latest', 'present']),
         version=dict(type='str', required=False),
         dest=dict(type='path', required=True),
-        verify_ssl=dict(type='bool', required=False, default=True)
+        validate_certs=dict(type='bool', required=False, default=True)
     )
     
     module = AnsibleModule(argument_spec=module_args, supports_check_mode=True)
@@ -204,14 +204,14 @@ def main():
     state = module.params['state']
     version = module.params.get('version')
     dest = module.params['dest']
-    verify_ssl = module.params['verify_ssl']
+    validate_certs = module.params['validate_certs']
     
     # Validate parameters
     if state == 'present' and not version:
         module.fail_json(msg="When state is 'present', the 'version' parameter must be provided.")
     
     try:
-        download_url = get_download_url(state, version, verify_ssl=verify_ssl)
+        download_url = get_download_url(state, version, validate_certs=validate_certs)
     except Exception as e:
         module.fail_json(msg=f"Error determining download URL: {str(e)}")
     
@@ -231,7 +231,7 @@ def main():
         )
     
     # Perform the actual download
-    changed, msg, download_dest = download_file(module, download_url, dest, verify_ssl)
+    changed, msg, download_dest = download_file(module, download_url, dest, validate_certs)
     
     module.exit_json(
         changed=changed,
