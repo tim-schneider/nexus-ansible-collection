@@ -81,6 +81,10 @@ changed:
     description: Indicates if a change was made (e.g., download occurred).
     type: bool
     returned: always
+status_code:
+    description: HTTP status code of the download request.
+    type: int
+    returned: always
 '''
 
 def get_latest_version(validate_certs=False):
@@ -202,7 +206,7 @@ def download_file(module, url, dest, validate_certs=True):
     
     # Check if file already exists
     if os.path.exists(download_dest):
-        return False, "File already exists", download_dest
+        return False, "File already exists", download_dest, 200
 
     # Create destination directory if it doesn't exist
     if not os.path.exists(dest):
@@ -213,6 +217,7 @@ def download_file(module, url, dest, validate_certs=True):
 
     # Download the file
     response, info = fetch_url(module, url, method="GET")
+    status_code = info['status']
     
     if info['status'] != 200:
         module.fail_json(msg=f"Failed to download file: {info['msg']}")
@@ -220,7 +225,7 @@ def download_file(module, url, dest, validate_certs=True):
     try:
         with open(download_dest, 'wb') as f:
             f.write(response.read())
-        return True, "File downloaded successfully", download_dest
+        return True, "File downloaded successfully", download_dest, status_code
     except Exception as e:
         module.fail_json(msg=f"Failed to write file: {str(e)}")
 
@@ -262,17 +267,19 @@ def main():
             changed=not file_exists,
             download_url=download_url,
             download_dest=download_dest,
+            status_code=200 if file_exists else None,
             msg="File would be downloaded, if not in check mode." if not file_exists else "File already exists"
         )
     
     # Perform the actual download
-    changed, msg, download_dest = download_file(module, download_url, dest, validate_certs)
+    changed, msg, download_dest, status_code = download_file(module, download_url, dest, validate_certs)
     
     module.exit_json(
         changed=changed,
         download_url=download_url,
         msg=msg,
-        download_dest=download_dest
+        download_dest=download_dest,
+        status_code=status_code
     )
 
 if __name__ == '__main__':
