@@ -25,6 +25,13 @@ options:
     description:
       - The version to download when state is 'present'.
     required: false
+  arch:
+    description:
+      - Target architecture for the package (e.g., 'x86_64' or 'aarch64').
+      - If specified, will attempt to find a package matching this architecture.
+      - If not specified or if no architecture-specific package exists, will use the default package.
+    required: false
+    type: str
   dest:
     description:
       - Destination directory where the file should be saved.
@@ -51,6 +58,14 @@ EXAMPLES = '''
     version: 3.78.0-1
     dest: /path/to/download/dir
     validate_certs: false
+
+- name: Download a specific Nexus version for ARM64
+  cloudkrafter.nexus.download:
+    state: present
+    version: 3.78.0-1
+    dest: /path/to/download/dir
+    validate_certs: false
+    arch: aarch64
 '''
 
 RETURN = '''
@@ -100,12 +115,13 @@ def get_latest_version(validate_certs=False):
     except requests.exceptions.RequestException as e:
         raise Exception(f"Failed to fetch download page: {str(e)}")
 
-def get_version_download_url(version, validate_certs=True):
+def get_version_download_url(version, arch=None, validate_certs=True):
     """
     Scrapes the download page to find the specific URL for a version.
     
     Args:
         version (str): Version string in format X.Y.Z-NN
+        arch (str): Optional target architecture
         validate_certs (bool): Whether to verify SSL certificates
     
     Returns:
@@ -117,24 +133,41 @@ def get_version_download_url(version, validate_certs=True):
         response.raise_for_status()
         soup = BeautifulSoup(response.text, 'html.parser')
         
+        # Store all matching links
+        matching_links = []
+
         # Look for download links containing the version
         for link in soup.find_all('a'):
             href = link.get('href', '')
             if version in href and 'unix' in href.lower():
-                return href
-                
-        raise ValueError(f"No download URL found for version {version}")
+                matching_links.append(href)
         
+        if not matching_links:
+            raise ValueError(f"No download URL found for version {version}")
+        
+        # If architecture is specified, try to find a matching package
+        if arch:
+            for link in matching_links:
+                if arch.lower() in link.lower():
+                    return link
+            
+            # If no architecture-specific package found, warn and use first match
+            return matching_links[0]
+        
+        # If no architecture specified, return first match
+        return matching_links[0]
+
     except requests.exceptions.RequestException as e:
         raise Exception(f"Failed to fetch download page: {str(e)}")
 
-def get_download_url(state, version=None, validate_certs=True):
+def get_download_url(state, version=None, arch=None, validate_certs=True):
     """
     Determines the download URL based on state and version.
     
     Args:
         state (str): Either 'latest' or 'present'
         version (str): Optional version string (required if state is 'present')
+        arch (str): Optional target architecture
         validate_certs (bool): Whether to verify SSL certificates
     
     Returns:
@@ -151,7 +184,7 @@ def get_download_url(state, version=None, validate_certs=True):
         if not re.match(r'^\d+\.\d+\.\d+-\d+$', version):
             raise ValueError(f"Invalid version format: {version}")
             
-        return get_version_download_url(version, validate_certs=validate_certs)
+        return get_version_download_url(version, arch=arch, validate_certs=validate_certs)
         
     except Exception as e:
         raise Exception(f"Error determining download URL: {str(e)}")
@@ -195,6 +228,7 @@ def main():
     module_args = dict(
         state=dict(type='str', required=True, choices=['latest', 'present']),
         version=dict(type='str', required=False),
+        arch=dict(type='str', required=False),
         dest=dict(type='path', required=True),
         validate_certs=dict(type='bool', required=False, default=True)
     )
@@ -203,6 +237,7 @@ def main():
     
     state = module.params['state']
     version = module.params.get('version')
+    arch = module.params.get('arch')
     dest = module.params['dest']
     validate_certs = module.params['validate_certs']
     
@@ -211,7 +246,7 @@ def main():
         module.fail_json(msg="When state is 'present', the 'version' parameter must be provided.")
     
     try:
-        download_url = get_download_url(state, version, validate_certs=validate_certs)
+        download_url = get_download_url(state, version, arch=arch, validate_certs=validate_certs)
     except Exception as e:
         module.fail_json(msg=f"Error determining download URL: {str(e)}")
     
