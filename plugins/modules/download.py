@@ -3,7 +3,10 @@ import requests
 from bs4 import BeautifulSoup
 from packaging import version
 import re
+import os
+import urllib3
 from ansible.module_utils.basic import AnsibleModule
+from ansible.module_utils.urls import fetch_url
 
 DOCUMENTATION = '''
 ---
@@ -53,6 +56,10 @@ EXAMPLES = '''
 RETURN = '''
 download_url:
     description: The URL used for downloading the package.
+    type: str
+    returned: always
+download_dest:
+    description: The local path where the package was saved.
     type: str
     returned: always
 changed:
@@ -149,6 +156,41 @@ def get_download_url(state, version=None, verify_ssl=True):
     except Exception as e:
         raise Exception(f"Error determining download URL: {str(e)}")
 
+def get_dest_path(url, dest):
+    """Helper function to get destination path"""
+    return os.path.join(dest, url.split('/')[-1])
+
+def download_file(module, url, dest, verify_ssl=True):
+    """Downloads a file using Ansible's fetch_url utility."""
+    if not verify_ssl:
+        urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
+    download_dest = get_dest_path(url, dest)
+    
+    # Check if file already exists
+    if os.path.exists(download_dest):
+        return False, "File already exists", download_dest
+
+    # Create destination directory if it doesn't exist
+    if not os.path.exists(dest):
+        try:
+            os.makedirs(dest)
+        except Exception as e:
+            module.fail_json(msg=f"Failed to create destination directory: {str(e)}")
+
+    # Download the file
+    response, info = fetch_url(module, url, method="GET")
+    
+    if info['status'] != 200:
+        module.fail_json(msg=f"Failed to download file: {info['msg']}")
+    
+    try:
+        with open(download_dest, 'wb') as f:
+            f.write(response.read())
+        return True, "File downloaded successfully", download_dest
+    except Exception as e:
+        module.fail_json(msg=f"Failed to write file: {str(e)}")
+
 def main():
     module_args = dict(
         state=dict(type='str', required=True, choices=['latest', 'present']),
@@ -164,24 +206,39 @@ def main():
     dest = module.params['dest']
     verify_ssl = module.params['verify_ssl']
     
-    # Validate parameters.
+    # Validate parameters
     if state == 'present' and not version:
         module.fail_json(msg="When state is 'present', the 'version' parameter must be provided.")
     
     try:
         download_url = get_download_url(state, version, verify_ssl=verify_ssl)
     except Exception as e:
-        module.fail_json(msg="Error determining download URL: " + str(e))
+        module.fail_json(msg=f"Error determining download URL: {str(e)}")
     
-    # Check mode: report what would be done.
+    # Get destination path
+    download_dest = get_dest_path(download_url, dest)
+    
+    # Check if file already exists for both check mode and regular mode
+    file_exists = os.path.exists(download_dest)
+    
+    # Check mode: report what would be done
     if module.check_mode:
-        module.exit_json(changed=False, download_url=download_url)
+        module.exit_json(
+            changed=not file_exists,
+            download_url=download_url,
+            download_dest=download_dest,
+            msg="File would be downloaded, if not in check mode." if not file_exists else "File already exists"
+        )
     
-    # Here, you could integrate Ansible's built-in get_url functionality
-    # or implement your own download logic.
-    # For now, assume that the URL is ready and report success.
+    # Perform the actual download
+    changed, msg, download_dest = download_file(module, download_url, dest, verify_ssl)
     
-    module.exit_json(changed=True, download_url=download_url)
+    module.exit_json(
+        changed=changed,
+        download_url=download_url,
+        msg=msg,
+        download_dest=download_dest
+    )
 
 if __name__ == '__main__':
     main()
