@@ -10,6 +10,7 @@ ansible-navigator==24.9.0
 ansible-runner==2.4.0
 ansible-sign==0.1.1
 attrs==24.2.0
+beautifulsoup4>=4.9.0
 bindep==2.11.0
 black==24.10.0
 bracex==2.5.post1
@@ -56,6 +57,7 @@ Pygments==2.18.0
 pyproject-api==1.8.0
 pytest==8.3.3
 pytest-ansible==24.9.0
+pytest-mock>=3.0.0
 pytest-testinfra==10.1.1
 pytest-xdist==3.6.1
 python-daemon==3.1.0

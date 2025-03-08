@@ -1,13 +1,10 @@
 ## Building the devcontainer
 
-[![Docker Image CI](https://github.com/CloudKrafter/nexus3_config_api/actions/workflows/docker-image.yml/badge.svg)](https://github.com/CloudKrafter/nexus3_config_api/actions/workflows/docker-image.yml)
-[![Codespaces Prebuilds](https://github.com/CloudKrafter/nexus3_config_api/actions/workflows/codespaces/create_codespaces_prebuilds/badge.svg)](https://github.com/CloudKrafter/nexus3_config_api/actions/workflows/codespaces/create_codespaces_prebuilds)
-
 The `.devcontainer/Dockerfile` is used to built a prebuild container to speed up the starting process of the actual devcontainer itself.
 When you update the Dockerfile, make sure you rebuild it with:
 
 ```bash
-$ docker build -t cloudkrafter/ansible-devcontainer:latest -f .devcontainer/Dockerfile .
+$ docker build -t cloudkrafter/ansible-devcontainer:latest -f .devcontainer/nexus-collection/Dockerfile .
 ```
 
 ## Launching the Devcontainer:
@@ -19,8 +16,8 @@ $ docker build -t cloudkrafter/ansible-devcontainer:latest -f .devcontainer/Dock
 
 1. Clone the repository to your local machine:
 ```bash
-git clone git@github.com:CloudKrafter/Ansible-Nexus3-Config-as-Code.git
-cd Ansible-Nexus3-Config-as-Code
+git clone git@github.com:CloudKrafter/nexus-ansible-collection.git
+cd nexus-ansible-collection
 ```
 2. Make proposed changes
 - Edit the `devcontainer.json`, `Dockerfile`, or `post-create.sh` files as needed to update the development environment.

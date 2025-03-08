@@ -95,6 +95,7 @@ import sys
 from ansible.module_utils.basic import AnsibleModule, missing_required_lib
 from ansible.module_utils.urls import fetch_url
 
+
 # Try collection import first, then local import, finally direct import
 HAS_DEPS = False
 try:
