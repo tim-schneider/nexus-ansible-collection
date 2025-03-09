@@ -32,7 +32,6 @@ jobs:
       - name: Run Sanity Tests
         run: |
           cd /home/runner/.ansible/collections/ansible_collections/cloudkrafter/nexus
-          ansible-test coverage erase
           ansible-test sanity plugins/modules/download.py tests/
         env:
           PY_COLORS: '1'
