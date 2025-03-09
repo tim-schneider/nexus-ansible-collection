@@ -32,7 +32,7 @@ jobs:
       - name: Run Sanity Tests
         run: |
           cd /home/runner/.ansible/collections/ansible_collections/cloudkrafter/nexus
-          ansible-test sanity plugins/modules/download.py
+          ansible-test sanity plugins/modules/download.py plugins/module_utils/ tests/
         env:
           PY_COLORS: '1'
           ANSIBLE_FORCE_COLOR: '1'
@@ -49,6 +49,14 @@ jobs:
         run: |
           cd /home/runner/work/nexus-ansible-collection/nexus-ansible-collection
           PYTHONPATH=$PWD ANSIBLE_LIBRARY=$PWD/plugins/modules ansible-playbook tests/local_test.yml -vv
+        env:
+          PY_COLORS: '1'
+          ANSIBLE_FORCE_COLOR: '1'
+      
+      - name: Run Unit tests
+        run: |
+          cd /home/runner/.ansible/collections/ansible_collections/cloudkrafter/nexus
+          ansible-test units --docker default
         env:
           PY_COLORS: '1'
           ANSIBLE_FORCE_COLOR: '1'
