@@ -64,10 +64,14 @@ issues: https://github.com/CloudKrafter/nexus-ansible-collection/issues
 # uses 'fnmatch' to match the files or directories. Some directories and files like 'galaxy.yml', '*.pyc', '*.retry',
 # and '.git' are always filtered. Mutually exclusive with 'manifest'
 build_ignore:
+  - '.devcontainer/*'
+  - '.github/*'
+  - '.gitignore'
+  - '.vscode/*'
+  - 'docs/*'
+  - 'molecule/*'
   - '*.tar.gz'
   - '*.pyc'
-  - 'tests/*'
-  - 'requirements.txt'
   - '.venv*'
 # A dict controlling use of manifest directives used in building the collection artifact. The key 'directives' is a
 # list of MANIFEST.in style
