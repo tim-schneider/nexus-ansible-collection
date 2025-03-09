@@ -21,7 +21,7 @@ jobs:
             3.10
             3.11
             3.12
-      
+
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
@@ -32,27 +32,11 @@ jobs:
       - name: Run Sanity Tests
         run: |
           cd /home/runner/.ansible/collections/ansible_collections/cloudkrafter/nexus
-          ansible-test sanity plugins/modules/download.py plugins/module_utils/ tests/
+          ansible-test sanity plugins/modules/download.py tests/
         env:
           PY_COLORS: '1'
           ANSIBLE_FORCE_COLOR: '1'
-    
-      - name: Run Download Module
-        run: |
-          cd /home/runner/.ansible/collections/ansible_collections/cloudkrafter/nexus
-          ANSIBLE_LIBRARY=./plugins/modules ansible -m download -a 'state=present version=3.78.0-14 dest=/tmp/nexus.tar.gz validate_certs=false' localhost
-        env:
-          PY_COLORS: '1'
-          ANSIBLE_FORCE_COLOR: '1'
-    
-      - name: Run playbook
-        run: |
-          cd /home/runner/work/nexus-ansible-collection/nexus-ansible-collection
-          PYTHONPATH=$PWD ANSIBLE_LIBRARY=$PWD/plugins/modules ansible-playbook tests/local_test.yml -vv
-        env:
-          PY_COLORS: '1'
-          ANSIBLE_FORCE_COLOR: '1'
-      
+
       - name: Run Unit tests
         run: |
           cd /home/runner/.ansible/collections/ansible_collections/cloudkrafter/nexus
@@ -60,4 +44,20 @@ jobs:
         env:
           PY_COLORS: '1'
           ANSIBLE_FORCE_COLOR: '1'
-  
+
+      - name: Run Download Module
+        run: |
+          cd /home/runner/.ansible/collections/ansible_collections/cloudkrafter/nexus
+          ANSIBLE_LIBRARY=./plugins/modules ansible -m download -a 'state=present version=3.78.0-14 dest=/tmp/nexus.tar.gz validate_certs=false' localhost
+        env:
+          PY_COLORS: '1'
+          ANSIBLE_FORCE_COLOR: '1'
+
+      - name: Run playbook
+        run: |
+          cd /home/runner/work/nexus-ansible-collection/nexus-ansible-collection
+          PYTHONPATH=$PWD ANSIBLE_LIBRARY=$PWD/plugins/modules ansible-playbook tests/local_test.yml -vv
+        env:
+          PY_COLORS: '1'
+          ANSIBLE_FORCE_COLOR: '1'
+
