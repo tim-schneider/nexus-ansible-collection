@@ -168,9 +168,31 @@ def is_valid_version(version):
     return bool(re.match(pattern, version))
 
 
+def scrape_download_page(url, validate_certs=True):
+    """
+    Scrapes the Sonatype download page and returns the parsed content.
+
+    Args:
+        url (str): URL to scrape
+        validate_certs (bool): Whether to verify SSL certificates
+
+    Returns:
+        BeautifulSoup: Parsed HTML content
+
+    Raises:
+        Exception: If page fetch fails
+    """
+    try:
+        response = requests.get(url, verify=validate_certs)
+        response.raise_for_status()
+        return BeautifulSoup(response.text, 'html.parser')
+    except requests.exceptions.RequestException as e:
+        raise Exception(f"Failed to fetch download page: {str(e)}")
+
+
 def get_version_download_url(version, arch=None, validate_certs=True):
     """
-    Scrapes the download page to find the specific URL for a version.
+    Gets the download URL for a specific version.
 
     Args:
         version (str): Version string in format X.Y.Z-NN
@@ -179,39 +201,36 @@ def get_version_download_url(version, arch=None, validate_certs=True):
 
     Returns:
         str: Download URL for the specific version
+    
+    Raises:
+        ValueError: If version is invalid or no matching URL found
     """
+
+    if not is_valid_version(version):
+        raise ValueError(f"Invalid version format: {version}")
+    
     url = "https://help.sonatype.com/en/download-archives---repository-manager-3.html"
-    try:
-        response = requests.get(url, verify=validate_certs)
-        response.raise_for_status()
-        soup = BeautifulSoup(response.text, 'html.parser')
+    soup = scrape_download_page(url, validate_certs)
 
-        # Store all matching links
-        matching_links = []
+    # Store all matching links
+    matching_links = [
+        link.get('href', '')
+        for link in soup.find_all('a')
+        if version in link.get('href', '') and 'unix' in link.get('href', '').lower()
+    ]
 
-        # Look for download links containing the version
-        for link in soup.find_all('a'):
-            href = link.get('href', '')
-            if version in href and 'unix' in href.lower():
-                matching_links.append(href)
+    if not matching_links:
+        raise ValueError(f"No download URL found for version {version}")
 
-        if not matching_links:
-            raise ValueError(f"No download URL found for version {version}")
+    # If architecture is specified, try to find a matching package
+    if arch:
+        arch_matches = [
+            link for link in matching_links 
+            if arch.lower() in link.lower()
+        ]
+        return arch_matches[0] if arch_matches else matching_links[0]
 
-        # If architecture is specified, try to find a matching package
-        if arch:
-            for link in matching_links:
-                if arch.lower() in link.lower():
-                    return link
-
-            # If no architecture-specific package found, warn and use first match
-            return matching_links[0]
-
-        # If no architecture specified, return first match
-        return matching_links[0]
-
-    except requests.exceptions.RequestException as e:
-        raise Exception(f"Failed to fetch download page: {str(e)}")
+    return matching_links[0]
 
 
 def get_possible_package_names(version, arch=None, java_version=None):
@@ -266,20 +285,16 @@ def get_download_url(state, version=None, arch=None, validate_certs=True):
         str: Download URL for the specified version
 
     Raises:
-        ValueError: If version format is invalid or version not found
+        ValueError: If parameters are invalid or version not found
     """
+    if state not in ['latest', 'present']:
+        raise ValueError(f"Invalid state: {state}")
+        
     try:
-        if state == 'latest':
-            version = get_latest_version(validate_certs=validate_certs)
-
-        # Validate version format
-        if not is_valid_version(version):
-            raise ValueError(f"Invalid version format: {version}")
-
+        version = get_latest_version(validate_certs) if state == 'latest' else version
         return get_version_download_url(version, arch=arch, validate_certs=validate_certs)
-
     except Exception as e:
-        raise Exception(f"Error determining download URL: {str(e)}")
+        raise ValueError(f"Failed to get download URL: {str(e)}")
 
 
 def get_dest_path(url, dest):

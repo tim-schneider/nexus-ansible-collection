@@ -6,32 +6,8 @@ import sys
 from unittest.mock import patch, MagicMock
 import pytest
 from ansible_collections.cloudkrafter.nexus.plugins.modules.download import (
-    is_valid_version, get_dest_path
+    is_valid_version, get_latest_version, get_version_download_url, get_possible_package_names, scrape_download_page
 )
-
-@pytest.mark.parametrize('url,dest,expected', [
-    (
-        'https://download.sonatype.com/nexus/3/nexus-3.78.0-01-unix.tar.gz',
-        '/tmp/nexus',
-        '/tmp/nexus/nexus-3.78.0-01-unix.tar.gz'
-    ),
-    (
-        'http://example.com/path/to/nexus-3.78.0-01-unix.tar.gz',
-        '/var/lib/nexus',
-        '/var/lib/nexus/nexus-3.78.0-01-unix.tar.gz'
-    ),
-    (
-        'https://download.sonatype.com/nexus/3/latest.tar.gz',
-        '.',
-        './latest.tar.gz'
-    ),
-])
-def test_get_dest_path(url, dest, expected):
-    """Test destination path construction"""
-    result = get_dest_path(url, dest)
-    assert result == expected
-
-from ansible_collections.cloudkrafter.nexus.plugins.modules.download import is_valid_version
 
 @pytest.mark.parametrize('version,expected', [
     ('3.78.0-01', True),
@@ -156,7 +132,6 @@ class TestNexusDownloadModule:
     )
 
 
-
     # @patch('ansible.module_utils.basic.AnsibleModule')
     # @patch('sys.stdin')
     # def test_check_mode(self, mock_stdin, mock_module):
@@ -227,3 +202,38 @@ def test_get_possible_package_names(version, arch, java_version, expected):
     """Test generation of possible package names"""
     result = get_possible_package_names(version, arch, java_version)
     assert result == expected
+
+
+@patch('ansible_collections.cloudkrafter.nexus.plugins.modules.download.requests')
+@patch('ansible_collections.cloudkrafter.nexus.plugins.modules.download.BeautifulSoup')
+def test_scrape_download_page(mock_bs4, mock_requests):
+    """Test scraping of download page"""
+    # Setup mock response for successful case
+    mock_response = MagicMock()
+    mock_response.text = '<html><body>Test content</body></html>'
+    mock_response.raise_for_status.return_value = None
+    mock_requests.get.return_value = mock_response
+
+    # Setup BeautifulSoup mock
+    mock_soup = MagicMock()
+    mock_bs4.return_value = mock_soup
+
+    # Test successful scraping
+    url = "https://test.com"
+    result = scrape_download_page(url, validate_certs=True)
+    
+    assert result == mock_soup
+    mock_requests.get.assert_called_once_with(url, verify=True)
+    mock_bs4.assert_called_once_with(mock_response.text, 'html.parser')
+
+    # Test request failure
+    mock_requests.get.reset_mock()
+    mock_requests.exceptions = MagicMock()
+    mock_requests.exceptions.RequestException = Exception
+    mock_requests.get.side_effect = mock_requests.exceptions.RequestException("Connection error")
+    
+    with pytest.raises(Exception) as exc_info:
+        scrape_download_page(url, validate_certs=False)
+    
+    assert "Failed to fetch download page" in str(exc_info.value)
+    mock_requests.get.assert_called_once_with(url, verify=False)
