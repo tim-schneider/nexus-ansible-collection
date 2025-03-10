@@ -6,7 +6,8 @@ import sys
 from unittest.mock import patch, MagicMock
 import pytest
 from ansible_collections.cloudkrafter.nexus.plugins.modules.download import (
-    is_valid_version, get_latest_version, get_version_download_url, get_possible_package_names, scrape_download_page
+    is_valid_version, get_latest_version, get_version_download_url, get_possible_package_names, scrape_download_page,
+    validate_download_url, get_valid_download_urls
 )
 
 @pytest.mark.parametrize('version,expected', [
@@ -202,6 +203,71 @@ def test_get_possible_package_names(version, arch, java_version, expected):
     """Test generation of possible package names"""
     result = get_possible_package_names(version, arch, java_version)
     assert result == expected
+
+
+@patch('ansible_collections.cloudkrafter.nexus.plugins.modules.download.requests')
+def test_validate_download_url(mock_requests):
+    """Test URL validation using HEAD requests"""
+    # Setup mock responses
+    mock_response_valid = MagicMock()
+    mock_response_valid.ok = True
+    mock_response_valid.status_code = 200
+
+    mock_response_invalid = MagicMock()
+    mock_response_invalid.ok = False
+    mock_response_invalid.status_code = 404
+
+    # Test valid URL
+    mock_requests.head.return_value = mock_response_valid
+    is_valid, status_code = validate_download_url("https://download.sonatype.com/nexus/3/test.tar.gz")
+    assert is_valid is True
+    assert status_code == 200
+
+    # Test invalid URL
+    mock_requests.head.return_value = mock_response_invalid
+    is_valid, status_code = validate_download_url("https://download.sonatype.com/nexus/3/nonexistent.tar.gz")
+    assert is_valid is False
+    assert status_code == 404
+
+    # Test connection error
+    mock_requests.exceptions = MagicMock()
+    mock_requests.exceptions.RequestException = Exception
+    mock_requests.head.side_effect = mock_requests.exceptions.RequestException
+    is_valid, status_code = validate_download_url("https://invalid.url")
+    assert is_valid is False
+    assert status_code is None
+
+
+@patch('ansible_collections.cloudkrafter.nexus.plugins.modules.download.validate_download_url')
+def test_get_valid_download_urls(mock_validate):
+    """Test getting valid download URLs by checking headers"""
+    # Setup mock responses for different URLs
+    mock_validate.side_effect = [
+        (True, 200),   # First URL is valid
+        (False, 404),  # Second URL is invalid
+        (True, 200),   # Third URL is valid
+        (False, 404),  # Fourth URL is invalid
+    ]
+
+    # Test successful case
+    base_url = "https://download.sonatype.com/nexus/3/"
+    result = get_valid_download_urls('3.78.1-02', arch='aarch64', base_url=base_url)
+
+    # Verify we got valid URLs
+    assert len(result) == 2
+    assert all(url.startswith(base_url) for url in result)
+    assert all('3.78.1-02' in url for url in result)
+
+    # Test invalid version
+    mock_validate.reset_mock()
+    with pytest.raises(ValueError, match="Invalid version format"):
+        get_valid_download_urls('invalid')
+
+    # Test when no valid URLs found
+    mock_validate.reset_mock()
+    mock_validate.side_effect = [(False, 404)] * 10  # All URLs return 404
+    with pytest.raises(ValueError, match="No valid download URLs found"):
+        get_valid_download_urls('3.78.1-02')
 
 
 @patch('ansible_collections.cloudkrafter.nexus.plugins.modules.download.requests')

@@ -190,6 +190,61 @@ def scrape_download_page(url, validate_certs=True):
         raise Exception(f"Failed to fetch download page: {str(e)}")
 
 
+def validate_download_url(url, validate_certs=True):
+    """
+    Validates if a URL exists by checking HTTP headers.
+    
+    Args:
+        url (str): URL to validate
+        validate_certs (bool): Whether to verify SSL certificates
+        
+    Returns:
+        tuple: (bool, int) - (is_valid, status_code)
+    """
+    try:
+        response = requests.head(url, verify=validate_certs, allow_redirects=True)
+        return response.ok, response.status_code
+    except requests.exceptions.RequestException:
+        return False, None
+
+
+def get_valid_download_urls(version, arch=None, java_version=None, validate_certs=True, base_url="https://download.sonatype.com/nexus/3/"):
+    """
+    Returns a list of valid download URLs for a given version and optional parameters.
+    
+    Args:
+        version (str): Version string (e.g., '3.78.0-01')
+        arch (str): Optional architecture (e.g., 'aarch64', 'x86_64')
+        java_version (str): Optional Java version (e.g., 'java8', 'java11')
+        validate_certs (bool): Whether to verify SSL certificates
+        base_url (str): Base URL for downloads
+    
+    Returns:
+        list: List of valid download URLs ordered by priority
+        
+    Raises:
+        ValueError: If version is invalid or no valid URLs found
+    """
+    if not is_valid_version(version):
+        raise ValueError(f"Invalid version format: {version}")
+
+    # Get possible package names
+    possible_names = get_possible_package_names(version, arch, java_version)
+    
+    # Check each possible URL
+    valid_urls = []
+    for name in possible_names:
+        url = base_url + name
+        is_valid, _ = validate_download_url(url, validate_certs)
+        if is_valid:
+            valid_urls.append(url)
+    
+    if not valid_urls:
+        raise ValueError(f"No valid download URLs found for version {version}")
+        
+    return valid_urls
+
+
 def get_version_download_url(version, arch=None, validate_certs=True):
     """
     Gets the download URL for a specific version.
