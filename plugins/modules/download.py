@@ -159,6 +159,15 @@ def get_latest_version(validate_certs=False):
         raise Exception(f"Failed to fetch download page: {str(e)}")
 
 
+def is_valid_version(version):
+    if version is None:
+        return False
+    if not isinstance(version, str):
+        return False
+    pattern = r'^\d+\.\d+\.\d+-\d+$'
+    return bool(re.match(pattern, version))
+
+
 def get_version_download_url(version, arch=None, validate_certs=True):
     """
     Scrapes the download page to find the specific URL for a version.
@@ -226,7 +235,7 @@ def get_download_url(state, version=None, arch=None, validate_certs=True):
             version = get_latest_version(validate_certs=validate_certs)
 
         # Validate version format
-        if not re.match(r'^\d+\.\d+\.\d+-\d+$', version):
+        if not is_valid_version(version):
             raise ValueError(f"Invalid version format: {version}")
 
         return get_version_download_url(version, arch=arch, validate_certs=validate_certs)

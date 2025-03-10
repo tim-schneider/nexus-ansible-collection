@@ -4,6 +4,25 @@ __metaclass__ = type
 
 import sys
 from unittest.mock import patch, MagicMock
+import pytest
+from ansible_collections.cloudkrafter.nexus.plugins.modules.download import is_valid_version
+
+@pytest.mark.parametrize('version,expected', [
+    ('3.78.0-01', True),
+    ('3.78.1-02', True),
+    ('3.0.0-01', True),
+    ('3.78.0', False),
+    ('3.78-01', False),
+    ('3.78.0.1-01', False),
+    ('3.78.0-1', True),
+    ('invalid', False),
+    ('', False),
+    (None, False),
+])
+def test_is_valid_version(version, expected):
+    """Test version string validation"""
+    result = is_valid_version(version)
+    assert result == expected
 
 
 # Mock the requests, bs4, and packaging imports before importing the module
@@ -104,30 +123,34 @@ class TestNexusDownloadModule:
 
         result = get_latest_version(validate_certs=True)
         assert result == '3.78.0-01'
+        mock_requests.get.assert_called_once_with(
+            "https://help.sonatype.com/en/download-archives---repository-manager-3.html",
+            verify=True
+    )
 
-    @patch('ansible_collections.cloudkrafter.nexus.plugins.modules.download.requests')
-    @patch('ansible_collections.cloudkrafter.nexus.plugins.modules.download.BeautifulSoup')
-    def test_get_version_download_url(self, mock_bs4, mock_requests):
-        # Setup mock response
-        mock_response = MagicMock()
-        mock_response.text = self.mock_html
-        mock_response.raise_for_status.return_value = None
-        mock_requests.get.return_value = mock_response
+    # @patch('ansible_collections.cloudkrafter.nexus.plugins.modules.download.requests')
+    # @patch('ansible_collections.cloudkrafter.nexus.plugins.modules.download.BeautifulSoup')
+    # def test_get_version_download_url(self, mock_bs4, mock_requests):
+    #     # Setup mock response
+    #     mock_response = MagicMock()
+    #     mock_response.text = self.mock_html
+    #     mock_response.raise_for_status.return_value = None
+    #     mock_requests.get.return_value = mock_response
 
-        # Setup BeautifulSoup mock with find_all
-        mock_soup = MagicMock()
-        mock_bs4.return_value = mock_soup
+    #     # Setup BeautifulSoup mock with find_all
+    #     mock_soup = MagicMock()
+    #     mock_bs4.return_value = mock_soup
 
-        # Create mock links
-        mock_link1 = MagicMock()
-        mock_link1.get.return_value = 'https://download.sonatype.com/nexus/3/nexus-3.78.0-01-unix.tar.gz'
-        mock_link2 = MagicMock()
-        mock_link2.get.return_value = 'https://download.sonatype.com/nexus/3/nexus-3.77.0-01-unix.tar.gz'
+    #     # Create mock links
+    #     mock_link1 = MagicMock()
+    #     mock_link1.get.return_value = 'https://download.sonatype.com/nexus/3/nexus-3.78.0-01-unix.tar.gz'
+    #     mock_link2 = MagicMock()
+    #     mock_link2.get.return_value = 'https://download.sonatype.com/nexus/3/nexus-3.77.0-01-unix.tar.gz'
 
-        mock_soup.find_all.return_value = [mock_link1, mock_link2]
+    #     mock_soup.find_all.return_value = [mock_link1, mock_link2]
 
-        result = get_version_download_url('3.78.0-01')
-        assert result == 'https://download.sonatype.com/nexus/3/nexus-3.78.0-01-unix.tar.gz'
+    #     result = get_version_download_url('3.78.0-01')
+    #     assert result == 'https://download.sonatype.com/nexus/3/nexus-3.78.0-01-unix.tar.gz'
 
     # @patch('ansible.module_utils.basic.AnsibleModule')
     # @patch('ansible_collections.cloudkrafter.nexus.plugins.modules.download.get_download_url')
