@@ -6,8 +6,8 @@ import sys
 from unittest.mock import patch, MagicMock
 import pytest
 from ansible_collections.cloudkrafter.nexus.plugins.modules.download import (
-    is_valid_version, get_latest_version, get_version_download_url, get_possible_package_names, scrape_download_page,
-    validate_download_url, get_valid_download_urls
+    is_valid_version, get_latest_version, get_possible_package_names, scrape_download_page,
+    validate_download_url, get_valid_download_urls, get_download_url
 )
 
 @pytest.mark.parametrize('version,expected', [
@@ -60,12 +60,12 @@ def mock_parse(version_str):
 version_mock.parse = mock_parse
 sys.modules['packaging.version'] = version_mock
 
-# Now import the module under test
-from ansible_collections.cloudkrafter.nexus.plugins.modules.download import (
-    get_latest_version,
-    get_version_download_url,
-    get_possible_package_names
-)
+# # Now import the module under test
+# from ansible_collections.cloudkrafter.nexus.plugins.modules.download import (
+#     get_latest_version,
+#     get_possible_package_names,
+#     get_download_url
+# )
 
 
 def setup_ansible_module_mock(mock_module, params=None):
@@ -303,3 +303,44 @@ def test_scrape_download_page(mock_bs4, mock_requests):
     
     assert "Failed to fetch download page" in str(exc_info.value)
     mock_requests.get.assert_called_once_with(url, verify=False)
+
+
+# @patch('ansible_collections.cloudkrafter.nexus.plugins.modules.download.get_latest_version')
+# @patch('ansible_collections.cloudkrafter.nexus.plugins.modules.download.get_valid_download_urls')
+# def test_get_download_url(mock_get_valid_urls, mock_get_latest):
+#     """Test URL selection based on state and version"""
+#     base_url = 'https://download.sonatype.com/nexus/3/'
+#     version = '3.78.0-01'
+
+#     # Test latest version with single URL
+#     mock_get_latest.return_value = version
+#     mock_get_valid_urls.return_value = [f'{base_url}nexus-{version}-unix.tar.gz']
+    
+#     result = get_download_url(state='latest', validate_certs=True)
+#     assert result == f'{base_url}nexus-{version}-unix.tar.gz'
+#     mock_get_latest.assert_called_once_with(validate_certs=True)
+
+#     # Reset mocks
+#     mock_get_latest.reset_mock()
+#     mock_get_valid_urls.reset_mock()
+
+#     # Test present state with multiple URLs
+#     urls = [
+#         f'{base_url}nexus-unix-{version}.tar.gz',
+#         f'{base_url}nexus-{version}-unix.tar.gz'
+#     ]
+#     mock_get_valid_urls.return_value = urls
+    
+#     with pytest.raises(ValueError, match="Multiple valid URLs found"):
+#         get_download_url(state='present', version=version)
+
+#     # Reset mocks
+#     mock_get_valid_urls.reset_mock()
+
+#     # Test invalid state
+#     with pytest.raises(ValueError, match="Invalid state"):
+#         get_download_url(state='invalid')
+
+#     # Test missing version in present state
+#     with pytest.raises(ValueError, match="Version must be provided"):
+#         get_download_url(state='present')

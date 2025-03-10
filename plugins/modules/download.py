@@ -245,49 +245,6 @@ def get_valid_download_urls(version, arch=None, java_version=None, validate_cert
     return valid_urls
 
 
-def get_version_download_url(version, arch=None, validate_certs=True):
-    """
-    Gets the download URL for a specific version.
-
-    Args:
-        version (str): Version string in format X.Y.Z-NN
-        arch (str): Optional target architecture
-        validate_certs (bool): Whether to verify SSL certificates
-
-    Returns:
-        str: Download URL for the specific version
-    
-    Raises:
-        ValueError: If version is invalid or no matching URL found
-    """
-
-    if not is_valid_version(version):
-        raise ValueError(f"Invalid version format: {version}")
-    
-    url = "https://help.sonatype.com/en/download-archives---repository-manager-3.html"
-    soup = scrape_download_page(url, validate_certs)
-
-    # Store all matching links
-    matching_links = [
-        link.get('href', '')
-        for link in soup.find_all('a')
-        if version in link.get('href', '') and 'unix' in link.get('href', '').lower()
-    ]
-
-    if not matching_links:
-        raise ValueError(f"No download URL found for version {version}")
-
-    # If architecture is specified, try to find a matching package
-    if arch:
-        arch_matches = [
-            link for link in matching_links 
-            if arch.lower() in link.lower()
-        ]
-        return arch_matches[0] if arch_matches else matching_links[0]
-
-    return matching_links[0]
-
-
 def get_possible_package_names(version, arch=None, java_version=None):
     """
     Generate possible package name variations based on version, architecture and Java version.
