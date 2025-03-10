@@ -5,6 +5,32 @@ __metaclass__ = type
 import sys
 from unittest.mock import patch, MagicMock
 import pytest
+from ansible_collections.cloudkrafter.nexus.plugins.modules.download import (
+    is_valid_version, get_dest_path
+)
+
+@pytest.mark.parametrize('url,dest,expected', [
+    (
+        'https://download.sonatype.com/nexus/3/nexus-3.78.0-01-unix.tar.gz',
+        '/tmp/nexus',
+        '/tmp/nexus/nexus-3.78.0-01-unix.tar.gz'
+    ),
+    (
+        'http://example.com/path/to/nexus-3.78.0-01-unix.tar.gz',
+        '/var/lib/nexus',
+        '/var/lib/nexus/nexus-3.78.0-01-unix.tar.gz'
+    ),
+    (
+        'https://download.sonatype.com/nexus/3/latest.tar.gz',
+        '.',
+        './latest.tar.gz'
+    ),
+])
+def test_get_dest_path(url, dest, expected):
+    """Test destination path construction"""
+    result = get_dest_path(url, dest)
+    assert result == expected
+
 from ansible_collections.cloudkrafter.nexus.plugins.modules.download import is_valid_version
 
 @pytest.mark.parametrize('version,expected', [
