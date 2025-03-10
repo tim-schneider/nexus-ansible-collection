@@ -328,7 +328,13 @@ def get_possible_package_names(version, arch=None, java_version=None):
 
 def get_download_url(state, version=None, arch=None, validate_certs=True):
     """
-    Determines the download URL based on state and version.
+    Determines and returns a single download URL based on state, version and architecture.
+    
+    The URL is selected based on the following precedence:
+    1. Architecture-specific package (nexus-{arch}-{version}.tar.gz)
+    2. Standard unix package (nexus-{version}-unix.tar.gz)
+    3. Alternative unix package (nexus-unix-{version}.tar.gz)
+    4. Java version specific package (nexus-{version}-{java_version}-unix.tar.gz)
 
     Args:
         state (str): Either 'latest' or 'present'
@@ -337,17 +343,46 @@ def get_download_url(state, version=None, arch=None, validate_certs=True):
         validate_certs (bool): Whether to verify SSL certificates
 
     Returns:
-        str: Download URL for the specified version
+        str: Single download URL matching the criteria
 
     Raises:
-        ValueError: If parameters are invalid or version not found
+        ValueError: If parameters are invalid or no unique URL can be determined
     """
     if state not in ['latest', 'present']:
         raise ValueError(f"Invalid state: {state}")
         
     try:
+        # Get version and valid URLs
         version = get_latest_version(validate_certs) if state == 'latest' else version
-        return get_version_download_url(version, arch=arch, validate_certs=validate_certs)
+        valid_urls = get_valid_download_urls(version, arch=arch, validate_certs=validate_certs)
+
+        # Define URL patterns in order of precedence
+        patterns = [
+            rf"nexus-{arch}-.*?{version}\.tar\.gz$" if arch else None,
+            rf"nexus-{version}-unix\.tar\.gz$",
+            rf"nexus-unix-{version}\.tar\.gz$",
+            rf"nexus-{version}-.*?-unix\.tar\.gz$"
+        ]
+        
+        # Filter out None patterns
+        patterns = [p for p in patterns if p]
+
+        # Try each pattern in order
+        for pattern in patterns:
+            matches = [url for url in valid_urls if re.search(pattern, url, re.IGNORECASE)]
+            if matches:
+                if len(matches) > 1:
+                    raise ValueError(f"Multiple matches found for pattern {pattern}")
+                return matches[0]
+
+        # If no pattern matches but we have exactly one valid URL, return it
+        if len(valid_urls) == 1:
+            return valid_urls[0]
+        elif len(valid_urls) > 1:
+            raise ValueError("Multiple valid URLs found with no specific match")
+        else:
+            raise ValueError("No valid download URLs found")
+
     except Exception as e:
         raise ValueError(f"Failed to get download URL: {str(e)}")
 
