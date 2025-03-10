@@ -58,6 +58,7 @@ Pygments==2.18.0
 pyproject-api==1.8.0
 pytest==8.3.3
 pytest-ansible==24.9.0
+pytest-cov
 pytest-mock>=3.0.0
 pytest-testinfra==10.1.1
 pytest-xdist==3.6.1
