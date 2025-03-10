@@ -214,6 +214,44 @@ def get_version_download_url(version, arch=None, validate_certs=True):
         raise Exception(f"Failed to fetch download page: {str(e)}")
 
 
+def get_possible_package_names(version, arch=None, java_version=None):
+    """
+    Generate possible package name variations based on version, architecture and Java version.
+    
+    Args:
+        version (str): Version string (e.g., '3.78.0-01')
+        arch (str): Optional architecture (e.g., 'aarch64', 'x86_64')
+        java_version (str): Optional Java version (e.g., 'java8', 'java11')
+    
+    Returns:
+        list: List of possible package names in order of specificity
+    """
+    variants = []
+    
+    # Architecture variants (highest priority)
+    if arch:
+        variants.extend([
+            f"nexus-unix-{arch}-{version}.tar.gz",
+            f"nexus-{arch}-unix-{version}.tar.gz",
+        ])
+    
+    # Java version variants (medium priority)
+    if java_version:
+        variants.extend([
+            f"nexus-unix-{version}-{java_version}.tar.gz",
+            f"nexus-{version}-unix-{java_version}.tar.gz",
+        ])
+    
+    # Base names (lowest priority)
+    base_names = [
+        f"nexus-{version}-unix.tar.gz",
+        f"nexus-unix-{version}.tar.gz"
+    ]
+    
+    # Return all variants in order of priority
+    return variants + base_names
+
+
 def get_download_url(state, version=None, arch=None, validate_certs=True):
     """
     Determines the download URL based on state and version.

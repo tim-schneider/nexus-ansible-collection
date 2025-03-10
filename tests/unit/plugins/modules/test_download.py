@@ -60,7 +60,8 @@ sys.modules['packaging.version'] = version_mock
 # Now import the module under test
 from ansible_collections.cloudkrafter.nexus.plugins.modules.download import (
     get_latest_version,
-    get_version_download_url
+    get_version_download_url,
+    get_possible_package_names
 )
 
 
@@ -128,62 +129,7 @@ class TestNexusDownloadModule:
             verify=True
     )
 
-    # @patch('ansible_collections.cloudkrafter.nexus.plugins.modules.download.requests')
-    # @patch('ansible_collections.cloudkrafter.nexus.plugins.modules.download.BeautifulSoup')
-    # def test_get_version_download_url(self, mock_bs4, mock_requests):
-    #     # Setup mock response
-    #     mock_response = MagicMock()
-    #     mock_response.text = self.mock_html
-    #     mock_response.raise_for_status.return_value = None
-    #     mock_requests.get.return_value = mock_response
 
-    #     # Setup BeautifulSoup mock with find_all
-    #     mock_soup = MagicMock()
-    #     mock_bs4.return_value = mock_soup
-
-    #     # Create mock links
-    #     mock_link1 = MagicMock()
-    #     mock_link1.get.return_value = 'https://download.sonatype.com/nexus/3/nexus-3.78.0-01-unix.tar.gz'
-    #     mock_link2 = MagicMock()
-    #     mock_link2.get.return_value = 'https://download.sonatype.com/nexus/3/nexus-3.77.0-01-unix.tar.gz'
-
-    #     mock_soup.find_all.return_value = [mock_link1, mock_link2]
-
-    #     result = get_version_download_url('3.78.0-01')
-    #     assert result == 'https://download.sonatype.com/nexus/3/nexus-3.78.0-01-unix.tar.gz'
-
-    # @patch('ansible.module_utils.basic.AnsibleModule')
-    # @patch('ansible_collections.cloudkrafter.nexus.plugins.modules.download.get_download_url')
-    # @patch('ansible_collections.cloudkrafter.nexus.plugins.modules.download.download_file')
-    # def test_main_latest_success(self, mock_download_file, mock_get_url, mock_module):
-    #     # Setup mocks
-    #     mock_instance = setup_ansible_module_mock(mock_module, self.module_args)
-    #     mock_get_url.return_value = 'https://example.com/nexus.tar.gz'
-    #     mock_download_file.return_value = (True, "Success", "/tmp/nexus/nexus.tar.gz", 200)
-
-    #     # Test main function
-    #     main()  # Remove pytest.raises since we're not raising SystemExit anymore
-
-    #     mock_instance.exit_json.assert_called_once_with(
-    #         changed=True,
-    #         download_url='https://example.com/nexus.tar.gz',
-    #         msg="Success",
-    #         destination="/tmp/nexus/nexus.tar.gz",
-    #         status_code=200
-    #     )
-
-    # @patch('ansible.module_utils.basic.AnsibleModule')
-    # def test_main_missing_version(self, mock_module):
-    #     # Test when state is 'present' but version is missing
-    #     self.module_args['state'] = 'present'
-    #     mock_instance = setup_ansible_module_mock(mock_module, self.module_args)
-
-    #     with pytest.raises(SystemExit):
-    #         main()
-
-    #     mock_instance.fail_json.assert_called_once_with(
-    #         msg="When state is 'present', the 'version' parameter must be provided."
-    #     )
 
     # @patch('ansible.module_utils.basic.AnsibleModule')
     # @patch('sys.stdin')
@@ -203,3 +149,55 @@ class TestNexusDownloadModule:
     #     args = mock_instance.exit_json.call_args[1]
     #     assert args['changed'] is True
     #     assert 'download_url' in args
+
+
+@pytest.mark.parametrize('version,arch,java_version,expected', [
+    (
+        '3.78.0-01',
+        None,
+        None,
+        [
+            'nexus-3.78.0-01-unix.tar.gz',
+            'nexus-unix-3.78.0-01.tar.gz'
+        ]
+    ),
+    (
+        '3.78.0-01',
+        'aarch64',
+        None,
+        [
+            'nexus-unix-aarch64-3.78.0-01.tar.gz',
+            'nexus-aarch64-unix-3.78.0-01.tar.gz',
+            'nexus-3.78.0-01-unix.tar.gz',
+            'nexus-unix-3.78.0-01.tar.gz'
+        ]
+    ),
+    (
+        '3.78.0-01',
+        None,
+        'java11',
+        [
+            'nexus-unix-3.78.0-01-java11.tar.gz',
+            'nexus-3.78.0-01-unix-java11.tar.gz',
+            'nexus-3.78.0-01-unix.tar.gz',
+            'nexus-unix-3.78.0-01.tar.gz'
+        ]
+    ),
+    (
+        '3.78.0-01',
+        'aarch64',
+        'java11',
+        [
+            'nexus-unix-aarch64-3.78.0-01.tar.gz',
+            'nexus-aarch64-unix-3.78.0-01.tar.gz',
+            'nexus-unix-3.78.0-01-java11.tar.gz',
+            'nexus-3.78.0-01-unix-java11.tar.gz',
+            'nexus-3.78.0-01-unix.tar.gz',
+            'nexus-unix-3.78.0-01.tar.gz'
+        ]
+    ),
+])
+def test_get_possible_package_names(version, arch, java_version, expected):
+    """Test generation of possible package names"""
+    result = get_possible_package_names(version, arch, java_version)
+    assert result == expected
