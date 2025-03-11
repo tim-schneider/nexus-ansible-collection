@@ -17,6 +17,7 @@ from ansible_collections.cloudkrafter.nexus.plugins.modules.download import (
     validate_download_url, get_valid_download_urls, get_download_url
 )
 
+
 @pytest.mark.parametrize('version,expected', [
     ('3.78.0-01', True),
     ('3.78.1-02', True),
@@ -137,8 +138,7 @@ class TestNexusDownloadModule:
         mock_requests.get.assert_called_once_with(
             "https://help.sonatype.com/en/download-archives---repository-manager-3.html",
             verify=True
-    )
-
+        )
 
     # @patch('ansible.module_utils.basic.AnsibleModule')
     # @patch('sys.stdin')
@@ -294,7 +294,7 @@ def test_scrape_download_page(mock_bs4, mock_requests):
     # Test successful scraping
     url = "https://test.com"
     result = scrape_download_page(url, validate_certs=True)
-    
+
     assert result == mock_soup
     mock_requests.get.assert_called_once_with(url, verify=True)
     mock_bs4.assert_called_once_with(mock_response.text, 'html.parser')
@@ -304,10 +304,10 @@ def test_scrape_download_page(mock_bs4, mock_requests):
     mock_requests.exceptions = MagicMock()
     mock_requests.exceptions.RequestException = Exception
     mock_requests.get.side_effect = mock_requests.exceptions.RequestException("Connection error")
-    
+
     with pytest.raises(Exception) as exc_info:
         scrape_download_page(url, validate_certs=False)
-    
+
     assert "Failed to fetch download page" in str(exc_info.value)
     mock_requests.get.assert_called_once_with(url, verify=False)
 
@@ -322,7 +322,7 @@ def test_scrape_download_page(mock_bs4, mock_requests):
 #     # Test latest version with single URL
 #     mock_get_latest.return_value = version
 #     mock_get_valid_urls.return_value = [f'{base_url}nexus-{version}-unix.tar.gz']
-    
+
 #     result = get_download_url(state='latest', validate_certs=True)
 #     assert result == f'{base_url}nexus-{version}-unix.tar.gz'
 #     mock_get_latest.assert_called_once_with(validate_certs=True)
@@ -337,7 +337,7 @@ def test_scrape_download_page(mock_bs4, mock_requests):
 #         f'{base_url}nexus-{version}-unix.tar.gz'
 #     ]
 #     mock_get_valid_urls.return_value = urls
-    
+
 #     with pytest.raises(ValueError, match="Multiple valid URLs found"):
 #         get_download_url(state='present', version=version)
 

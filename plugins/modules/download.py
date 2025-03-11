@@ -197,11 +197,11 @@ def scrape_download_page(url, validate_certs=True):
 def validate_download_url(url, validate_certs=True):
     """
     Validates if a URL exists by checking HTTP headers.
-    
+
     Args:
         url (str): URL to validate
         validate_certs (bool): Whether to verify SSL certificates
-        
+
     Returns:
         tuple: (bool, int) - (is_valid, status_code)
     """
@@ -215,17 +215,17 @@ def validate_download_url(url, validate_certs=True):
 def get_valid_download_urls(version, arch=None, java_version=None, validate_certs=True, base_url="https://download.sonatype.com/nexus/3/"):
     """
     Returns a list of valid download URLs for a given version and optional parameters.
-    
+
     Args:
         version (str): Version string (e.g., '3.78.0-01')
         arch (str): Optional architecture (e.g., 'aarch64', 'x86_64')
         java_version (str): Optional Java version (e.g., 'java8', 'java11')
         validate_certs (bool): Whether to verify SSL certificates
         base_url (str): Base URL for downloads
-    
+
     Returns:
         list: List of valid download URLs ordered by priority
-        
+
     Raises:
         ValueError: If version is invalid or no valid URLs found
     """
@@ -234,7 +234,7 @@ def get_valid_download_urls(version, arch=None, java_version=None, validate_cert
 
     # Get possible package names
     possible_names = get_possible_package_names(version, arch, java_version)
-    
+
     # Check each possible URL
     valid_urls = []
     for name in possible_names:
@@ -242,47 +242,47 @@ def get_valid_download_urls(version, arch=None, java_version=None, validate_cert
         is_valid, _ = validate_download_url(url, validate_certs)
         if is_valid:
             valid_urls.append(url)
-    
+
     if not valid_urls:
         raise ValueError(f"No valid download URLs found for version {version}")
-        
+
     return valid_urls
 
 
 def get_possible_package_names(version, arch=None, java_version=None):
     """
     Generate possible package name variations based on version, architecture and Java version.
-    
+
     Args:
         version (str): Version string (e.g., '3.78.0-01')
         arch (str): Optional architecture (e.g., 'aarch64', 'x86_64')
         java_version (str): Optional Java version (e.g., 'java8', 'java11')
-    
+
     Returns:
         list: List of possible package names in order of specificity
     """
     variants = []
-    
+
     # Architecture variants (highest priority)
     if arch:
         variants.extend([
             f"nexus-unix-{arch}-{version}.tar.gz",
             f"nexus-{arch}-unix-{version}.tar.gz",
         ])
-    
+
     # Java version variants (medium priority)
     if java_version:
         variants.extend([
             f"nexus-unix-{version}-{java_version}.tar.gz",
             f"nexus-{version}-unix-{java_version}.tar.gz",
         ])
-    
+
     # Base names (lowest priority)
     base_names = [
         f"nexus-{version}-unix.tar.gz",
         f"nexus-unix-{version}.tar.gz"
     ]
-    
+
     # Return all variants in order of priority
     return variants + base_names
 
@@ -290,7 +290,7 @@ def get_possible_package_names(version, arch=None, java_version=None):
 def get_download_url(state, version=None, arch=None, validate_certs=True):
     """
     Determines and returns a single download URL based on state, version and architecture.
-    
+
     The URL is selected based on the following precedence:
     1. Architecture-specific package (nexus-{arch}-{version}.tar.gz)
     2. Standard unix package (nexus-{version}-unix.tar.gz)
@@ -311,7 +311,7 @@ def get_download_url(state, version=None, arch=None, validate_certs=True):
     """
     if state not in ['latest', 'present']:
         raise ValueError(f"Invalid state: {state}")
-        
+
     try:
         # Get version and valid URLs
         version = get_latest_version(validate_certs) if state == 'latest' else version
@@ -324,7 +324,7 @@ def get_download_url(state, version=None, arch=None, validate_certs=True):
             rf"nexus-unix-{version}\.tar\.gz$",
             rf"nexus-{version}-.*?-unix\.tar\.gz$"
         ]
-        
+
         # Filter out None patterns
         patterns = [p for p in patterns if p]
 
