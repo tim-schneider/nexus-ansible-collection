@@ -30,11 +30,12 @@ options:
     type: str
   arch:
     description:
-      - Target architecture for the package (e.g., 'x86_64' or 'aarch64').
+      - Target architecture for the package (e.g., 'x86-64' or 'aarch64').
       - If specified, will attempt to find a package matching this architecture.
       - If not specified or if no architecture-specific package exists, will use the default package.
     required: false
     type: str
+    default: x86-64
   dest:
     description:
       - Destination directory where the file should be saved.
@@ -390,7 +391,7 @@ def main():
     module_args = dict(
         state=dict(type='str', required=True, choices=['latest', 'present']),
         version=dict(type='str', required=False),
-        arch=dict(type='str', required=False),
+        arch=dict(type='str', required=False, default='x86-64'),
         dest=dict(type='path', required=True),
         validate_certs=dict(type='bool', required=False, default=True)
     )
