@@ -1,8 +1,12 @@
-# Copyright: (c) 2025, Brian Veltman <@cloudkrafter>
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+#
+# Copyright: (c) 2025, Brian Veltman <info@cloudkrafter.org>
 # GNU General Public License v3.0+ (see https://www.gnu.org/licenses/gpl-3.0.txt)
 
 
 from __future__ import (absolute_import, division, print_function)
+__metaclass__ = type
 
 
 DOCUMENTATION = '''
@@ -26,11 +30,12 @@ options:
     type: str
   arch:
     description:
-      - Target architecture for the package (e.g., 'x86_64' or 'aarch64').
+      - Target architecture for the package (e.g., 'x86-64' or 'aarch64').
       - If specified, will attempt to find a package matching this architecture.
       - If not specified or if no architecture-specific package exists, will use the default package.
     required: false
     type: str
+    default: x86-64
   dest:
     description:
       - Destination directory where the file should be saved.
@@ -95,6 +100,7 @@ import sys
 from ansible.module_utils.basic import AnsibleModule, missing_required_lib
 from ansible.module_utils.urls import fetch_url
 
+
 # Try collection import first, then local import, finally direct import
 HAS_DEPS = False
 try:
@@ -158,55 +164,139 @@ def get_latest_version(validate_certs=False):
         raise Exception(f"Failed to fetch download page: {str(e)}")
 
 
-def get_version_download_url(version, arch=None, validate_certs=True):
+def is_valid_version(version):
+    if version is None:
+        return False
+    if not isinstance(version, str):
+        return False
+    pattern = r'^\d+\.\d+\.\d+-\d+$'
+    return bool(re.match(pattern, version))
+
+
+def scrape_download_page(url, validate_certs=True):
     """
-    Scrapes the download page to find the specific URL for a version.
+    Scrapes the Sonatype download page and returns the parsed content.
 
     Args:
-        version (str): Version string in format X.Y.Z-NN
-        arch (str): Optional target architecture
+        url (str): URL to scrape
         validate_certs (bool): Whether to verify SSL certificates
 
     Returns:
-        str: Download URL for the specific version
+        BeautifulSoup: Parsed HTML content
+
+    Raises:
+        Exception: If page fetch fails
     """
-    url = "https://help.sonatype.com/en/download-archives---repository-manager-3.html"
     try:
         response = requests.get(url, verify=validate_certs)
         response.raise_for_status()
-        soup = BeautifulSoup(response.text, 'html.parser')
-
-        # Store all matching links
-        matching_links = []
-
-        # Look for download links containing the version
-        for link in soup.find_all('a'):
-            href = link.get('href', '')
-            if version in href and 'unix' in href.lower():
-                matching_links.append(href)
-
-        if not matching_links:
-            raise ValueError(f"No download URL found for version {version}")
-
-        # If architecture is specified, try to find a matching package
-        if arch:
-            for link in matching_links:
-                if arch.lower() in link.lower():
-                    return link
-
-            # If no architecture-specific package found, warn and use first match
-            return matching_links[0]
-
-        # If no architecture specified, return first match
-        return matching_links[0]
-
+        return BeautifulSoup(response.text, 'html.parser')
     except requests.exceptions.RequestException as e:
         raise Exception(f"Failed to fetch download page: {str(e)}")
 
 
+def validate_download_url(url, validate_certs=True):
+    """
+    Validates if a URL exists by checking HTTP headers.
+
+    Args:
+        url (str): URL to validate
+        validate_certs (bool): Whether to verify SSL certificates
+
+    Returns:
+        tuple: (bool, int) - (is_valid, status_code)
+    """
+    try:
+        response = requests.head(url, verify=validate_certs, allow_redirects=True)
+        return response.ok, response.status_code
+    except requests.exceptions.RequestException:
+        return False, None
+
+
+def get_valid_download_urls(version, arch=None, java_version=None, validate_certs=True, base_url="https://download.sonatype.com/nexus/3/"):
+    """
+    Returns a list of valid download URLs for a given version and optional parameters.
+
+    Args:
+        version (str): Version string (e.g., '3.78.0-01')
+        arch (str): Optional architecture (e.g., 'aarch64', 'x86_64')
+        java_version (str): Optional Java version (e.g., 'java8', 'java11')
+        validate_certs (bool): Whether to verify SSL certificates
+        base_url (str): Base URL for downloads
+
+    Returns:
+        list: List of valid download URLs ordered by priority
+
+    Raises:
+        ValueError: If version is invalid or no valid URLs found
+    """
+    if not is_valid_version(version):
+        raise ValueError(f"Invalid version format: {version}")
+
+    # Get possible package names
+    possible_names = get_possible_package_names(version, arch, java_version)
+
+    # Check each possible URL
+    valid_urls = []
+    for name in possible_names:
+        url = base_url + name
+        is_valid, status_code = validate_download_url(url, validate_certs)
+        if is_valid:
+            valid_urls.append(url)
+
+    if not valid_urls:
+        raise ValueError(f"No valid download URLs found for version {version}")
+
+    return valid_urls
+
+
+def get_possible_package_names(version, arch=None, java_version=None):
+    """
+    Generate possible package name variations based on version, architecture and Java version.
+
+    Args:
+        version (str): Version string (e.g., '3.78.0-01')
+        arch (str): Optional architecture (e.g., 'aarch64', 'x86_64')
+        java_version (str): Optional Java version (e.g., 'java8', 'java11')
+
+    Returns:
+        list: List of possible package names in order of specificity
+    """
+    variants = []
+
+    # Architecture variants (highest priority)
+    if arch:
+        variants.extend([
+            f"nexus-unix-{arch}-{version}.tar.gz",
+            f"nexus-{arch}-unix-{version}.tar.gz",
+        ])
+
+    # Java version variants (medium priority)
+    if java_version:
+        variants.extend([
+            f"nexus-unix-{version}-{java_version}.tar.gz",
+            f"nexus-{version}-unix-{java_version}.tar.gz",
+        ])
+
+    # Base names (lowest priority)
+    base_names = [
+        f"nexus-{version}-unix.tar.gz",
+        f"nexus-unix-{version}.tar.gz"
+    ]
+
+    # Return all variants in order of priority
+    return variants + base_names
+
+
 def get_download_url(state, version=None, arch=None, validate_certs=True):
     """
-    Determines the download URL based on state and version.
+    Determines and returns a single download URL based on state, version and architecture.
+
+    The URL is selected based on the following precedence:
+    1. Architecture-specific package (nexus-{arch}-{version}.tar.gz)
+    2. Standard unix package (nexus-{version}-unix.tar.gz)
+    3. Alternative unix package (nexus-unix-{version}.tar.gz)
+    4. Java version specific package (nexus-{version}-{java_version}-unix.tar.gz)
 
     Args:
         state (str): Either 'latest' or 'present'
@@ -215,23 +305,48 @@ def get_download_url(state, version=None, arch=None, validate_certs=True):
         validate_certs (bool): Whether to verify SSL certificates
 
     Returns:
-        str: Download URL for the specified version
+        str: Single download URL matching the criteria
 
     Raises:
-        ValueError: If version format is invalid or version not found
+        ValueError: If parameters are invalid or no unique URL can be determined
     """
+    if state not in ['latest', 'present']:
+        raise ValueError(f"Invalid state: {state}")
+
     try:
-        if state == 'latest':
-            version = get_latest_version(validate_certs=validate_certs)
+        # Get version and valid URLs
+        version = get_latest_version(validate_certs) if state == 'latest' else version
+        valid_urls = get_valid_download_urls(version, arch=arch, validate_certs=validate_certs)
 
-        # Validate version format
-        if not re.match(r'^\d+\.\d+\.\d+-\d+$', version):
-            raise ValueError(f"Invalid version format: {version}")
+        # Define URL patterns in order of precedence
+        patterns = [
+            rf"nexus-{arch}-.*?{version}\.tar\.gz$" if arch else None,
+            rf"nexus-{version}-unix\.tar\.gz$",
+            rf"nexus-unix-{version}\.tar\.gz$",
+            rf"nexus-{version}-.*?-unix\.tar\.gz$"
+        ]
 
-        return get_version_download_url(version, arch=arch, validate_certs=validate_certs)
+        # Filter out None patterns
+        patterns = [p for p in patterns if p]
+
+        # Try each pattern in order
+        for pattern in patterns:
+            matches = [url for url in valid_urls if re.search(pattern, url, re.IGNORECASE)]
+            if matches:
+                if len(matches) > 1:
+                    raise ValueError(f"Multiple matches found for pattern {pattern}")
+                return matches[0]
+
+        # If no pattern matches but we have exactly one valid URL, return it
+        if len(valid_urls) == 1:
+            return valid_urls[0]
+        elif len(valid_urls) > 1:
+            raise ValueError("Multiple valid URLs found with no specific match")
+        else:
+            raise ValueError("No valid download URLs found")
 
     except Exception as e:
-        raise Exception(f"Error determining download URL: {str(e)}")
+        raise ValueError(f"Failed to get download URL: {str(e)}")
 
 
 def get_dest_path(url, dest):
@@ -276,7 +391,7 @@ def main():
     module_args = dict(
         state=dict(type='str', required=True, choices=['latest', 'present']),
         version=dict(type='str', required=False),
-        arch=dict(type='str', required=False),
+        arch=dict(type='str', required=False, default='x86-64'),
         dest=dict(type='path', required=True),
         validate_certs=dict(type='bool', required=False, default=True)
     )

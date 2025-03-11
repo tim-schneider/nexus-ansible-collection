@@ -13,7 +13,7 @@
 	"features": {
 		"ghcr.io/devcontainers/features/python:1": {
 			"installTools": false,
-			"version": "latest"
+			"version": "3.12"
 		},
 		"ghcr.io/hspaans/devcontainer-features/ansible-lint:1": {
 			"version": "latest"
@@ -34,8 +34,8 @@
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	// "forwardPorts": [	],
 	// Use 'postCreateCommand' to run commands after the container is created.
-	"onCreateCommand": ".devcontainer/ansible-role/post-create.sh",
-	"postStartCommand": ".devcontainer/ansible-role/post-start.sh",
+	"onCreateCommand": ".devcontainer/nexus-collection/post-create.sh",
+	//"postStartCommand": ".devcontainer/nexus-collection/post-start.sh",
 	"remoteEnv": {
 		"NEXUS_LICENSE_B64": "${localEnv:NEXUS_LICENSE_B64}"
 	},
@@ -48,8 +48,14 @@
 			"extensions": [
 				"ms-azuretools.vscode-docker",
 				"redhat.ansible",
-				"ms-python.python"
-			]
+				"ms-python.python",
+				"ms-python.pylint"
+			],
+            "settings": {
+                "python.defaultInterpreterPath": "/workspaces/${localWorkspaceFolderBasename}/.venv-${command:python.interpreterVersion}/bin/python",
+                "python.terminal.activateEnvironment": true,
+                "python.terminal.activateEnvInCurrentTerminal": true
+            }
 		}
 	},
 	"portsAttributes": {
