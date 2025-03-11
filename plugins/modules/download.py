@@ -239,7 +239,7 @@ def get_valid_download_urls(version, arch=None, java_version=None, validate_cert
     valid_urls = []
     for name in possible_names:
         url = base_url + name
-        is_valid, _ = validate_download_url(url, validate_certs)
+        is_valid, status_code = validate_download_url(url, validate_certs)
         if is_valid:
             valid_urls.append(url)
 

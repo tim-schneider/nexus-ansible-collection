@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
 # Copyright: (c) 2025, Brian Veltman <info@cloudkrafter.org>
@@ -14,7 +14,7 @@ from unittest.mock import patch, MagicMock
 import pytest
 from ansible_collections.cloudkrafter.nexus.plugins.modules.download import (
     is_valid_version, get_latest_version, get_possible_package_names, scrape_download_page,
-    validate_download_url, get_valid_download_urls, get_download_url
+    validate_download_url, get_valid_download_urls
 )
 
 
