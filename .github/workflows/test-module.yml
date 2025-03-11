@@ -48,7 +48,15 @@ jobs:
       - name: Run Download Module
         run: |
           cd /home/runner/.ansible/collections/ansible_collections/cloudkrafter/nexus
-          ANSIBLE_LIBRARY=./plugins/modules ansible -m download -a 'state=present version=3.78.0-14 dest=/tmp/nexus.tar.gz validate_certs=false' localhost
+          ANSIBLE_LIBRARY=./plugins/modules ansible -m download -a 'state=latest dest=/tmp/nexus.tar.gz' localhost
+        env:
+          PY_COLORS: '1'
+          ANSIBLE_FORCE_COLOR: '1'
+
+      - name: Run playbook in check mode
+        run: |
+          cd /home/runner/work/nexus-ansible-collection/nexus-ansible-collection
+          PYTHONPATH=$PWD ANSIBLE_LIBRARY=$PWD/plugins/modules ansible-playbook tests/local_test.yml --check
         env:
           PY_COLORS: '1'
           ANSIBLE_FORCE_COLOR: '1'
@@ -56,7 +64,7 @@ jobs:
       - name: Run playbook
         run: |
           cd /home/runner/work/nexus-ansible-collection/nexus-ansible-collection
-          PYTHONPATH=$PWD ANSIBLE_LIBRARY=$PWD/plugins/modules ansible-playbook tests/local_test.yml -vv
+          PYTHONPATH=$PWD ANSIBLE_LIBRARY=$PWD/plugins/modules ansible-playbook tests/local_test.yml
         env:
           PY_COLORS: '1'
           ANSIBLE_FORCE_COLOR: '1'
