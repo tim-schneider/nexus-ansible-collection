@@ -109,6 +109,9 @@ of new features if needed (and update meta/main.yml for minimum version)
  and Debian buster. Other molecule scenarios can be played locally for CentOS 7, Ubuntu Xenial (16.04), and Debian stretch
 - Rsync has to be installed on the target machine (it is not needed on the host running ansible if different)
 - `jmespath` library needs to be installed on the host running the playbook (needed for the `json_query` filter). See `requirements.txt`
+- `requests` is needed for downloading the latest Nexus version. See `requirements.txt`
+- `beautifulsoup4` is needed for identifying the latest Nexus version. See `requirements.txt`
+- `packaging` is needed for version comparision. See `requirements.txt`
 - Java 8 (mandatory)
     - **Oracle announced Java 8 EOL. Sonatype is now recommending openjdk8**
     - For more information see [nexus3 system requirements](https://help.sonatype.com/display/NXRM3/System+Requirements)
