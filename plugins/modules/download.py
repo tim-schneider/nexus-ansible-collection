@@ -152,7 +152,7 @@ except ImportError:
             pass
 
 
-def get_latest_version(validate_certs=False):
+def get_latest_version(validate_certs=True):
     """
     Scrapes the Sonatype download page to find the latest version.
 
