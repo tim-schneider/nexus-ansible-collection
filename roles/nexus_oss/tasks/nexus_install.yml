@@ -108,8 +108,6 @@
     timeout: "{{ nexus_download_timeout }}"
     validate_certs: "{{ nexus_download_ssl_verify | default(omit) }}"
   register: __nexus_download__
-  notify:
-    - nexus-service-stop
 
 - name: Ensure Nexus o/s group exists
   ansible.builtin.group:
