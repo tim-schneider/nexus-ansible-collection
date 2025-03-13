@@ -100,6 +100,10 @@ download_url:
     description: The URL used for downloading the package.
     type: str
     returned: always
+version:
+    description: The version of Nexus that was or will be downloaded.
+    type: str
+    returned: always
 destination:
     description: The local path where the package was saved.
     type: str
@@ -455,17 +459,22 @@ def main():
     try:
         if url:
             base_url = url.rstrip('/') + '/'
-            valid_urls = get_valid_download_urls(version, arch=arch, validate_certs=validate_certs, base_url=base_url)
+            # Ensure we have the version before getting URLs
+            actual_version = version  # We know version is set when url is used
+            valid_urls = get_valid_download_urls(actual_version, arch=arch, validate_certs=validate_certs, base_url=base_url)
             if len(valid_urls) == 1:
                 download_url = valid_urls[0]
             else:
-                download_url = get_download_url(state, version, arch=arch, validate_certs=validate_certs, base_url=base_url)
+                download_url = get_download_url(state, actual_version, arch=arch, validate_certs=validate_certs, base_url=base_url)
         else:
-            download_url = get_download_url(state, version, arch=arch, validate_certs=validate_certs)
+            # For non-custom URLs, get latest version if needed
+            actual_version = version if state == 'present' else get_latest_version(validate_certs)
+            download_url = get_download_url(state, actual_version, arch=arch, validate_certs=validate_certs)
     except Exception as e:
         module.fail_json(
             msg=f"Error determining download URL: {str(e)}",
-            download_url=url if url else None
+            download_url=url if url else None,
+            version=actual_version
         )
 
     # Get destination path
@@ -479,6 +488,7 @@ def main():
         module.exit_json(
             changed=not file_exists,
             download_url=download_url,
+            version=actual_version,
             destination=destination,
             status_code=200 if file_exists else None,
             msg="File would be downloaded, if not in check mode" if not file_exists else "File already exists"
@@ -490,6 +500,7 @@ def main():
     module.exit_json(
         changed=changed,
         download_url=download_url,
+        version=actual_version,
         msg=msg,
         destination=destination,
         status_code=status_code
