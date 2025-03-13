@@ -36,6 +36,12 @@ options:
     required: false
     type: str
     default: x86-64
+  url:
+    description:
+      - Custom base URL to download Nexus from.
+      - Can only be used when state is 'present' and version is defined.
+    required: false
+    type: str
   dest:
     description:
       - Destination directory where the file should be saved.
@@ -46,6 +52,13 @@ options:
       - If False, SSL certificates will not be validated.
     type: bool
     default: true
+    required: false
+  timeout:
+    description:
+      - Timeout in seconds for the HTTP request.
+      - This value sets both the connect and read timeouts.
+    type: int
+    default: 120
     required: false
 author:
   - "Brian Veltman (@cloudkrafter)"
@@ -72,6 +85,14 @@ EXAMPLES = '''
     dest: /path/to/download/dir
     validate_certs: false
     arch: aarch64
+
+- name: Download from a custom URL
+  cloudkrafter.nexus.download:
+    state: present
+    version: 3.78.0-1
+    url: https://some-url.tld/files
+    dest: /path/to/download/dir
+    validate_certs: true
 '''
 
 RETURN = '''
@@ -288,7 +309,7 @@ def get_possible_package_names(version, arch=None, java_version=None):
     return variants + base_names
 
 
-def get_download_url(state, version=None, arch=None, validate_certs=True):
+def get_download_url(state, version=None, arch=None, base_url=None, validate_certs=True):
     """
     Determines and returns a single download URL based on state, version and architecture.
 
@@ -302,6 +323,7 @@ def get_download_url(state, version=None, arch=None, validate_certs=True):
         state (str): Either 'latest' or 'present'
         version (str): Optional version string (required if state is 'present')
         arch (str): Optional target architecture
+        base_url (str): Optional URL to download from
         validate_certs (bool): Whether to verify SSL certificates
 
     Returns:
@@ -316,7 +338,12 @@ def get_download_url(state, version=None, arch=None, validate_certs=True):
     try:
         # Get version and valid URLs
         version = get_latest_version(validate_certs) if state == 'latest' else version
-        valid_urls = get_valid_download_urls(version, arch=arch, validate_certs=validate_certs)
+        valid_urls = get_valid_download_urls(
+            version,
+            arch=arch,
+            validate_certs=validate_certs,
+            base_url=base_url or "https://download.sonatype.com/nexus/3/"
+        )
 
         # Define URL patterns in order of precedence
         patterns = [
@@ -373,7 +400,7 @@ def download_file(module, url, dest, validate_certs=True):
             module.fail_json(msg=f"Failed to create destination directory: {str(e)}")
 
     # Download the file
-    response, info = fetch_url(module, url, method="GET")
+    response, info = fetch_url(module, url, method="GET", timeout=module.params['timeout'])
     status_code = info['status']
 
     if info['status'] != 200:
@@ -392,6 +419,8 @@ def main():
         state=dict(type='str', required=True, choices=['latest', 'present']),
         version=dict(type='str', required=False),
         arch=dict(type='str', required=False, default='x86-64'),
+        url=dict(type='str', required=False),
+        timeout=dict(type='int', required=False, default=120),
         dest=dict(type='path', required=True),
         validate_certs=dict(type='bool', required=False, default=True)
     )
@@ -405,6 +434,7 @@ def main():
     state = module.params['state']
     version = module.params.get('version')
     arch = module.params.get('arch')
+    url = module.params.get('url')
     dest = module.params['dest']
     validate_certs = module.params['validate_certs']
 
@@ -412,8 +442,22 @@ def main():
     if state == 'present' and not version:
         module.fail_json(msg="When state is 'present', the 'version' parameter must be provided.")
 
+    if url and state != 'present':
+        module.fail_json(msg="URL can only be used when state is 'present'")
+
+    if url and not version:
+        module.fail_json(msg="Version must be provided when using a custom URL")
+
     try:
-        download_url = get_download_url(state, version, arch=arch, validate_certs=validate_certs)
+        if url:
+            base_url = url.rstrip('/') + '/'
+            valid_urls = get_valid_download_urls(version, arch=arch, validate_certs=validate_certs, base_url=base_url)
+            if len(valid_urls) == 1:
+                download_url = valid_urls[0]
+            else:
+                download_url = get_download_url(state, version, arch=arch, validate_certs=validate_certs, base_url=base_url)
+        else:
+            download_url = get_download_url(state, version, arch=arch, validate_certs=validate_certs)
     except Exception as e:
         module.fail_json(msg=f"Error determining download URL: {str(e)}")
 
