@@ -53,6 +53,13 @@ options:
     type: bool
     default: true
     required: false
+  timeout:
+    description:
+      - Timeout in seconds for the HTTP request.
+      - This value sets both the connect and read timeouts.
+    type: int
+    default: 120
+    required: false
 author:
   - "Brian Veltman (@cloudkrafter)"
 '''
@@ -393,7 +400,7 @@ def download_file(module, url, dest, validate_certs=True):
             module.fail_json(msg=f"Failed to create destination directory: {str(e)}")
 
     # Download the file
-    response, info = fetch_url(module, url, method="GET")
+    response, info = fetch_url(module, url, method="GET", timeout=module.params['timeout'])
     status_code = info['status']
 
     if info['status'] != 200:
@@ -413,6 +420,7 @@ def main():
         version=dict(type='str', required=False),
         arch=dict(type='str', required=False, default='x86-64'),
         url=dict(type='str', required=False),
+        timeout=dict(type='int', required=False, default=120),
         dest=dict(type='path', required=True),
         validate_certs=dict(type='bool', required=False, default=True)
     )
