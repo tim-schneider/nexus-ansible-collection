@@ -404,7 +404,11 @@ def download_file(module, url, dest, validate_certs=True):
     status_code = info['status']
 
     if info['status'] != 200:
-        module.fail_json(msg=f"Failed to download file: {info['msg']}")
+        module.fail_json(
+            msg=f"Failed to download file: {info['msg']}",
+            status_code=status_code,
+            download_url=url
+        )
 
     try:
         with open(destination, 'wb') as f:
@@ -459,7 +463,10 @@ def main():
         else:
             download_url = get_download_url(state, version, arch=arch, validate_certs=validate_certs)
     except Exception as e:
-        module.fail_json(msg=f"Error determining download URL: {str(e)}")
+        module.fail_json(
+            msg=f"Error determining download URL: {str(e)}",
+            download_url=url if url else None
+        )
 
     # Get destination path
     destination = get_dest_path(download_url, dest)
