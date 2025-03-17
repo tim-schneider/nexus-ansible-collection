@@ -27,7 +27,35 @@
     mode: "0640"
   tags: nexus-postgres,nexus-migrate
 
-# Add username and password to the nexus-store.properties file in the etc directory
+- name: Get primary group and its hosts
+  ansible.builtin.set_fact:
+    nexus_group: "{{ inventory_hostname | cloudkrafter.nexus.direct_parent(groups) }}"
+    nexus_group_hosts: "{{ groups[inventory_hostname | cloudkrafter.nexus.direct_parent(groups)] | default([]) | sort }}"
+  tags: nexus-postgres,nexus-migrate
+
+- name: Show nexus group and its hosts
+  ansible.builtin.debug:
+    msg: >-
+      Nexus group {{ nexus_group }} has hosts {{ nexus_group_hosts }}
+  tags: nexus-postgres,nexus-migrate
+
+- name: Set database host for Nexus instance
+  ansible.builtin.set_fact:
+    _nxrm_selected_db_: >-
+      {{
+        nexus_postgres_db_hosts[nexus_postgres_db_host_override | default(
+          (inventory_hostname | cloudkrafter.nexus.host_index_in_group(nexus_group_hosts)) % nexus_postgres_db_hosts | length
+        )]
+      }}
+  tags: nexus-postgres,nexus-migrate
+
+- name: Show bouncer assignment
+  ansible.builtin.debug:
+    msg: >-
+      Host {{ inventory_hostname }} ({{ nexus_group }})
+      will use {{ _nxrm_selected_db_.host }}
+  tags: nexus-postgres,nexus-migrate
+
 - name: Add the username and password to the nexus-store.properties file
   ansible.builtin.lineinfile:
     path: "{{ nexus_data_dir }}/etc/fabric/nexus-store.properties"
@@ -35,9 +63,9 @@
     insertafter: "EOF"
     state: present
   loop:
-    - username={{ nexus_postgres_db_username }}
-    - password={{ nexus_postgres_db_password }}
-    - jdbcUrl=jdbc\:postgresql\://{{ nexus_postgres_db_host }}\:{{ nexus_postgres_db_port }}/{{ nexus_postgres_db_name }}
+    - username={{ _nxrm_selected_db_.username }}
+    - password={{ _nxrm_selected_db_.password }}
+    - jdbcUrl=jdbc\:postgresql\://{{ _nxrm_selected_db_.host }}\:{{ _nxrm_selected_db_.port }}/{{ _nxrm_selected_db_.name }}
     - maximumPoolSize={{ nexus_postgres_max_pool_size }}
     - advanced=maxLifetime\={{ nexus_postgres_max_lifetime }}
   tags: nexus-postgres,nexus-migrate
