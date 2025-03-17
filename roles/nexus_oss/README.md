@@ -189,14 +189,85 @@ Then make sure your Postgres instance has the following requirements: https://he
 **NOTE:** You have to use a Pro license. It may look like Nexus will work with postgres without importing a license, but it doesn't. Nexus will start but you won't be able to login. See [Enabling Nexus Pro](#nexus-pro).
 
 When ready add the following variables to your playbook;
-Keep in mind this works for installing NEW Nexus instances only! This will **NOT** migrate your existing Orient/H2 database to Postgres!!
+Keep in mind this works for installing NEW or existing Nexus instances running Postgres only! This will **NOT** migrate your existing Orient/H2 database to Postgres!!
 ```yaml
 nexus_use_postgres: true
-nexus_postgres_db_host: localhost
-nexus_postgres_db_name: nexus
-nexus_postgres_db_port: 5432
-nexus_postgres_db_username: nexus
-nexus_postgres_db_password: nexus
+nexus_postgres_db_hosts:
+  - host: localhost
+    port: 5432
+    name: nexus
+    username: nexus
+    password: nexus
+```
+
+When using a Postgres cluster, you can define multiple pgbouncers or databases.
+```yaml
+nexus_use_postgres: true
+nexus_postgres_db_hosts:
+  - host: pgbouncer-01
+    port: 5432
+    name: nexus
+    username: nexus
+    password: nexus
+  - host: pgbouncer-02
+    port: 5432
+    name: nexus
+    username: nexus
+    password: nexus
+```
+
+#### Database Connection assignment in Cluster/HA mode
+Sonatype recommends to run your Nexus instances within a single cloud region or on-premises data center.
+Therefore this role will distribute the database hosts evenly across all servers within the same `inventory group`.
+
+```ini
+[single-instances]
+nexus-single-01 ansible_host=some-server.tld
+
+[clustered]
+nexus-clustered-01 ansible_host=some-server-01.tld
+nexus-clustered-02 ansible_host=some-server-02.tld
+nexus-clustered-03 ansible_host=some-server-03.tld
+
+# All nexus servers
+[nexus:children]
+single-instances
+clustered
+
+```
+```yaml
+nexus_postgres_db_hosts:
+  - host: pgbouncer-01
+    port: 5432
+    name: nexus
+    username: nexus
+    password: nexus
+  - host: pgbouncer-02
+    port: 5432
+    name: nexus
+    username: nexus
+    password: nexus
+```
+
+In this example the database/pgbouncer assignment will look like this:
+
+`pgbouncer-01` will be assigned to `nexus-single-01`
+
+`pgbouncer-02` will be assigned to `nexus-single-02`
+
+`pgbouncer-01` will be assigned to `nexus-single-03`
+
+etc..
+
+#### Override database assignments
+
+If you want or need to configure your database assignments differently, you may use the following overrides in your `host_vars` or `group_vars`.
+
+```ini
+...
+[clustered]
+nexus-clustered-01 ansible_host=some-server-01.tld nexus_postgres_db_host_override=pgbouncer-01.local nexus_postgres_db_name_override=nexus nexus_postgres_db_port_override=5432 nexus_postgres_db_username_override=db-user nexus_postgres_db_password_override=db-password
+
 ```
 
 ### Nexus HA Cluster
