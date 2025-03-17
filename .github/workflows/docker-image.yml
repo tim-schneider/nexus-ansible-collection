@@ -26,7 +26,7 @@ jobs:
       - name: Log in to Docker Hub
         run: echo "${{ secrets.DOCKER_HUB_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_HUB_USERNAME }}" --password-stdin
       - name: Build the Docker image
-        run: docker build -t cloudkrafter/ansible-devcontainer:${{ env.TIMESTAMP }} -f .devcontainer/Dockerfile .
+        run: docker build -t cloudkrafter/ansible-devcontainer:${{ env.TIMESTAMP }} -f .devcontainer/nexus-collection/Dockerfile .
       - name: Tag the Docker image as latest if on main branch
         if: github.ref == 'refs/heads/main'
         run: docker tag cloudkrafter/ansible-devcontainer:${{ env.TIMESTAMP }} cloudkrafter/ansible-devcontainer:latest
