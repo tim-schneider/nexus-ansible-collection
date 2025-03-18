@@ -36,11 +36,12 @@ nexus_cluster_enabled: false
 # If you want to use PostgreSQL as the database for NEW installations, set the following to true
 nexus_use_postgres: false
 
-nexus_postgres_db_host: localhost
-nexus_postgres_db_name: nexus
-nexus_postgres_db_port: 5432
-nexus_postgres_db_username: nexus
-nexus_postgres_db_password: nexus
+nexus_postgres_db_hosts:
+  - host: localhost
+    port: 5432
+    name: nexus
+    username: nexus
+    password: nexus
 nexus_postgres_max_lifetime: 840000
 nexus_postgres_max_pool_size: 85
 
