@@ -200,7 +200,7 @@ nexus_postgres_db_hosts:
     password: nexus
 ```
 
-When using a Postgres cluster, you can define multiple pgbouncers or databases.
+When using a Postgres cluster, you can define multiple pgbouncers.
 ```yaml
 nexus_use_postgres: true
 nexus_postgres_db_hosts:
@@ -216,9 +216,17 @@ nexus_postgres_db_hosts:
     password: nexus
 ```
 
+**IMPORTANT NOTE:** 
+
+Do NOT configure multiple database connections that point to different databases or even different Postgres instances! 
+
+You want to avoid a situation where a database write goes to one PostgreSQL instance and is followed by a read which goes to another PostgreSQL instance. The latency in replication can cause the read to fail.
+
+Pgbouncers that all point towards the same Postgres instance is fine.
+
 #### Database Connection assignment in Cluster/HA mode
 Sonatype recommends to run your Nexus instances within a single cloud region or on-premises data center.
-Therefore this role will distribute the database hosts evenly across all servers within the same `inventory group`.
+Therefore this role will distribute the pgbouncers evenly across all servers within the same `inventory group`.
 
 ```ini
 [single-instances]
@@ -249,7 +257,7 @@ nexus_postgres_db_hosts:
     password: nexus
 ```
 
-In this example the database/pgbouncer assignment will look like this:
+In this example the pgbouncer assignment will look like this:
 
 `pgbouncer-01` will be assigned to `nexus-single-01`
 
