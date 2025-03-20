@@ -130,7 +130,7 @@ from ansible.module_utils.urls import fetch_url
 HAS_DEPS = False
 try:
     from ansible_collections.cloudkrafter.nexus.plugins.module_utils.nexus_utils import (
-        requests, BeautifulSoup, version, urllib3
+        requests, urllib3
     )
     HAS_DEPS = True
 except ImportError:
@@ -139,15 +139,13 @@ except ImportError:
         module_utils_path = os.path.join(os.path.dirname(__file__), '..', 'module_utils')
         if os.path.exists(module_utils_path):
             sys.path.insert(0, module_utils_path)
-            from nexus_utils import requests, BeautifulSoup, version, urllib3
+            from nexus_utils import requests, urllib3
             HAS_DEPS = True
     except ImportError:
         # Direct imports as fallback
         try:
             import requests
             import urllib3
-            from bs4 import BeautifulSoup
-            from packaging import version
             HAS_DEPS = True
 
             def check_dependencies():
@@ -158,35 +156,43 @@ except ImportError:
 
 def get_latest_version(validate_certs=True):
     """
-    Scrapes the Sonatype download page to find the latest version.
+    Gets the latest version from Sonatype's API endpoint.
 
     Args:
         validate_certs (bool): Whether to verify SSL certificates
+
+    Returns:
+        str: Latest version in format 'X.Y.Z-N'
+
+    Raises:
+        Exception: If version cannot be retrieved
     """
-    url = "https://help.sonatype.com/en/download-archives---repository-manager-3.html"
+    url = "https://api.github.com/repos/sonatype/nexus-public/releases/latest"
     try:
         response = requests.get(url, verify=validate_certs)
         response.raise_for_status()
-        soup = BeautifulSoup(response.text, 'html.parser')
+        data = response.json()
 
-        # Look for version pattern in text (e.g., "3.78.0-01")
-        version_pattern = r'(\d+\.\d+\.\d+-\d+)'
-        versions = []
+        # Extract version from JSON response
+        raw_version = data.get('name')
+        if not raw_version:
+            raise ValueError("No release found in API response")
+        
+        # Strip 'release-' prefix if present
+        if raw_version.startswith('release-'):
+            version = raw_version[8:]
+        else:
+            version = raw_version
 
-        for text in soup.stripped_strings:
-            match = re.search(version_pattern, text)
-            if match:
-                versions.append(match.group(1))
+        if not is_valid_version(version):
+            raise ValueError(f"Invalid version format: {version}")
 
-        if not versions:
-            raise ValueError("No version found on download page")
-
-        # Sort versions and get the latest
-        latest = sorted(versions, key=lambda x: version.parse(x.split('-')[0]))[-1]
-        return latest
+        return version
 
     except requests.exceptions.RequestException as e:
-        raise Exception(f"Failed to fetch download page: {str(e)}")
+        raise Exception(f"Failed to fetch version from API: {str(e)}")
+    except (ValueError, KeyError) as e:
+        raise Exception(f"Failed to parse version from API response: {str(e)}")
 
 
 def is_valid_version(version):
@@ -196,28 +202,6 @@ def is_valid_version(version):
         return False
     pattern = r'^\d+\.\d+\.\d+-\d+$'
     return bool(re.match(pattern, version))
-
-
-def scrape_download_page(url, validate_certs=True):
-    """
-    Scrapes the Sonatype download page and returns the parsed content.
-
-    Args:
-        url (str): URL to scrape
-        validate_certs (bool): Whether to verify SSL certificates
-
-    Returns:
-        BeautifulSoup: Parsed HTML content
-
-    Raises:
-        Exception: If page fetch fails
-    """
-    try:
-        response = requests.get(url, verify=validate_certs)
-        response.raise_for_status()
-        return BeautifulSoup(response.text, 'html.parser')
-    except requests.exceptions.RequestException as e:
-        raise Exception(f"Failed to fetch download page: {str(e)}")
 
 
 def validate_download_url(url, validate_certs=True):
