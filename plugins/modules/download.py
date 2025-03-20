@@ -130,7 +130,7 @@ from ansible.module_utils.urls import fetch_url
 HAS_DEPS = False
 try:
     from ansible_collections.cloudkrafter.nexus.plugins.module_utils.nexus_utils import (
-        requests, urllib3
+        requests
     )
     HAS_DEPS = True
 except ImportError:
@@ -139,13 +139,12 @@ except ImportError:
         module_utils_path = os.path.join(os.path.dirname(__file__), '..', 'module_utils')
         if os.path.exists(module_utils_path):
             sys.path.insert(0, module_utils_path)
-            from nexus_utils import requests, urllib3
+            from nexus_utils import requests
             HAS_DEPS = True
     except ImportError:
         # Direct imports as fallback
         try:
             import requests
-            import urllib3
             HAS_DEPS = True
 
             def check_dependencies():
@@ -189,10 +188,8 @@ def get_latest_version(validate_certs=True):
 
         return version
 
-    except requests.exceptions.RequestException as e:
+    except (requests.exceptions.RequestException, ValueError) as e:
         raise Exception(f"Failed to fetch version from API: {str(e)}")
-    except (ValueError, KeyError) as e:
-        raise Exception(f"Failed to parse version from API response: {str(e)}")
 
 
 def is_valid_version(version):
@@ -218,7 +215,7 @@ def validate_download_url(url, validate_certs=True):
     try:
         response = requests.head(url, verify=validate_certs, allow_redirects=True)
         return response.ok, response.status_code
-    except requests.exceptions.RequestException:
+    except (requests.exceptions.RequestException, ValueError):
         return False, None
 
 
@@ -371,8 +368,6 @@ def get_dest_path(url, dest):
 
 def download_file(module, url, dest, validate_certs=True):
     """Downloads a file using Ansible's fetch_url utility."""
-    if not validate_certs:
-        urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
     destination = get_dest_path(url, dest)
 
@@ -388,7 +383,7 @@ def download_file(module, url, dest, validate_certs=True):
             module.fail_json(msg=f"Failed to create destination directory: {str(e)}")
 
     # Download the file
-    response, info = fetch_url(module, url, method="GET", timeout=module.params['timeout'])
+    response, info = fetch_url(module, url, method="GET", timeout=module.params['timeout'], validate_certs=validate_certs)
     status_code = info['status']
 
     if info['status'] != 200:
