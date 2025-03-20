@@ -320,6 +320,9 @@ def get_download_url(state, version=None, arch=None, base_url=None, validate_cer
     if state not in ['latest', 'present']:
         raise ValueError(f"Invalid state: {state}")
 
+    if state == 'present' and not version:
+        raise ValueError("Version must be provided when state is 'present'")
+
     try:
         # Get version and valid URLs
         version = get_latest_version(validate_certs) if state == 'latest' else version
@@ -418,6 +421,7 @@ def main():
     if not HAS_DEPS:
         module.fail_json(msg=missing_required_lib('requests, beautifulsoup4, packaging'))
 
+    # Get parameters
     state = module.params['state']
     version = module.params.get('version')
     arch = module.params.get('arch')
@@ -425,20 +429,26 @@ def main():
     dest = module.params['dest']
     validate_certs = module.params['validate_certs']
 
-    # Validate parameters
+    # Parameter validation
     if state == 'present' and not version:
         module.fail_json(msg="When state is 'present', the 'version' parameter must be provided.")
+        return  # Exit early after validation failure
 
     if url and state != 'present':
         module.fail_json(msg="URL can only be used when state is 'present'")
+        return  # Exit early after validation failure
 
     if url and not version:
         module.fail_json(msg="Version must be provided when using a custom URL")
+        return  # Exit early after validation failure
+
+    # Initialize variables
+    download_url = None
+    actual_version = None
 
     try:
         if url:
             base_url = url.rstrip('/') + '/'
-            # Ensure we have the version before getting URLs
             actual_version = version  # We know version is set when url is used
             valid_urls = get_valid_download_urls(actual_version, arch=arch, validate_certs=validate_certs, base_url=base_url)
             if len(valid_urls) == 1:
@@ -449,41 +459,45 @@ def main():
             # For non-custom URLs, get latest version if needed
             actual_version = version if state == 'present' else get_latest_version(validate_certs)
             download_url = get_download_url(state, actual_version, arch=arch, validate_certs=validate_certs)
+
+        if not download_url:
+            raise ValueError("Failed to determine download URL")
+
+        # Get destination path
+        destination = get_dest_path(download_url, dest)
+
+        # Check if file already exists for both check mode and regular mode
+        file_exists = os.path.exists(destination)
+
+        # Check mode: report what would be done
+        if module.check_mode:
+            module.exit_json(
+                changed=not file_exists,
+                download_url=download_url,
+                version=actual_version,
+                destination=destination,
+                status_code=200 if file_exists else None,
+                msg="File would be downloaded, if not in check mode" if not file_exists else "File already exists"
+            )
+
+        # Perform the actual download
+        changed, msg, destination, status_code = download_file(module, download_url, dest, validate_certs)
+
+        module.exit_json(
+            changed=changed,
+            download_url=download_url,
+            version=actual_version,
+            msg=msg,
+            destination=destination,
+            status_code=status_code
+        )
+
     except Exception as e:
         module.fail_json(
             msg=f"Error determining download URL: {str(e)}",
-            download_url=url if url else None,
+            download_url=download_url,
             version=actual_version
         )
-
-    # Get destination path
-    destination = get_dest_path(download_url, dest)
-
-    # Check if file already exists for both check mode and regular mode
-    file_exists = os.path.exists(destination)
-
-    # Check mode: report what would be done
-    if module.check_mode:
-        module.exit_json(
-            changed=not file_exists,
-            download_url=download_url,
-            version=actual_version,
-            destination=destination,
-            status_code=200 if file_exists else None,
-            msg="File would be downloaded, if not in check mode" if not file_exists else "File already exists"
-        )
-
-    # Perform the actual download
-    changed, msg, destination, status_code = download_file(module, download_url, dest, validate_certs)
-
-    module.exit_json(
-        changed=changed,
-        download_url=download_url,
-        version=actual_version,
-        msg=msg,
-        destination=destination,
-        status_code=status_code
-    )
 
 
 if __name__ == '__main__':
