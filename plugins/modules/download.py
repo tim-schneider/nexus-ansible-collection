@@ -130,7 +130,7 @@ from ansible.module_utils.urls import fetch_url
 HAS_DEPS = False
 try:
     from ansible_collections.cloudkrafter.nexus.plugins.module_utils.nexus_utils import (
-        requests, BeautifulSoup, version, urllib3
+        requests
     )
     HAS_DEPS = True
 except ImportError:
@@ -139,15 +139,12 @@ except ImportError:
         module_utils_path = os.path.join(os.path.dirname(__file__), '..', 'module_utils')
         if os.path.exists(module_utils_path):
             sys.path.insert(0, module_utils_path)
-            from nexus_utils import requests, BeautifulSoup, version, urllib3
+            from nexus_utils import requests
             HAS_DEPS = True
     except ImportError:
         # Direct imports as fallback
         try:
             import requests
-            import urllib3
-            from bs4 import BeautifulSoup
-            from packaging import version
             HAS_DEPS = True
 
             def check_dependencies():
@@ -158,35 +155,41 @@ except ImportError:
 
 def get_latest_version(validate_certs=True):
     """
-    Scrapes the Sonatype download page to find the latest version.
+    Gets the latest version from Sonatype's API endpoint.
 
     Args:
         validate_certs (bool): Whether to verify SSL certificates
+
+    Returns:
+        str: Latest version in format 'X.Y.Z-N'
+
+    Raises:
+        Exception: If version cannot be retrieved
     """
-    url = "https://help.sonatype.com/en/download-archives---repository-manager-3.html"
+    url = "https://api.github.com/repos/sonatype/nexus-public/releases/latest"
     try:
         response = requests.get(url, verify=validate_certs)
         response.raise_for_status()
-        soup = BeautifulSoup(response.text, 'html.parser')
+        data = response.json()
 
-        # Look for version pattern in text (e.g., "3.78.0-01")
-        version_pattern = r'(\d+\.\d+\.\d+-\d+)'
-        versions = []
+        # Extract version from JSON response
+        raw_version = data.get('name')
+        if not raw_version:
+            raise ValueError("No release found in API response")
 
-        for text in soup.stripped_strings:
-            match = re.search(version_pattern, text)
-            if match:
-                versions.append(match.group(1))
+        # Strip 'release-' prefix if present
+        if raw_version.startswith('release-'):
+            version = raw_version[8:]
+        else:
+            version = raw_version
 
-        if not versions:
-            raise ValueError("No version found on download page")
+        if not is_valid_version(version):
+            raise ValueError(f"Invalid version format: {version}")
 
-        # Sort versions and get the latest
-        latest = sorted(versions, key=lambda x: version.parse(x.split('-')[0]))[-1]
-        return latest
+        return version
 
-    except requests.exceptions.RequestException as e:
-        raise Exception(f"Failed to fetch download page: {str(e)}")
+    except (requests.exceptions.RequestException, ValueError) as e:
+        raise Exception(f"Failed to fetch version from API: {str(e)}")
 
 
 def is_valid_version(version):
@@ -196,28 +199,6 @@ def is_valid_version(version):
         return False
     pattern = r'^\d+\.\d+\.\d+-\d+$'
     return bool(re.match(pattern, version))
-
-
-def scrape_download_page(url, validate_certs=True):
-    """
-    Scrapes the Sonatype download page and returns the parsed content.
-
-    Args:
-        url (str): URL to scrape
-        validate_certs (bool): Whether to verify SSL certificates
-
-    Returns:
-        BeautifulSoup: Parsed HTML content
-
-    Raises:
-        Exception: If page fetch fails
-    """
-    try:
-        response = requests.get(url, verify=validate_certs)
-        response.raise_for_status()
-        return BeautifulSoup(response.text, 'html.parser')
-    except requests.exceptions.RequestException as e:
-        raise Exception(f"Failed to fetch download page: {str(e)}")
 
 
 def validate_download_url(url, validate_certs=True):
@@ -234,7 +215,7 @@ def validate_download_url(url, validate_certs=True):
     try:
         response = requests.head(url, verify=validate_certs, allow_redirects=True)
         return response.ok, response.status_code
-    except requests.exceptions.RequestException:
+    except (requests.exceptions.RequestException, ValueError):
         return False, None
 
 
@@ -339,6 +320,9 @@ def get_download_url(state, version=None, arch=None, base_url=None, validate_cer
     if state not in ['latest', 'present']:
         raise ValueError(f"Invalid state: {state}")
 
+    if state == 'present' and not version:
+        raise ValueError("Version must be provided when state is 'present'")
+
     try:
         # Get version and valid URLs
         version = get_latest_version(validate_certs) if state == 'latest' else version
@@ -387,8 +371,6 @@ def get_dest_path(url, dest):
 
 def download_file(module, url, dest, validate_certs=True):
     """Downloads a file using Ansible's fetch_url utility."""
-    if not validate_certs:
-        urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
     destination = get_dest_path(url, dest)
 
@@ -439,6 +421,7 @@ def main():
     if not HAS_DEPS:
         module.fail_json(msg=missing_required_lib('requests, beautifulsoup4, packaging'))
 
+    # Get parameters
     state = module.params['state']
     version = module.params.get('version')
     arch = module.params.get('arch')
@@ -446,20 +429,26 @@ def main():
     dest = module.params['dest']
     validate_certs = module.params['validate_certs']
 
-    # Validate parameters
+    # Parameter validation
     if state == 'present' and not version:
         module.fail_json(msg="When state is 'present', the 'version' parameter must be provided.")
+        return  # Exit early after validation failure
 
     if url and state != 'present':
         module.fail_json(msg="URL can only be used when state is 'present'")
+        return  # Exit early after validation failure
 
     if url and not version:
         module.fail_json(msg="Version must be provided when using a custom URL")
+        return  # Exit early after validation failure
+
+    # Initialize variables
+    download_url = None
+    actual_version = None
 
     try:
         if url:
             base_url = url.rstrip('/') + '/'
-            # Ensure we have the version before getting URLs
             actual_version = version  # We know version is set when url is used
             valid_urls = get_valid_download_urls(actual_version, arch=arch, validate_certs=validate_certs, base_url=base_url)
             if len(valid_urls) == 1:
@@ -470,41 +459,45 @@ def main():
             # For non-custom URLs, get latest version if needed
             actual_version = version if state == 'present' else get_latest_version(validate_certs)
             download_url = get_download_url(state, actual_version, arch=arch, validate_certs=validate_certs)
+
+        if not download_url:
+            raise ValueError("Failed to determine download URL")
+
+        # Get destination path
+        destination = get_dest_path(download_url, dest)
+
+        # Check if file already exists for both check mode and regular mode
+        file_exists = os.path.exists(destination)
+
+        # Check mode: report what would be done
+        if module.check_mode:
+            module.exit_json(
+                changed=not file_exists,
+                download_url=download_url,
+                version=actual_version,
+                destination=destination,
+                status_code=200 if file_exists else None,
+                msg="File would be downloaded, if not in check mode" if not file_exists else "File already exists"
+            )
+
+        # Perform the actual download
+        changed, msg, destination, status_code = download_file(module, download_url, dest, validate_certs)
+
+        module.exit_json(
+            changed=changed,
+            download_url=download_url,
+            version=actual_version,
+            msg=msg,
+            destination=destination,
+            status_code=status_code
+        )
+
     except Exception as e:
         module.fail_json(
             msg=f"Error determining download URL: {str(e)}",
-            download_url=url if url else None,
+            download_url=download_url,
             version=actual_version
         )
-
-    # Get destination path
-    destination = get_dest_path(download_url, dest)
-
-    # Check if file already exists for both check mode and regular mode
-    file_exists = os.path.exists(destination)
-
-    # Check mode: report what would be done
-    if module.check_mode:
-        module.exit_json(
-            changed=not file_exists,
-            download_url=download_url,
-            version=actual_version,
-            destination=destination,
-            status_code=200 if file_exists else None,
-            msg="File would be downloaded, if not in check mode" if not file_exists else "File already exists"
-        )
-
-    # Perform the actual download
-    changed, msg, destination, status_code = download_file(module, download_url, dest, validate_certs)
-
-    module.exit_json(
-        changed=changed,
-        download_url=download_url,
-        version=actual_version,
-        msg=msg,
-        destination=destination,
-        status_code=status_code
-    )
 
 
 if __name__ == '__main__':
