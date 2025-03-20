@@ -383,7 +383,7 @@ def download_file(module, url, dest, validate_certs=True):
             module.fail_json(msg=f"Failed to create destination directory: {str(e)}")
 
     # Download the file
-    response, info = fetch_url(module, url, method="GET", timeout=module.params['timeout'], validate_certs=validate_certs)
+    response, info = fetch_url(module, url, method="GET", timeout=module.params['timeout'])
     status_code = info['status']
 
     if info['status'] != 200:
