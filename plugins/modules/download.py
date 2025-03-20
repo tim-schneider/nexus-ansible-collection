@@ -176,7 +176,7 @@ def get_latest_version(validate_certs=True):
         raw_version = data.get('name')
         if not raw_version:
             raise ValueError("No release found in API response")
-        
+
         # Strip 'release-' prefix if present
         if raw_version.startswith('release-'):
             version = raw_version[8:]
