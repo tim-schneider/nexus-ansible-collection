@@ -404,4 +404,3 @@ def test_error_handling(mock_get_valid_urls, mock_validate, mock_requests):
     # Test get_download_url with missing version in present state
     with pytest.raises(ValueError, match="Version must be provided"):
         get_download_url(state='present')
-
