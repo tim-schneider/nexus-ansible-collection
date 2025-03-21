@@ -799,7 +799,7 @@
           }}
 
 - name: Process definitions for bower repositories
-  when: nexus_config_bower | bool
+  when: nexus_config_bower | bool and nexus_bower_supported
   block:
     - name: Apply defaults to bower proxy repos
       ansible.builtin.set_fact:

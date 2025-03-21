@@ -441,6 +441,7 @@
       capability_typeId: log4j-visualizer
       capability_enabled: "{{ nexus_log4j_visualizer_enabled | bool }}"
       capability_properties: {}
+  when: nexus_log4j_supported
 
 - name: Configure Default Role capability
   ansible.builtin.include_tasks: call_script.yml

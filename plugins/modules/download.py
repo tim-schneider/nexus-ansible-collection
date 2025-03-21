@@ -121,36 +121,9 @@ status_code:
 
 import re
 import os
-import sys
-from ansible.module_utils.basic import AnsibleModule, missing_required_lib
-from ansible.module_utils.urls import fetch_url
-
-
-# Try collection import first, then local import, finally direct import
-HAS_DEPS = False
-try:
-    from ansible_collections.cloudkrafter.nexus.plugins.module_utils.nexus_utils import (
-        requests
-    )
-    HAS_DEPS = True
-except ImportError:
-    try:
-        # For local development, try to find module_utils in relative path
-        module_utils_path = os.path.join(os.path.dirname(__file__), '..', 'module_utils')
-        if os.path.exists(module_utils_path):
-            sys.path.insert(0, module_utils_path)
-            from nexus_utils import requests
-            HAS_DEPS = True
-    except ImportError:
-        # Direct imports as fallback
-        try:
-            import requests
-            HAS_DEPS = True
-
-            def check_dependencies():
-                return True, ""
-        except ImportError as e:
-            pass
+import json
+from ansible.module_utils.basic import AnsibleModule
+from ansible.module_utils.urls import fetch_url, open_url
 
 
 def get_latest_version(validate_certs=True):
@@ -168,27 +141,29 @@ def get_latest_version(validate_certs=True):
     """
     url = "https://api.github.com/repos/sonatype/nexus-public/releases/latest"
     try:
-        response = requests.get(url, verify=validate_certs)
-        response.raise_for_status()
-        data = response.json()
+        response = open_url(
+            url,
+            validate_certs=validate_certs,
+            headers={'Accept': 'application/json'}
+        )
 
-        # Extract version from JSON response
+        if response.code != 200:
+            raise ValueError(f"API request failed with status code: {response.code}")
+
+        data = json.loads(response.read().decode('utf-8'))
+
         raw_version = data.get('name')
         if not raw_version:
             raise ValueError("No release found in API response")
 
-        # Strip 'release-' prefix if present
-        if raw_version.startswith('release-'):
-            version = raw_version[8:]
-        else:
-            version = raw_version
+        version = raw_version[8:] if raw_version.startswith('release-') else raw_version
 
         if not is_valid_version(version):
             raise ValueError(f"Invalid version format: {version}")
 
         return version
 
-    except (requests.exceptions.RequestException, ValueError) as e:
+    except Exception as e:
         raise Exception(f"Failed to fetch version from API: {str(e)}")
 
 
@@ -213,9 +188,14 @@ def validate_download_url(url, validate_certs=True):
         tuple: (bool, int) - (is_valid, status_code)
     """
     try:
-        response = requests.head(url, verify=validate_certs, allow_redirects=True)
-        return response.ok, response.status_code
-    except (requests.exceptions.RequestException, ValueError):
+        response = open_url(
+            url,
+            method='HEAD',
+            validate_certs=validate_certs,
+            follow_redirects=True
+        )
+        return True, response.code
+    except Exception:
         return False, None
 
 
@@ -414,10 +394,6 @@ def main():
     )
 
     module = AnsibleModule(argument_spec=module_args, supports_check_mode=True)
-
-    # Check required libraries early
-    if not HAS_DEPS:
-        module.fail_json(msg=missing_required_lib('requests, beautifulsoup4, packaging'))
 
     # Get parameters
     state = module.params['state']

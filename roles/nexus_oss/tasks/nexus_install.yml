@@ -1,9 +1,4 @@
 ---
-- name: Set detection method to fixed if we have a var
-  ansible.builtin.set_fact:
-    nexus_version_detected_from: fixed
-  when: nexus_version | length > 0
-
 - name: Check nexus-latest link stat in {{ nexus_installation_dir }}
   ansible.builtin.stat:
     path: "{{ nexus_installation_dir }}/nexus-latest"
@@ -21,72 +16,45 @@
     - nexus_latest_link.stat.exists | default(false)
     - nexus_latest_link.stat.islnk | default(false)
 
-- name: No version given => Version detection
+- name: Register nexus_version from currently installed
+  ansible.builtin.set_fact:
+    nexus_version: "{{ nexus_version_running }}"
+    nexus_version_detected_from: installed
   when:
-    - nexus_version | length == 0
-    - nexus_version_file | length == 0
-  block:
-    - name: Register nexus_version from currently installed
-      # Note: setting nexus_version here skips the next block task.
-      ansible.builtin.set_fact:
-        nexus_version: "{{ nexus_version_running }}"
-        nexus_version_detected_from: installed
-      when:
-        - nexus_version_running is defined
-        - not (nexus_upgrade | default(false) | bool)
+    - nexus_version_running is defined
+    - not (nexus_upgrade | default(false) | bool)
 
-    - name: Call latest nexus uri to get redirection
-      ansible.builtin.uri:
-        url: "{{ nexus_download_url }}/latest-unix.tar.gz"
-        method: CONNECT
-        status_code: 302
-        validate_certs: "{{ nexus_download_ssl_verify | default(omit) }}"
-      register: nexus_latest_uri_call
-      # No changes made, we only need the target uri. Safe for check mode and needed for next operations
-      check_mode: false
+#     - name: Call latest nexus uri to get redirection
+#       ansible.builtin.uri:
+#         url: "{{ nexus_download_url }}/latest-unix.tar.gz"
+#         method: CONNECT
+#         status_code: 302
+#         validate_certs: "{{ nexus_download_ssl_verify | default(omit) }}"
+#       register: nexus_latest_uri_call
+#       # No changes made, we only need the target uri. Safe for check mode and needed for next operations
+#       check_mode: false
 
-    - name: Register nexus_version from latest nexus uri redirection
-      ansible.builtin.set_fact:
-        nexus_version: >-
-          {{
-            nexus_latest_uri_call.location
-            | regex_replace("^https://.*nexus-(\d*\.\d*\.\d*-\d*)-unix.tar.gz", "\1")
-          }}
-        nexus_version_detected_from: latest
+- name: Set detection method to fixed if we have a var
+  ansible.builtin.set_fact:
+    nexus_version_detected_from: fixed
+  when: nexus_version | length > 0
 
-- name: Version file present => Version detection
-  when: nexus_version_file | length > 0
-  block:
-    - name: Register nexus_version from currently installed
-      # Note: setting nexus_version here skips the next block task.
-      ansible.builtin.set_fact:
-        nexus_version: "{{ nexus_version_running }}"
-        nexus_version_detected_from: installed
-      when:
-        - nexus_version_running is defined
-        - not (nexus_upgrade | default(false) | bool)
+- name: Download Nexus package
+  cloudkrafter.nexus.download:
+    state: "{{ 'present' if nexus_version | length > 0 else 'latest' }}"
+    version: "{{ nexus_version | default(omit) }}"
+    dest: "{{ nexus_download_dir }}"
+    url: "{{ nexus_download_url | default(omit) }}"
+    timeout: "{{ nexus_download_timeout }}"
+    validate_certs: "{{ nexus_download_ssl_verify | default(omit) }}"
+  environment: "{{ nexus_proxy_env_vars | default(omit) }}"
+  register: __nexus_download__
 
-    - name: download nexus_version_file
-      ansible.builtin.get_url:
-        url: "{{ nexus_download_url }}/{{ nexus_version_file }}"
-        dest: "{{ nexus_download_dir }}/{{ nexus_version_file }}"
-        force: false
-        validate_certs: "{{ nexus_download_ssl_verify | default(omit) }}"
-        owner: root
-        group: root
-        mode: "0644"
-      check_mode: false
-
-    - name: Get content of nexus_version_file
-      ansible.builtin.slurp:
-        src: "{{ nexus_download_dir }}/{{ nexus_version_file }}"
-      register: nexus_version_file_content
-      check_mode: false
-
-    - name: Register nexus_version from file content
-      ansible.builtin.set_fact:
-        nexus_version: "{{ nexus_version_file_content.content | b64decode }}"
-        nexus_version_detected_from: file
+- name: Register nexus_version from latest nexus download
+  ansible.builtin.set_fact:
+    nexus_version: "{{ __nexus_download__.version }}"
+    nexus_version_detected_from: latest
+  when: nexus_version | length == 0
 
 - name: Print info about detected version to use
   vars:
@@ -99,16 +67,10 @@
   ansible.builtin.debug:
     msg: "{{ version_info.split('\n') }}"
 
-- name: Download Nexus package
-  cloudkrafter.nexus.download:
-    state: "{{ 'present' if nexus_version | length > 0 else 'latest' }}"
-    version: "{{ nexus_version }}"
-    dest: "{{ nexus_download_dir }}"
-    url: "{{ nexus_download_url | default(omit) }}"
-    timeout: "{{ nexus_download_timeout }}"
-    validate_certs: "{{ nexus_download_ssl_verify | default(omit) }}"
-  environment: "{{ nexus_proxy_env_vars | default(omit) }}"
-  register: __nexus_download__
+- name: Set facts for deprecated features
+  ansible.builtin.set_fact:
+    nexus_log4j_supported: "{{ nexus_version is version('3.77.2-02', '<=') }}"
+    nexus_bower_supported: "{{ nexus_version is version('3.77.2-02', '<=') }}"
 
 - name: Ensure Nexus o/s group exists
   ansible.builtin.group:
@@ -353,6 +315,14 @@
     line: export NEXUS_HOME={{ nexus_installation_dir }}/nexus-latest
   notify:
     - nexus-service-stop
+
+- name: Ensure nexus.rc file exists
+  ansible.builtin.file:
+    path: "{{ nexus_installation_dir }}/nexus-latest/bin/nexus.rc"
+    state: touch
+    owner: "{{ nexus_os_user }}"
+    group: "{{ nexus_os_group }}"
+    mode: "0750"
 
 - name: Set nexus user
   ansible.builtin.lineinfile:

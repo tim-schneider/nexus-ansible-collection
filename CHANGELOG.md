@@ -1,4 +1,31 @@
 # Changelog
+## [1.20.0] - 2025-03-21
+
+## BREAKING CHANGE WHEN USING POSTGRES!
+Please follow the new instructions at https://github.com/CloudKrafter/nexus-ansible-collection/tree/main/roles/nexus_oss#postgres-database to update your postgres variables.
+
+### Changed
+- **nexus_oss role** Ability to define multiple Postgres bouncers when running Nexus in HA.
+- **nexus_oss role** Using the `cloudkrafter.nexus.download` module to download the given Nexus version.
+- **nexus_oss role** [BREAKING] Using the `nexus_version_file: latest` has been deprecated in favor of the new download mechanism.
+- **nexus_oss role** [BREAKING] Using a redirect url such as `https://download.sonatype.com/nexus/3/latest-unix.tar.gz` is no longer supported as `nexus_download_url`.
+- **nexus_oss role** unset the `nexus_download_url` variable by default. If you have set it, it will be used.
+- **nexus_oss role** Configuring Anonymous Access is now done via the API instead of Groovy scripts.
+- **nexus_oss role** Configuring Security Realms is now done via the API instead of Groovy scripts.
+- **nexus_oss role** Log4j Visualizer and Bower repos are now only available on Nexus 3.77.2-02 or earlier.
+
+### Added
+- **download module** Introduced a Nexus download module to handle downloading the given Nexus version.
+- **nexus_oss** Introduced proxy settings for downloading Nexus.
+- **download module** Added Ansible Sanity and Unit tests for the python module.
+
+### Fixed
+- **nexus_oss role** Downloading latest version of Nexus works again.
+- **nexus_oss role** Nexus 3.78.x does not ship with the `nexus.rc` file. We added this file back into the installation directory.
+
+More information on how the new download feature works see: https://github.com/CloudKrafter/nexus-ansible-collection/tree/main/roles/nexus_oss#downloading-nexus
+
+
 ## [1.19.0] - 2025-03-02
 
 ### Changed
