@@ -11,6 +11,7 @@ __metaclass__ = type
 
 import sys
 from unittest.mock import patch, MagicMock
+import os
 import pytest
 from ansible_collections.cloudkrafter.nexus.plugins.modules.download import (
     is_valid_version, get_latest_version, get_possible_package_names,
@@ -274,51 +275,57 @@ def test_main_parameters(mock_module):
     )
 
 
-# @patch('ansible_collections.cloudkrafter.nexus.plugins.modules.download.os.path')
-# @patch('ansible_collections.cloudkrafter.nexus.plugins.modules.download.fetch_url')
-# def test_download_file(mock_fetch, mock_path, tmp_path):
-#     """Test file download functionality"""
-#     # Setup module mock
-#     module = MagicMock()
-#     module.params = {'timeout': 30}
-#     module.fail_json.side_effect = Exception("Download failed")
+@patch('ansible_collections.cloudkrafter.nexus.plugins.modules.download.os')
+@patch('ansible_collections.cloudkrafter.nexus.plugins.modules.download.fetch_url')
+def test_download_file(mock_fetch, mock_os, tmp_path):
+    """Test file download functionality"""
+    # Setup module mock
+    module = MagicMock()
+    module.params = {'timeout': 30}
 
-#     url = "https://example.com/nexus.tar.gz"
-#     dest = str(tmp_path)
+    url = "https://example.com/nexus.tar.gz"
+    dest = str(tmp_path)
+    dest_file = f"{dest}/nexus.tar.gz"
 
-#     # Test successful download
-#     mock_path.exists.side_effect = [False]  # File doesn't exist
-#     mock_response = MagicMock()
-#     mock_response.read.return_value = b"test content"
-#     mock_fetch.return_value = (mock_response, {'status': 200})
+    # Mock os.path functions
+    mock_os.path.exists.side_effect = [False, False]  # For dest dir and file
+    mock_os.path.join = os.path.join  # Use real join function
+    mock_os.makedirs = MagicMock()  # Mock makedirs
 
-#     changed, msg, dest_path, status = download_file(module, url, dest)
-#     assert changed is True
-#     assert status == 200
-#     assert "successfully" in msg
+    # Setup successful download
+    mock_response = MagicMock()
+    mock_response.read.return_value = b"test content"
+    mock_fetch.return_value = (mock_response, {'status': 200})
 
-#     # Reset mocks for existing file test
-#     mock_path.reset_mock()
-#     mock_fetch.reset_mock()
-#     module.fail_json.reset_mock()
-#     mock_path.exists.side_effect = [True]  # File exists
+    # Test successful download
+    changed, msg, dest_path, status = download_file(module, url, dest)
+    assert changed is True
+    assert status == 200
+    assert "successfully" in msg
+    mock_os.makedirs.assert_called_once_with(dest)
 
-#     changed, msg, dest_path, status = download_file(module, url, dest)
-#     assert changed is False
-#     assert "exists" in msg
-#     assert not module.fail_json.called
+    # Reset mocks for existing file test
+    mock_os.reset_mock()
+    mock_fetch.reset_mock()
+    mock_os.path.exists.side_effect = [True]  # File exists
 
-#     # Reset mocks for failure test
-#     mock_path.reset_mock()
-#     mock_fetch.reset_mock()
-#     module.fail_json.reset_mock()
-#     mock_path.exists.side_effect = [False]  # File doesn't exist
-#     mock_fetch.return_value = (None, {'status': 404, 'msg': 'Not found'})
+    # Test existing file
+    changed, msg, dest_path, status = download_file(module, url, dest)
+    assert changed is False
+    assert "exists" in msg
+    assert not mock_fetch.called
 
-#     with pytest.raises(Exception) as exc:
-#         download_file(module, url, dest)
-#     assert "Download failed" in str(exc.value)
-#     module.fail_json.assert_called_once()
+    # Reset mocks for download failure test
+    mock_os.reset_mock()
+    mock_fetch.reset_mock()
+    mock_os.path.exists.side_effect = [False, False]  # File doesn't exist
+    mock_fetch.return_value = (None, {'status': 404, 'msg': 'Not found'})
+    module.fail_json.side_effect = Exception("Download failed")
+
+    # Test download failure
+    with pytest.raises(Exception) as exc:
+        download_file(module, url, dest)
+    assert "Download failed" in str(exc.value)
 
 
 def test_get_dest_path():
