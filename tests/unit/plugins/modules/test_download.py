@@ -9,7 +9,6 @@ from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
 
-import sys
 from unittest.mock import patch, MagicMock
 import os
 import pytest
@@ -35,33 +34,6 @@ def test_is_valid_version(version, expected):
     """Test version string validation"""
     result = is_valid_version(version)
     assert result == expected
-
-
-# Mock the requests, bs4, and packaging imports before importing the module
-sys.modules['requests'] = MagicMock()
-
-
-# Update the packaging version mock to handle version comparisons
-version_mock = MagicMock()
-
-
-class MockVersion:
-    def __init__(self, version_str):
-        self.version_str = version_str
-
-    def __lt__(self, other):
-        return self.version_str < other.version_str
-
-    def __gt__(self, other):
-        return self.version_str > other.version_str
-
-
-def mock_parse(version_str):
-    return MockVersion(version_str)
-
-
-version_mock.parse = mock_parse
-sys.modules['packaging.version'] = version_mock
 
 
 def setup_ansible_module_mock(mock_module, params=None):
