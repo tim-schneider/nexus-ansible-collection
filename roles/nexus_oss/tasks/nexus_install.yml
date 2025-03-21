@@ -99,10 +99,10 @@
   ansible.builtin.debug:
     msg: "{{ version_info.split('\n') }}"
 
-- name: Download Nexus package
-  cloudkrafter.nexus.download:
-    state: "{{ 'present' if nexus_version | length > 0 else 'latest' }}"
-    version: "{{ nexus_version }}"
+- name: Set facts for deprecated features
+  ansible.builtin.set_fact:
+    nexus_log4j_supported: "{{ nexus_version is version('3.77.2-02', '<=') }}"
+    nexus_bower_supported: "{{ nexus_version is version('3.77.2-02', '<=') }}"
     dest: "{{ nexus_download_dir }}"
     url: "{{ nexus_download_url | default(omit) }}"
     timeout: "{{ nexus_download_timeout }}"
