@@ -11,10 +11,11 @@ __metaclass__ = type
 
 import sys
 from unittest.mock import patch, MagicMock
+import os
 import pytest
 from ansible_collections.cloudkrafter.nexus.plugins.modules.download import (
     is_valid_version, get_latest_version, get_possible_package_names,
-    validate_download_url, get_valid_download_urls, main, get_dest_path
+    validate_download_url, get_valid_download_urls, main, get_dest_path, download_file, get_download_url
 )
 
 
@@ -274,51 +275,57 @@ def test_main_parameters(mock_module):
     )
 
 
-# @patch('ansible_collections.cloudkrafter.nexus.plugins.modules.download.os.path')
-# @patch('ansible_collections.cloudkrafter.nexus.plugins.modules.download.fetch_url')
-# def test_download_file(mock_fetch, mock_path, tmp_path):
-#     """Test file download functionality"""
-#     # Setup module mock
-#     module = MagicMock()
-#     module.params = {'timeout': 30}
-#     module.fail_json.side_effect = Exception("Download failed")
+@patch('ansible_collections.cloudkrafter.nexus.plugins.modules.download.os')
+@patch('ansible_collections.cloudkrafter.nexus.plugins.modules.download.fetch_url')
+def test_download_file(mock_fetch, mock_os, tmp_path):
+    """Test file download functionality"""
+    # Setup module mock
+    module = MagicMock()
+    module.params = {'timeout': 30}
 
-#     url = "https://example.com/nexus.tar.gz"
-#     dest = str(tmp_path)
+    url = "https://example.com/nexus.tar.gz"
+    dest = str(tmp_path)
+    dest_file = f"{dest}/nexus.tar.gz"
 
-#     # Test successful download
-#     mock_path.exists.side_effect = [False]  # File doesn't exist
-#     mock_response = MagicMock()
-#     mock_response.read.return_value = b"test content"
-#     mock_fetch.return_value = (mock_response, {'status': 200})
+    # Mock os.path functions
+    mock_os.path.exists.side_effect = [False, False]  # For dest dir and file
+    mock_os.path.join = os.path.join  # Use real join function
+    mock_os.makedirs = MagicMock()  # Mock makedirs
 
-#     changed, msg, dest_path, status = download_file(module, url, dest)
-#     assert changed is True
-#     assert status == 200
-#     assert "successfully" in msg
+    # Setup successful download
+    mock_response = MagicMock()
+    mock_response.read.return_value = b"test content"
+    mock_fetch.return_value = (mock_response, {'status': 200})
 
-#     # Reset mocks for existing file test
-#     mock_path.reset_mock()
-#     mock_fetch.reset_mock()
-#     module.fail_json.reset_mock()
-#     mock_path.exists.side_effect = [True]  # File exists
+    # Test successful download
+    changed, msg, dest_path, status = download_file(module, url, dest)
+    assert changed is True
+    assert status == 200
+    assert "successfully" in msg
+    mock_os.makedirs.assert_called_once_with(dest)
 
-#     changed, msg, dest_path, status = download_file(module, url, dest)
-#     assert changed is False
-#     assert "exists" in msg
-#     assert not module.fail_json.called
+    # Reset mocks for existing file test
+    mock_os.reset_mock()
+    mock_fetch.reset_mock()
+    mock_os.path.exists.side_effect = [True]  # File exists
 
-#     # Reset mocks for failure test
-#     mock_path.reset_mock()
-#     mock_fetch.reset_mock()
-#     module.fail_json.reset_mock()
-#     mock_path.exists.side_effect = [False]  # File doesn't exist
-#     mock_fetch.return_value = (None, {'status': 404, 'msg': 'Not found'})
+    # Test existing file
+    changed, msg, dest_path, status = download_file(module, url, dest)
+    assert changed is False
+    assert "exists" in msg
+    assert not mock_fetch.called
 
-#     with pytest.raises(Exception) as exc:
-#         download_file(module, url, dest)
-#     assert "Download failed" in str(exc.value)
-#     module.fail_json.assert_called_once()
+    # Reset mocks for download failure test
+    mock_os.reset_mock()
+    mock_fetch.reset_mock()
+    mock_os.path.exists.side_effect = [False, False]  # File doesn't exist
+    mock_fetch.return_value = (None, {'status': 404, 'msg': 'Not found'})
+    module.fail_json.side_effect = Exception("Download failed")
+
+    # Test download failure
+    with pytest.raises(Exception) as exc:
+        download_file(module, url, dest)
+    assert "Download failed" in str(exc.value)
 
 
 def test_get_dest_path():
@@ -364,76 +371,36 @@ def test_url_resolution(mock_requests, mock_get_latest, mock_get_url):
     assert all(url.startswith(base_url) for url in valid_urls)
 
 
-# @patch('ansible_collections.cloudkrafter.nexus.plugins.modules.download.get_valid_download_urls')
-# def test_multiple_urls_handling(mock_get_valid_urls):
-#     """Test handling of multiple matching URLs"""
-#     # Setup mock response with multiple URLs that match the same pattern
-#     mock_get_valid_urls.return_value = [
-#         "https://example.com/nexus-3.78.0-01-unix.tar.gz",
-#         "https://example.com/nexus-unix-3.78.0-01.tar.gz"
-#     ]
+@patch('ansible_collections.cloudkrafter.nexus.plugins.modules.download.requests')
+@patch('ansible_collections.cloudkrafter.nexus.plugins.modules.download.validate_download_url')
+@patch('ansible_collections.cloudkrafter.nexus.plugins.modules.download.get_valid_download_urls')
+def test_error_handling(mock_get_valid_urls, mock_validate, mock_requests):
+    """Test error handling in various scenarios"""
+    mock_requests.exceptions = type('Exceptions', (), {
+        'RequestException': Exception
+    })
 
-#     # Expect ValueError when multiple URLs match the same pattern
-#     with pytest.raises(ValueError, match="Multiple matches found for pattern"):
-#         get_download_url(
-#             state='present',
-#             version='3.78.0-01',
-#             arch=None,
-#             validate_certs=True
-#         )
+    # Test directory creation failure
+    module = MagicMock()
+    module.fail_json = MagicMock(side_effect=Exception("Failed to create directory"))
 
-#     # Verify mock was called correctly
-#     mock_get_valid_urls.assert_called_once_with(
-#         version='3.78.0-01',
-#         arch=None,
-#         validate_certs=True,
-#         base_url="https://download.sonatype.com/nexus/3/"
-#     )
+    with pytest.raises(Exception, match="Failed to create directory"):
+        download_file(
+            module=module,
+            url="https://example.com/file.tar.gz",
+            dest="/root/forbidden"
+        )
 
-# @patch('ansible_collections.cloudkrafter.nexus.plugins.modules.download.requests')
-# @patch('ansible_collections.cloudkrafter.nexus.plugins.modules.download.validate_download_url')
-# @patch('ansible_collections.cloudkrafter.nexus.plugins.modules.download.get_valid_download_urls')
-# def test_error_handling(mock_get_valid_urls, mock_validate, mock_requests):
-#     """Test error handling in various scenarios"""
-#     mock_requests.exceptions = type('Exceptions', (), {
-#         'RequestException': Exception
-#     })
+    # Test invalid version format
+    with pytest.raises(ValueError, match="Invalid version format"):
+        get_valid_download_urls("invalid-version")
 
-#     # Test directory creation failure
-#     module = MagicMock()
-#     module.fail_json = MagicMock(side_effect=Exception("Failed to create directory"))
+    mock_validate.return_value = (True, 200)
 
-#     with pytest.raises(Exception, match="Failed to create directory"):
-#         download_file(
-#             module=module,
-#             url="https://example.com/file.tar.gz",
-#             dest="/root/forbidden"
-#         )
+    # Test get_download_url with invalid state
+    with pytest.raises(ValueError, match="Invalid state"):
+        get_download_url(state='invalid', version='3.78.0-01')
 
-#     # Test invalid version format
-#     with pytest.raises(ValueError, match="Invalid version format"):
-#         get_valid_download_urls("invalid-version")
-
-#     # Test multiple URL matches
-#     mock_get_valid_urls.return_value = [
-#         "https://example.com/nexus-3.78.0-01-unix.tar.gz",
-#         "https://example.com/nexus-unix-3.78.0-01.tar.gz"
-#     ]
-#     mock_validate.return_value = (True, 200)
-
-#     # Test get_download_url with invalid state
-#     with pytest.raises(ValueError, match="Invalid state"):
-#         get_download_url(state='invalid', version='3.78.0-01')
-
-#     # Test get_download_url with missing version in present state
-#     with pytest.raises(ValueError, match="Version must be provided"):
-#         get_download_url(state='present')
-
-#     # Test multiple matches scenario
-#     with pytest.raises(ValueError, match="Multiple valid URLs found with no specific match"):
-#         get_download_url(
-#             state='present',
-#             version='3.78.0-01',
-#             arch=None,
-#             validate_certs=True
-#         )
+    # Test get_download_url with missing version in present state
+    with pytest.raises(ValueError, match="Version must be provided"):
+        get_download_url(state='present')

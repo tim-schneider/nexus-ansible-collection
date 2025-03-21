@@ -355,8 +355,6 @@ def get_download_url(state, version=None, arch=None, base_url=None, validate_cer
         # If no pattern matches but we have exactly one valid URL, return it
         if len(valid_urls) == 1:
             return valid_urls[0]
-        elif len(valid_urls) > 1:
-            raise ValueError("Multiple valid URLs found with no specific match")
         else:
             raise ValueError("No valid download URLs found")
 
