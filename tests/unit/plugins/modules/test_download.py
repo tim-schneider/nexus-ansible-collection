@@ -14,7 +14,7 @@ from unittest.mock import patch, MagicMock
 import pytest
 from ansible_collections.cloudkrafter.nexus.plugins.modules.download import (
     is_valid_version, get_latest_version, get_possible_package_names,
-    validate_download_url, get_valid_download_urls, main, get_dest_path
+    validate_download_url, get_valid_download_urls, main, get_dest_path, download_file, get_download_url
 )
 
 
@@ -364,76 +364,37 @@ def test_url_resolution(mock_requests, mock_get_latest, mock_get_url):
     assert all(url.startswith(base_url) for url in valid_urls)
 
 
-# @patch('ansible_collections.cloudkrafter.nexus.plugins.modules.download.get_valid_download_urls')
-# def test_multiple_urls_handling(mock_get_valid_urls):
-#     """Test handling of multiple matching URLs"""
-#     # Setup mock response with multiple URLs that match the same pattern
-#     mock_get_valid_urls.return_value = [
-#         "https://example.com/nexus-3.78.0-01-unix.tar.gz",
-#         "https://example.com/nexus-unix-3.78.0-01.tar.gz"
-#     ]
+@patch('ansible_collections.cloudkrafter.nexus.plugins.modules.download.requests')
+@patch('ansible_collections.cloudkrafter.nexus.plugins.modules.download.validate_download_url')
+@patch('ansible_collections.cloudkrafter.nexus.plugins.modules.download.get_valid_download_urls')
+def test_error_handling(mock_get_valid_urls, mock_validate, mock_requests):
+    """Test error handling in various scenarios"""
+    mock_requests.exceptions = type('Exceptions', (), {
+        'RequestException': Exception
+    })
 
-#     # Expect ValueError when multiple URLs match the same pattern
-#     with pytest.raises(ValueError, match="Multiple matches found for pattern"):
-#         get_download_url(
-#             state='present',
-#             version='3.78.0-01',
-#             arch=None,
-#             validate_certs=True
-#         )
+    # Test directory creation failure
+    module = MagicMock()
+    module.fail_json = MagicMock(side_effect=Exception("Failed to create directory"))
 
-#     # Verify mock was called correctly
-#     mock_get_valid_urls.assert_called_once_with(
-#         version='3.78.0-01',
-#         arch=None,
-#         validate_certs=True,
-#         base_url="https://download.sonatype.com/nexus/3/"
-#     )
+    with pytest.raises(Exception, match="Failed to create directory"):
+        download_file(
+            module=module,
+            url="https://example.com/file.tar.gz",
+            dest="/root/forbidden"
+        )
 
-# @patch('ansible_collections.cloudkrafter.nexus.plugins.modules.download.requests')
-# @patch('ansible_collections.cloudkrafter.nexus.plugins.modules.download.validate_download_url')
-# @patch('ansible_collections.cloudkrafter.nexus.plugins.modules.download.get_valid_download_urls')
-# def test_error_handling(mock_get_valid_urls, mock_validate, mock_requests):
-#     """Test error handling in various scenarios"""
-#     mock_requests.exceptions = type('Exceptions', (), {
-#         'RequestException': Exception
-#     })
+    # Test invalid version format
+    with pytest.raises(ValueError, match="Invalid version format"):
+        get_valid_download_urls("invalid-version")
 
-#     # Test directory creation failure
-#     module = MagicMock()
-#     module.fail_json = MagicMock(side_effect=Exception("Failed to create directory"))
+    mock_validate.return_value = (True, 200)
 
-#     with pytest.raises(Exception, match="Failed to create directory"):
-#         download_file(
-#             module=module,
-#             url="https://example.com/file.tar.gz",
-#             dest="/root/forbidden"
-#         )
+    # Test get_download_url with invalid state
+    with pytest.raises(ValueError, match="Invalid state"):
+        get_download_url(state='invalid', version='3.78.0-01')
 
-#     # Test invalid version format
-#     with pytest.raises(ValueError, match="Invalid version format"):
-#         get_valid_download_urls("invalid-version")
+    # Test get_download_url with missing version in present state
+    with pytest.raises(ValueError, match="Version must be provided"):
+        get_download_url(state='present')
 
-#     # Test multiple URL matches
-#     mock_get_valid_urls.return_value = [
-#         "https://example.com/nexus-3.78.0-01-unix.tar.gz",
-#         "https://example.com/nexus-unix-3.78.0-01.tar.gz"
-#     ]
-#     mock_validate.return_value = (True, 200)
-
-#     # Test get_download_url with invalid state
-#     with pytest.raises(ValueError, match="Invalid state"):
-#         get_download_url(state='invalid', version='3.78.0-01')
-
-#     # Test get_download_url with missing version in present state
-#     with pytest.raises(ValueError, match="Version must be provided"):
-#         get_download_url(state='present')
-
-#     # Test multiple matches scenario
-#     with pytest.raises(ValueError, match="Multiple valid URLs found with no specific match"):
-#         get_download_url(
-#             state='present',
-#             version='3.78.0-01',
-#             arch=None,
-#             validate_certs=True
-#         )
