@@ -78,7 +78,6 @@ def setup_ansible_module_mock(mock_module, params=None):
     return mock_instance
 
 
-@patch('ansible_collections.cloudkrafter.nexus.plugins.modules.download.HAS_DEPS', True)
 class TestNexusDownloadModule:
     def setup_method(self):
         self.module_args = {
@@ -89,33 +88,27 @@ class TestNexusDownloadModule:
             'arch': None
         }
 
-    @patch('ansible_collections.cloudkrafter.nexus.plugins.modules.download.requests')
-    def test_get_latest_version(self, mock_requests):
+    @patch('ansible_collections.cloudkrafter.nexus.plugins.modules.download.open_url')
+    def test_get_latest_version(self, mock_open_url):
         """Test getting latest version from GitHub API"""
         # Setup mock response
         mock_response = MagicMock()
-        mock_response.raise_for_status.return_value = None
-        mock_response.json.return_value = {
-            "name": "release-3.78.0-01"
-        }
-        mock_requests.get.return_value = mock_response
+        mock_response.code = 200
+        mock_response.read.return_value = b'{"name": "release-3.78.0-01"}'
+        mock_open_url.return_value = mock_response
 
         # Test successful case
         result = get_latest_version(validate_certs=True)
         assert result == '3.78.0-01'
-        mock_requests.get.assert_called_once_with(
+        mock_open_url.assert_called_once_with(
             "https://api.github.com/repos/sonatype/nexus-public/releases/latest",
-            verify=True
+            validate_certs=True,
+            headers={'Accept': 'application/json'}
         )
 
-        # Reset mock for next test
-        mock_requests.reset_mock()
-
-        # Setup RequestException for error test
-        mock_requests.exceptions = type('Exceptions', (), {
-            'RequestException': Exception
-        })
-        mock_requests.get.side_effect = mock_requests.exceptions.RequestException("API Error")
+        # Reset mock for error test
+        mock_open_url.reset_mock()
+        mock_open_url.side_effect = Exception("Connection error")
 
         # Test API error
         with pytest.raises(Exception, match="Failed to fetch version from API"):
@@ -174,34 +167,35 @@ def test_get_possible_package_names(version, arch, java_version, expected):
     assert result == expected
 
 
-@patch('ansible_collections.cloudkrafter.nexus.plugins.modules.download.requests')
-def test_validate_download_url(mock_requests):
+@patch('ansible_collections.cloudkrafter.nexus.plugins.modules.download.open_url')
+def test_validate_download_url(mock_open_url):
     """Test URL validation using HEAD requests"""
     # Setup mock responses
     mock_response_valid = MagicMock()
-    mock_response_valid.ok = True
-    mock_response_valid.status_code = 200
-
+    mock_response_valid.code = 200
     mock_response_invalid = MagicMock()
-    mock_response_invalid.ok = False
-    mock_response_invalid.status_code = 404
+    mock_response_invalid.code = 404
 
     # Test valid URL
-    mock_requests.head.return_value = mock_response_valid
+    mock_open_url.return_value = mock_response_valid
     is_valid, status_code = validate_download_url("https://download.sonatype.com/nexus/3/test.tar.gz")
     assert is_valid is True
     assert status_code == 200
 
+    # Reset mock for invalid URL test
+    mock_open_url.reset_mock()
+    mock_open_url.side_effect = Exception("404 Not Found")
+
     # Test invalid URL
-    mock_requests.head.return_value = mock_response_invalid
     is_valid, status_code = validate_download_url("https://download.sonatype.com/nexus/3/nonexistent.tar.gz")
     assert is_valid is False
-    assert status_code == 404
+    assert status_code is None
+
+    # Reset mock for connection error test
+    mock_open_url.reset_mock()
+    mock_open_url.side_effect = Exception("Connection error")
 
     # Test connection error
-    mock_requests.exceptions = MagicMock()
-    mock_requests.exceptions.RequestException = Exception
-    mock_requests.head.side_effect = mock_requests.exceptions.RequestException
     is_valid, status_code = validate_download_url("https://invalid.url")
     assert is_valid is False
     assert status_code is None
@@ -339,15 +333,14 @@ def test_get_dest_path():
 
 @patch('ansible_collections.cloudkrafter.nexus.plugins.modules.download.get_download_url')
 @patch('ansible_collections.cloudkrafter.nexus.plugins.modules.download.get_latest_version')
-@patch('ansible_collections.cloudkrafter.nexus.plugins.modules.download.requests')
-def test_url_resolution(mock_requests, mock_get_latest, mock_get_url):
+@patch('ansible_collections.cloudkrafter.nexus.plugins.modules.download.open_url')
+def test_url_resolution(mock_open_url, mock_get_latest, mock_get_url):
     """Test URL resolution logic"""
     # Setup mock responses
     mock_response = MagicMock()
-    mock_response.ok = True
-    mock_response.status_code = 200
-    mock_requests.head.return_value = mock_response
-    mock_requests.exceptions = type('Exceptions', (), {'RequestException': Exception})
+    mock_response.code = 200
+    mock_open_url.return_value = mock_response
+    mock_open_url.exceptions = type('Exceptions', (), {'RequestException': Exception})
 
     # Setup version and URL mocks
     mock_get_latest.return_value = '3.78.0-01'
@@ -367,16 +360,16 @@ def test_url_resolution(mock_requests, mock_get_latest, mock_get_url):
     )
 
     assert len(valid_urls) > 0
-    assert mock_requests.head.called
+    assert mock_open_url.called
     assert all(url.startswith(base_url) for url in valid_urls)
 
 
-@patch('ansible_collections.cloudkrafter.nexus.plugins.modules.download.requests')
+@patch('ansible_collections.cloudkrafter.nexus.plugins.modules.download.open_url')
 @patch('ansible_collections.cloudkrafter.nexus.plugins.modules.download.validate_download_url')
 @patch('ansible_collections.cloudkrafter.nexus.plugins.modules.download.get_valid_download_urls')
-def test_error_handling(mock_get_valid_urls, mock_validate, mock_requests):
+def test_error_handling(mock_get_valid_urls, mock_validate, mock_open_url):
     """Test error handling in various scenarios"""
-    mock_requests.exceptions = type('Exceptions', (), {
+    mock_open_url.exceptions = type('Exceptions', (), {
         'RequestException': Exception
     })
 
