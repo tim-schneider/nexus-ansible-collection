@@ -72,4 +72,14 @@ jobs:
       - name: Show code coverage
         run: |
           cd /home/runner/.ansible/collections/ansible_collections/cloudkrafter/nexus
-          ansible-test coverage report
+          ansible-test coverage xml
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          fail_ci_if_error: true
+          directory: /home/runner/.ansible/collections/ansible_collections/cloudkrafter/nexus/tests/output/
+          files: ./reports/coverage.xml
+          slug: CloudKrafter/nexus-ansible-collection
+          flags: unittests
+          token: ${{ secrets.CODECOV_TOKEN }}
