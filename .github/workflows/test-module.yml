@@ -74,6 +74,15 @@ jobs:
           cd /home/runner/.ansible/collections/ansible_collections/cloudkrafter/nexus
           ansible-test coverage xml
 
+      - name: Upload test results to Codecov
+        if: ${{ !cancelled() }}
+        uses: codecov/test-results-action@v1
+        with:
+          fail_ci_if_error: true
+          directory: /root/ansible_collections/cloudkrafter/nexus/tests/output/junit/
+          slug: CloudKrafter/nexus-ansible-collection
+          token: ${{ secrets.CODECOV_TOKEN }}
+
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v5
         with:
