@@ -50,14 +50,30 @@ jobs:
           cd /home/runner/.ansible/collections/ansible_collections/cloudkrafter/nexus
           ansible-test coverage xml
 
+      - name: Show JUnit test results
+        run: |
+          cd /home/runner/.ansible/collections/ansible_collections/cloudkrafter/nexus/tests/output/junit/
+          ls -la
+
       - name: Upload test results to Codecov
         if: ${{ !cancelled() }}
         uses: codecov/test-results-action@v1
         with:
           fail_ci_if_error: true
-          directory: /home/runner/.ansible/collections/ansible_collections/cloudkrafter/nexus/tests/output/junit/
-          files: python3.12-modules-units.xml,python3.11-modules-units.xml,python3.10-modules-units.xml,python3.9-modules-units.xml,python3.8-modules-units.xml,python3.7-modules-units.xml
+          #directory: /home/runner/.ansible/collections/ansible_collections/cloudkrafter/nexus/tests/output/junit
+          files: ./tests/output/junit/*.xml
           token: ${{ secrets.CODECOV_TOKEN }}
+          verbose: true
+
+      - name: Upload test results to Codecov root
+        if: ${{ !cancelled() }}
+        uses: codecov/test-results-action@v1
+        with:
+          fail_ci_if_error: true
+          #directory: /root/ansible_collections/cloudkrafter/nexus/tests/output/junit
+          files: ./tests/output/junit/*.xml
+          token: ${{ secrets.CODECOV_TOKEN }}
+          verbose: true
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v5
