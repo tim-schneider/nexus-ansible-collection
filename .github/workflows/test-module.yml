@@ -45,10 +45,42 @@ jobs:
           PY_COLORS: '1'
           ANSIBLE_FORCE_COLOR: '1'
 
-      - name: Run Download Module
+      - name: Generate code coverage report
+        run: |
+          cd /home/runner/.ansible/collections/ansible_collections/cloudkrafter/nexus
+          ansible-test coverage xml
+
+      - name: Upload test results to Codecov
+        if: ${{ !cancelled() }}
+        uses: codecov/test-results-action@v1
+        with:
+          fail_ci_if_error: true
+          directory: /home/runner/.ansible/collections/ansible_collections/cloudkrafter/nexus/tests/output/junit/
+          files: python3.12-modules-units.xml,python3.11-modules-units.xml,python3.10-modules-units.xml,python3.9-modules-units.xml,python3.8-modules-units.xml,python3.7-modules-units.xml
+          token: ${{ secrets.CODECOV_TOKEN }}
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          fail_ci_if_error: true
+          directory: /home/runner/.ansible/collections/ansible_collections/cloudkrafter/nexus/tests/output/
+          files: ./reports/coverage.xml
+          slug: CloudKrafter/nexus-ansible-collection
+          flags: unittests
+          token: ${{ secrets.CODECOV_TOKEN }}
+
+      - name: Run Download Module for latest
         run: |
           cd /home/runner/.ansible/collections/ansible_collections/cloudkrafter/nexus
           ANSIBLE_LIBRARY=./plugins/modules ansible -m download -a 'state=latest dest=/tmp/nexus.tar.gz' localhost
+        env:
+          PY_COLORS: '1'
+          ANSIBLE_FORCE_COLOR: '1'
+      
+      - name: Run Download Module for specific version
+        run: |
+          cd /home/runner/.ansible/collections/ansible_collections/cloudkrafter/nexus
+          ANSIBLE_LIBRARY=./plugins/modules ansible -m download -a 'state=present version=3.77.1-01 dest=/tmp/nexus.tar.gz' localhost
         env:
           PY_COLORS: '1'
           ANSIBLE_FORCE_COLOR: '1'
@@ -68,27 +100,3 @@ jobs:
         env:
           PY_COLORS: '1'
           ANSIBLE_FORCE_COLOR: '1'
-      
-      - name: Show code coverage
-        run: |
-          cd /home/runner/.ansible/collections/ansible_collections/cloudkrafter/nexus
-          ansible-test coverage xml
-
-      - name: Upload test results to Codecov
-        if: ${{ !cancelled() }}
-        uses: codecov/test-results-action@v1
-        with:
-          fail_ci_if_error: true
-          directory: /root/ansible_collections/cloudkrafter/nexus/tests/output/junit/
-          slug: CloudKrafter/nexus-ansible-collection
-          token: ${{ secrets.CODECOV_TOKEN }}
-
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v5
-        with:
-          fail_ci_if_error: true
-          directory: /home/runner/.ansible/collections/ansible_collections/cloudkrafter/nexus/tests/output/
-          files: ./reports/coverage.xml
-          slug: CloudKrafter/nexus-ansible-collection
-          flags: unittests
-          token: ${{ secrets.CODECOV_TOKEN }}
