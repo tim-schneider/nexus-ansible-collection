@@ -50,13 +50,11 @@ jobs:
           cd /home/runner/.ansible/collections/ansible_collections/cloudkrafter/nexus
           ansible-test coverage xml
 
-      - name: Show JUnit test results
-        run: |
-          cd /home/runner/.ansible/collections/ansible_collections/cloudkrafter/nexus/tests/output/junit/
-          ls -la
-          mv python3.12-modules-units.xml python3.12-modules.junit.xml
-          mv python3.11-modules-units.xml python3.11-modules.junit.xml
-          mv python3.10-modules-units.xml python3.10-modules.junit.xml
+      - uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: |
+            ~/.ansible/collections/ansible_collections/cloudkrafter/nexus/tests/output
 
       - name: Upload test results to Codecov
         if: ${{ !cancelled() }}
