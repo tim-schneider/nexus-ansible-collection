@@ -566,3 +566,36 @@ def test_get_download_url(mock_get_valid_urls):
         validate_certs=True
     )
     assert result == 'https://example.com/nexus-x86-64-3.78.0-01.tar.gz'
+
+    #################################
+    # Test single URL with no pattern match
+    #################################
+    mock_get_valid_urls.return_value = [
+        'https://example.com/nexus-special-3.78.0-01.tar.gz'  # URL doesn't match any pattern
+    ]
+
+    # Should return the single URL even though it doesn't match patterns
+    result = get_download_url(
+        state='present',
+        version='3.78.0-01',
+        arch='x86-64',
+        validate_certs=True
+    )
+    assert result == 'https://example.com/nexus-special-3.78.0-01.tar.gz'
+
+    #################################
+    # Test multiple URLs with no pattern matches
+    #################################
+    mock_get_valid_urls.return_value = [
+        'https://example.com/nexus-special-3.78.0-01.tar.gz',
+        'https://example.com/nexus-custom-3.78.0-01.tar.gz'
+    ]
+
+    # Should raise error when multiple URLs exist but none match patterns
+    with pytest.raises(ValueError, match="No valid download URLs found"):
+        get_download_url(
+            state='present',
+            version='3.78.0-01',
+            arch='x86-64',
+            validate_certs=True
+        )
