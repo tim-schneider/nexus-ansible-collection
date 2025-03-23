@@ -163,6 +163,72 @@ class TestNexusDownloadModule:
         with pytest.raises(Exception, match="Failed to fetch version from API"):
             get_latest_version(validate_certs=True)
 
+    @patch('ansible_collections.cloudkrafter.nexus.plugins.modules.download.download_file')
+    @patch('ansible_collections.cloudkrafter.nexus.plugins.modules.download.get_download_url')
+    @patch('ansible_collections.cloudkrafter.nexus.plugins.modules.download.get_latest_version')
+    @patch('ansible_collections.cloudkrafter.nexus.plugins.modules.download.AnsibleModule')
+    def test_main_check_mode(self, mock_module, mock_get_latest, mock_get_url, mock_download):
+        """Test main function check mode behavior"""
+        # Setup module mock with check mode
+        module_instance = setup_ansible_module_mock(mock_module)
+        module_instance.check_mode = True
+
+        # Reset and setup download mock
+        mock_download.reset_mock()
+        mock_download.return_value = (True, "File downloaded successfully", "/tmp/nexus.tar.gz", 200)
+
+        # Setup URL mock
+        mock_get_url.reset_mock()
+        mock_get_url.return_value = 'https://example.com/nexus-3.78.0-01-unix.tar.gz'
+
+        # Test check mode with non-existent file
+        with patch('os.path.exists') as mock_exists:
+            mock_exists.return_value = False
+            module_instance.params = {
+                'state': 'present',
+                'version': '3.78.0-01',
+                'dest': '/tmp',
+                'validate_certs': True,
+                'timeout': 30,
+                'arch': None,
+                'url': None
+            }
+
+            # Reset all call counts
+            mock_download.called = False
+            module_instance.exit_json.reset_mock()
+
+            main()
+
+            # Verify behavior when file doesn't exist
+            assert not mock_download.called, "download_file should not be called in check mode"
+            module_instance.exit_json.assert_called_once_with(
+                changed=True,
+                download_url='https://example.com/nexus-3.78.0-01-unix.tar.gz',
+                version='3.78.0-01',
+                destination='/tmp/nexus-3.78.0-01-unix.tar.gz',
+                status_code=None,
+                msg="File would be downloaded, if not in check mode"
+            )
+
+            # Test check mode with existing file
+            mock_exists.return_value = True
+            module_instance.exit_json.reset_mock()
+            mock_download.called = False
+
+            main()
+
+            # Verify behavior when file exists
+            assert not mock_download.called, "download_file should not be called in check mode"
+            module_instance.exit_json.assert_called_once_with(
+                changed=False,
+                download_url='https://example.com/nexus-3.78.0-01-unix.tar.gz',
+                version='3.78.0-01',
+                destination='/tmp/nexus-3.78.0-01-unix.tar.gz',
+                status_code=200,
+                msg="File already exists"
+            )
+
 
 @pytest.mark.parametrize('version,arch,java_version,expected', [
     (
@@ -364,45 +430,45 @@ def test_main(mock_module, mock_get_latest, mock_get_url, mock_download):
     )
 
     #################################
-    # Test check mode
+    # Test custom URL handling
     #################################
-    # Reset all mocks and module state
-    # module_instance.reset_mock()
-    # mock_download.reset_mock()
-    # mock_get_url.reset_mock()
-    # mock_get_latest.reset_mock()
+    module_instance.reset_mock()
+    mock_get_url.reset_mock()
+    mock_get_latest.reset_mock()
+    mock_download.reset_mock()  # Reset download mock before custom URL test
 
-    # # Set check mode and params
-    # module_instance.check_mode = True
-    # module_instance.params = {
-    #     'state': 'present',
-    #     'version': '3.78.0-01',
-    #     'dest': '/tmp',
-    #     'validate_certs': True,
-    #     'timeout': 30,
-    #     'arch': None
-    # }
+    # Setup mock for get_valid_download_urls
+    with patch('ansible_collections.cloudkrafter.nexus.plugins.modules.download.get_valid_download_urls') as mock_get_valid_urls:
+        # Test single URL case
+        mock_get_valid_urls.return_value = ['http://custom.example.com/nexus-3.78.0-01-unix.tar.gz']
+        module_instance.params = {
+            'state': 'present',
+            'version': '3.78.0-01',
+            'url': 'http://custom.example.com',
+            'dest': '/tmp',
+            'validate_certs': True,
+            'timeout': 30,
+            'arch': 'x86-64'
+        }
 
-    # # Set up return values for check mode
-    # mock_get_url.return_value = 'https://example.com/nexus-3.78.0-01-unix.tar.gz'
-    # mock_download.return_value = (True, "File downloaded successfully", "/tmp/nexus.tar.gz", 200)
+        main()
 
-    # # Clear any previous calls
-    # mock_download.called = False
+        # Verify correct URL handling
+        mock_get_valid_urls.assert_called_once_with(
+            '3.78.0-01',
+            arch='x86-64',
+            validate_certs=True,
+            base_url='http://custom.example.com/'
+        )
 
-    # # Run main in check mode
-    # main()
-
-    # # Verify check mode behavior
-    # assert not mock_download.called  # Download should not be called in check mode
-    # module_instance.exit_json.assert_called_with(
-    #     changed=True,  # Would be changed if not in check mode
-    #     download_url='https://example.com/nexus-3.78.0-01-unix.tar.gz',
-    #     version='3.78.0-01',
-    #     destination='/tmp/nexus-3.78.0-01-unix.tar.gz',
-    #     status_code=None,  # No status code in check mode
-    #     msg="File would be downloaded, if not in check mode"
-    # )
+        # Verify download was attempted with correct URL
+        assert mock_download.call_count == 1, "download_file should be called exactly once"
+        mock_download.assert_called_once_with(
+            module_instance,
+            'http://custom.example.com/nexus-3.78.0-01-unix.tar.gz',
+            '/tmp',
+            True
+        )
 
     #################################
     # Test URL with latest state

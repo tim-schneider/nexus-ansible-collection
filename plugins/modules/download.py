@@ -453,6 +453,7 @@ def main():
                 status_code=200 if file_exists else None,
                 msg="File would be downloaded, if not in check mode" if not file_exists else "File already exists"
             )
+            return
 
         # Perform the actual download
         changed, msg, destination, status_code = download_file(module, download_url, dest, validate_certs)
