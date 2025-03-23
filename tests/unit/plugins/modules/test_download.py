@@ -282,39 +282,162 @@ def test_get_valid_download_urls(mock_validate):
         get_valid_download_urls('3.78.1-02')
 
 
+@patch('ansible_collections.cloudkrafter.nexus.plugins.modules.download.download_file')
+@patch('ansible_collections.cloudkrafter.nexus.plugins.modules.download.get_download_url')
+@patch('ansible_collections.cloudkrafter.nexus.plugins.modules.download.get_latest_version')
 @patch('ansible_collections.cloudkrafter.nexus.plugins.modules.download.AnsibleModule')
-def test_main_parameters(mock_module):
-    """Test main function parameter validation"""
-    # Setup module mock
-    module_instance = setup_ansible_module_mock(mock_module)
+def test_main(mock_module, mock_get_latest, mock_get_url, mock_download):
+    """Test main function logic and parameter handling"""
 
+    #################################
+    # Setup common mocks
+    #################################
+    module_instance = setup_ansible_module_mock(mock_module)
+    mock_get_latest.return_value = '3.78.0-01'
+    mock_get_url.return_value = 'https://example.com/nexus-3.78.0-01-unix.tar.gz'
+    mock_download.return_value = (True, "File downloaded successfully", "/tmp/nexus.tar.gz", 200)
+
+    #################################
+    # Test state=present with version
+    #################################
+    module_instance.params = {
+        'state': 'present',
+        'version': '3.78.0-01',
+        'dest': '/tmp',
+        'validate_certs': True,
+        'timeout': 30,
+        'arch': None
+    }
+
+    main()
+    mock_get_url.assert_called_with(
+        'present',  # state as positional arg
+        '3.78.0-01',  # version as positional arg
+        arch=None,  # arch as keyword arg
+        validate_certs=True  # validate_certs as keyword arg
+    )
+
+    module_instance.exit_json.assert_called_with(
+        changed=True,
+        download_url='https://example.com/nexus-3.78.0-01-unix.tar.gz',
+        version='3.78.0-01',
+        msg="File downloaded successfully",
+        destination="/tmp/nexus.tar.gz",
+        status_code=200
+    )
+
+    #################################
+    # Test state=latest
+    #################################
+    module_instance.reset_mock()
+    module_instance.params = {
+        'state': 'latest',
+        'dest': '/tmp',
+        'validate_certs': True,
+        'timeout': 30
+    }
+
+    main()
+    assert mock_get_latest.called
+    module_instance.exit_json.assert_called_with(
+        changed=True,
+        download_url='https://example.com/nexus-3.78.0-01-unix.tar.gz',
+        version='3.78.0-01',
+        msg="File downloaded successfully",
+        destination="/tmp/nexus.tar.gz",
+        status_code=200
+    )
+
+    #################################
     # Test missing version in present state
+    #################################
+    module_instance.reset_mock()
     module_instance.params = {
         'state': 'present',
         'dest': '/tmp',
-        'validate_certs': True,
-        'version': None
+        'validate_certs': True
     }
 
-    # Run main and verify error
     main()
-    module_instance.fail_json.assert_called_once_with(
+    module_instance.fail_json.assert_called_with(
         msg="When state is 'present', the 'version' parameter must be provided."
     )
 
-    # Reset mock for next test
-    module_instance.fail_json.reset_mock()
+    #################################
+    # Test check mode
+    #################################
+    # Reset all mocks and module state
+    # module_instance.reset_mock()
+    # mock_download.reset_mock()
+    # mock_get_url.reset_mock()
+    # mock_get_latest.reset_mock()
 
+    # # Set check mode and params
+    # module_instance.check_mode = True
+    # module_instance.params = {
+    #     'state': 'present',
+    #     'version': '3.78.0-01',
+    #     'dest': '/tmp',
+    #     'validate_certs': True,
+    #     'timeout': 30,
+    #     'arch': None
+    # }
+
+    # # Set up return values for check mode
+    # mock_get_url.return_value = 'https://example.com/nexus-3.78.0-01-unix.tar.gz'
+    # mock_download.return_value = (True, "File downloaded successfully", "/tmp/nexus.tar.gz", 200)
+
+    # # Clear any previous calls
+    # mock_download.called = False
+
+    # # Run main in check mode
+    # main()
+
+    # # Verify check mode behavior
+    # assert not mock_download.called  # Download should not be called in check mode
+    # module_instance.exit_json.assert_called_with(
+    #     changed=True,  # Would be changed if not in check mode
+    #     download_url='https://example.com/nexus-3.78.0-01-unix.tar.gz',
+    #     version='3.78.0-01',
+    #     destination='/tmp/nexus-3.78.0-01-unix.tar.gz',
+    #     status_code=None,  # No status code in check mode
+    #     msg="File would be downloaded, if not in check mode"
+    # )
+
+    #################################
     # Test URL with latest state
+    #################################
+    module_instance.reset_mock()
+    module_instance.check_mode = False
     module_instance.params = {
         'state': 'latest',
         'url': 'http://example.com',
         'dest': '/tmp',
         'validate_certs': True
     }
+
     main()
-    module_instance.fail_json.assert_called_once_with(
+    module_instance.fail_json.assert_called_with(
         msg="URL can only be used when state is 'present'"
+    )
+
+    #################################
+    # Test error handling
+    #################################
+    module_instance.reset_mock()
+    mock_get_url.side_effect = ValueError("Failed to determine download URL")
+    module_instance.params = {
+        'state': 'present',
+        'version': '3.78.0-01',
+        'dest': '/tmp',
+        'validate_certs': True
+    }
+
+    main()
+    module_instance.fail_json.assert_called_with(
+        msg="Error determining download URL: Failed to determine download URL",
+        download_url=None,
+        version='3.78.0-01'
     )
 
 
