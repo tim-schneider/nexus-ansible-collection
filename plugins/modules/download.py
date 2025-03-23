@@ -382,6 +382,38 @@ def download_file(module, url, dest, validate_certs=True):
         module.fail_json(msg=f"Failed to write file: {str(e)}")
 
 
+def validate_parameters(module, state, version, url):
+    """
+    Validates module parameters in a specific order.
+    Returns (is_valid, error_message) tuple.
+    """
+    # Order of validation checks
+    validations = [
+        # URL state check
+        (
+            url and state != 'present',
+            "URL can only be used when state is 'present'"
+        ),
+        # URL version check
+        (
+            url and not version,
+            "Version must be provided when using a custom URL"
+        ),
+        # Present state version check
+        (
+            state == 'present' and not version,
+            "When state is 'present', the 'version' parameter must be provided."
+        )
+    ]
+
+    # Check each validation rule
+    for condition, message in validations:
+        if condition:
+            return False, message
+
+    return True, None
+
+
 def main():
     module_args = dict(
         state=dict(type='str', required=True, choices=['latest', 'present']),
@@ -404,17 +436,10 @@ def main():
     validate_certs = module.params['validate_certs']
 
     # Parameter validation
-    if state == 'present' and not version:
-        module.fail_json(msg="When state is 'present', the 'version' parameter must be provided.")
-        return  # Exit early after validation failure
-
-    if url and state != 'present':
-        module.fail_json(msg="URL can only be used when state is 'present'")
-        return  # Exit early after validation failure
-
-    if url and not version:
-        module.fail_json(msg="Version must be provided when using a custom URL")
-        return  # Exit early after validation failure
+    is_valid, error_message = validate_parameters(module, state, version, url)
+    if not is_valid:
+        module.fail_json(msg=error_message)
+        return
 
     # Initialize variables
     download_url = None

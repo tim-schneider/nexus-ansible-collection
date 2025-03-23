@@ -506,6 +506,83 @@ def test_main(mock_module, mock_get_latest, mock_get_url, mock_download):
         version='3.78.0-01'
     )
 
+    #################################
+    # Test missing version with custom URL
+    #################################
+    module_instance.reset_mock()
+    module_instance.params = {
+        'state': 'present',
+        'url': 'http://custom.example.com',  # Custom URL without version
+        'dest': '/tmp',
+        'validate_certs': True,
+        'timeout': 30,
+        'arch': None
+    }
+
+    main()
+    module_instance.fail_json.assert_called_with(
+        msg="Version must be provided when using a custom URL"
+    )
+
+    #################################
+    # Test download URL determination failure
+    #################################
+    module_instance.reset_mock()
+    mock_get_url.reset_mock()
+    mock_get_latest.reset_mock()
+
+    with patch('ansible_collections.cloudkrafter.nexus.plugins.modules.download.get_valid_download_urls') as mock_get_valid_urls:
+        # Setup to return no download URL
+        mock_get_valid_urls.return_value = []
+        module_instance.params = {
+            'state': 'present',
+            'version': '3.78.0-01',
+            'url': 'http://custom.example.com',
+            'dest': '/tmp',
+            'validate_certs': True,
+            'timeout': 30,
+            'arch': 'x86-64'
+        }
+
+        main()
+
+        # Verify error handling when no download URL is found
+        module_instance.fail_json.assert_called_with(
+            msg="Error determining download URL: Failed to determine download URL",
+            download_url=None,
+            version='3.78.0-01'
+        )
+
+    #################################
+    # Test generic exception handling
+    #################################
+    module_instance.reset_mock()
+    mock_get_url.reset_mock()
+    mock_get_latest.reset_mock()
+    mock_download.reset_mock()
+
+    # Setup module parameters
+    module_instance.params = {
+        'state': 'present',
+        'version': '3.78.0-01',
+        'dest': '/tmp',
+        'validate_certs': True,
+        'timeout': 30,
+        'arch': None
+    }
+
+    # Simulate a generic exception
+    mock_get_latest.side_effect = Exception("Unexpected error occurred")
+
+    main()
+
+    # Verify error handling
+    module_instance.fail_json.assert_called_with(
+        msg="Error determining download URL: Failed to determine download URL",
+        download_url=None,
+        version='3.78.0-01'
+    )
+
 
 @patch('ansible_collections.cloudkrafter.nexus.plugins.modules.download.os')
 @patch('ansible_collections.cloudkrafter.nexus.plugins.modules.download.fetch_url')
