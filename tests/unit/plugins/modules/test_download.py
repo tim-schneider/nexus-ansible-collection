@@ -19,16 +19,22 @@ from ansible_collections.cloudkrafter.nexus.plugins.modules.download import (
 
 
 @pytest.mark.parametrize('version,expected', [
-    ('3.78.0-01', True),
-    ('3.78.1-02', True),
-    ('3.0.0-01', True),
-    ('3.78.0', False),
-    ('3.78-01', False),
-    ('3.78.0.1-01', False),
-    ('3.78.0-1', True),
-    ('invalid', False),
-    ('', False),
-    (None, False),
+    ('3.78.0-01', True),        # Valid version
+    ('3.78.1-02', True),        # Valid version
+    ('3.0.0-01', True),         # Valid version
+    ('3.78.0', False),          # Missing build number
+    ('3.78-01', False),         # Missing minor version
+    ('3.78.0.1-01', False),     # Extra version number
+    ('3.78.0-1', True),         # Single digit build number
+    ('invalid', False),         # Invalid version
+    ('', False),                # Empty string
+    (None, False),              # None value
+    (123, False),               # Integer
+    (3.78, False),              # Float
+    ([], False),                # List
+    ({}, False),                # Dictionary
+    (True, False),              # Boolean
+    (b'3.78.0-01', False),      # Bytes
 ])
 def test_is_valid_version(version, expected):
     """Test version string validation"""
@@ -63,6 +69,11 @@ class TestNexusDownloadModule:
     @patch('ansible_collections.cloudkrafter.nexus.plugins.modules.download.open_url')
     def test_get_latest_version(self, mock_open_url):
         """Test getting latest version from GitHub API"""
+
+        #################################
+        # Test case for succesful response
+        #################################
+
         # Setup mock response
         mock_response = MagicMock()
         mock_response.code = 200
@@ -77,6 +88,72 @@ class TestNexusDownloadModule:
             validate_certs=True,
             headers={'Accept': 'application/json'}
         )
+
+        #################################
+        # Test case for empty release name
+        #################################
+
+        # Reset mock for empty response test
+        mock_open_url.reset_mock()
+        mock_empty_response = MagicMock()
+        mock_empty_response.code = 200
+        mock_empty_response.read.return_value = b'{"name": ""}'  # Empty name
+        mock_open_url.return_value = mock_empty_response
+
+        # Test empty release name
+        with pytest.raises(Exception, match="Failed to fetch version from API: No release found in API response"):
+            get_latest_version(validate_certs=True)
+
+        # Reset mock for missing name field test
+        mock_open_url.reset_mock()
+        mock_missing_name_response = MagicMock()
+        mock_missing_name_response.code = 200
+        mock_missing_name_response.read.return_value = b'{}'  # Missing name field
+        mock_open_url.return_value = mock_missing_name_response
+
+        # Test missing name field
+        with pytest.raises(Exception, match="Failed to fetch version from API: No release found in API response"):
+            get_latest_version(validate_certs=True)
+
+        #################################
+        # Test case for invalid version in response
+        #################################
+
+        # Reset mock for invalid version format test
+        mock_open_url.reset_mock()
+        mock_invalid_version_response = MagicMock()
+        mock_invalid_version_response.code = 200
+        mock_invalid_version_response.read.return_value = b'{"name": "release-invalid"}'  # Invalid version format
+        mock_open_url.return_value = mock_invalid_version_response
+
+        # Test invalid version format
+        with pytest.raises(Exception, match="Failed to fetch version from API: Invalid version format: invalid"):
+            get_latest_version(validate_certs=True)
+
+        # Reset mock for non-release version format test
+        mock_open_url.reset_mock()
+        mock_non_release_response = MagicMock()
+        mock_non_release_response.code = 200
+        mock_non_release_response.read.return_value = b'{"name": "non-release-3.78.0-01"}'  # Wrong prefix
+        mock_open_url.return_value = mock_non_release_response
+
+        # Test non-release version format
+        with pytest.raises(Exception, match="Failed to fetch version from API: Invalid version format: non-release-3.78.0-01"):
+            get_latest_version(validate_certs=True)
+
+        #################################
+        # Test case for API non-200 status code
+        #################################
+
+        # Reset mock for API error test (non-200 status code)
+        mock_open_url.reset_mock()
+        mock_error_response = MagicMock()
+        mock_error_response.code = 403
+        mock_open_url.return_value = mock_error_response
+
+        # Test API error with non-200 status code
+        with pytest.raises(Exception, match="Failed to fetch version from API: API request failed with status code: 403"):
+            get_latest_version(validate_certs=True)
 
         # Reset mock for error test
         mock_open_url.reset_mock()
@@ -292,6 +369,32 @@ def test_download_file(mock_fetch, mock_os, tmp_path):
     with pytest.raises(Exception) as exc:
         download_file(module, url, dest)
     assert "Download failed" in str(exc.value)
+
+    # Reset mocks for write failure test
+    mock_os.reset_mock()
+    mock_fetch.reset_mock()
+    mock_os.path.exists.side_effect = [False, False]  # File and dir don't exist
+    mock_response = MagicMock()
+    mock_response.read.return_value = b"test content"
+    mock_fetch.return_value = (mock_response, {'status': 200})
+
+    # Reset module mock for write failure test
+    module = MagicMock()
+    module.params = {'timeout': 30}
+    module.fail_json = MagicMock()
+
+    # Mock open to raise an IOError when writing
+    mock_open = MagicMock()
+    mock_open.side_effect = IOError("Permission denied")
+
+    with patch('builtins.open', mock_open):
+        # Test file write failure
+        download_file(module, url, dest)
+
+        # Verify fail_json was called with correct message
+        module.fail_json.assert_called_once_with(
+            msg="Failed to write file: Permission denied"
+        )
 
 
 def test_get_dest_path():
