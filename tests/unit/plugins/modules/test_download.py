@@ -369,3 +369,97 @@ def test_error_handling(mock_get_valid_urls, mock_validate, mock_open_url):
     # Test get_download_url with missing version in present state
     with pytest.raises(ValueError, match="Version must be provided"):
         get_download_url(state='present')
+
+
+@patch('ansible_collections.cloudkrafter.nexus.plugins.modules.download.get_valid_download_urls')
+def test_get_download_url(mock_get_valid_urls):
+    """Test URL resolution in get_download_url function"""
+
+    #################################
+    # Test successful case with single URL
+    #################################
+    mock_get_valid_urls.return_value = ['https://example.com/nexus-3.78.0-01-unix.tar.gz']
+
+    result = get_download_url(
+        state='present',
+        version='3.78.0-01',
+        arch='x86-64',
+        validate_certs=True
+    )
+    assert result == 'https://example.com/nexus-3.78.0-01-unix.tar.gz'
+
+    #################################
+    # Test multiple URLs with pattern matching
+    #################################
+    mock_get_valid_urls.return_value = [
+        'https://example.com/nexus-x86-64-3.78.0-01.tar.gz',
+        'https://example.com/nexus-3.78.0-01-unix.tar.gz',
+        'https://example.com/nexus-unix-3.78.0-01.tar.gz'
+    ]
+
+    result = get_download_url(
+        state='present',
+        version='3.78.0-01',
+        arch='x86-64',
+        validate_certs=True
+    )
+    assert result == 'https://example.com/nexus-x86-64-3.78.0-01.tar.gz'
+
+    #################################
+    # Test multiple matches error
+    #################################
+    mock_get_valid_urls.return_value = [
+        'https://example.com/nexus-x86-64-3.78.0-01.tar.gz',
+        'https://mirror.example.com/nexus-x86-64-3.78.0-01.tar.gz'
+    ]
+
+    with pytest.raises(ValueError, match="Multiple matches found for pattern"):
+        get_download_url(
+            state='present',
+            version='3.78.0-01',
+            arch='x86-64',
+            validate_certs=True
+        )
+
+    #################################
+    # Test no valid URLs found
+    #################################
+    mock_get_valid_urls.return_value = []
+
+    with pytest.raises(ValueError, match="No valid download URLs found"):
+        get_download_url(
+            state='present',
+            version='3.78.0-01',
+            validate_certs=True
+        )
+
+    #################################
+    # Test custom base URL
+    #################################
+    mock_get_valid_urls.return_value = ['https://custom.example.com/nexus-3.78.0-01-unix.tar.gz']
+
+    result = get_download_url(
+        state='present',
+        version='3.78.0-01',
+        base_url='https://custom.example.com/',
+        validate_certs=True
+    )
+    assert result == 'https://custom.example.com/nexus-3.78.0-01-unix.tar.gz'
+
+    #################################
+    # Test URL pattern preference order
+    #################################
+    mock_get_valid_urls.return_value = [
+        'https://example.com/nexus-unix-3.78.0-01.tar.gz',
+        'https://example.com/nexus-3.78.0-01-unix.tar.gz',
+        'https://example.com/nexus-x86-64-3.78.0-01.tar.gz'
+    ]
+
+    # Should prefer arch-specific URL
+    result = get_download_url(
+        state='present',
+        version='3.78.0-01',
+        arch='x86-64',
+        validate_certs=True
+    )
+    assert result == 'https://example.com/nexus-x86-64-3.78.0-01.tar.gz'
