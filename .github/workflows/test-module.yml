@@ -119,3 +119,19 @@ jobs:
         env:
           PY_COLORS: '1'
           ANSIBLE_FORCE_COLOR: '1'
+
+      - name: Run playbook in check mode (Idempotance check)
+        run: |
+          cd /home/runner/work/nexus-ansible-collection/nexus-ansible-collection
+          PYTHONPATH=$PWD ANSIBLE_LIBRARY=$PWD/plugins/modules ansible-playbook tests/local_test.yml --check
+        env:
+          PY_COLORS: '1'
+          ANSIBLE_FORCE_COLOR: '1'
+
+      - name: Run playbook (Idempotance check)
+        run: |
+          cd /home/runner/work/nexus-ansible-collection/nexus-ansible-collection
+          PYTHONPATH=$PWD ANSIBLE_LIBRARY=$PWD/plugins/modules ansible-playbook tests/local_test.yml
+        env:
+          PY_COLORS: '1'
+          ANSIBLE_FORCE_COLOR: '1'
