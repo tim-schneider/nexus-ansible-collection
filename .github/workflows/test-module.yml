@@ -2,6 +2,9 @@ name: Module Test
 
 on:
   push:
+  pull_request:
+    types:
+      - review_requested
   workflow_dispatch:
 
 jobs:

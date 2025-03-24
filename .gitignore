@@ -10,3 +10,4 @@
 **/*.lic
 target/
 **/nexus-data
+.ansible/
