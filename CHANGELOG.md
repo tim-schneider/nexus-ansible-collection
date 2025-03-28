@@ -1,4 +1,18 @@
 # Changelog
+## [1.21.0] - 2025-03-28
+
+### Changed
+- **nexus_oss role** Ensure nexus.rc task is idempotent by @Thulium-Drake in https://github.com/CloudKrafter/nexus-ansible-collection/pull/42
+
+### Added
+- **nexus_oss role** Added a task to accept the Nexus Community EULA by @Thulium-Drake in https://github.com/CloudKrafter/nexus-ansible-collection/pull/43
+- **nexus_oss role** Added task to configure SSL truststore by @Thulium-Drake in https://github.com/CloudKrafter/nexus-ansible-collection/pull/42
+- **module** RAW component module by @brianveltman in https://github.com/CloudKrafter/nexus-ansible-collection/pull/44
+
+### Fixed
+- **nexus_oss role** check SSL truststore content before configuring LDAP servers by @Thulium-Drake in https://github.com/CloudKrafter/nexus-ansible-collection/pull/42
+
+
 ## [1.20.0] - 2025-03-21
 
 ## BREAKING CHANGE WHEN USING POSTGRES!
