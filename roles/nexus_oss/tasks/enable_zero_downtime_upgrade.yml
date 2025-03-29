@@ -116,6 +116,7 @@
     validate_certs: "{{ nexus_api_validate_certs }}"
   register: __nexus_db_migration_status__
   until: >-
+    __nexus_db_migration_status__.json['state'] == "MIGRATION_NOT_REQUIRED" or
     __nexus_db_migration_status__.json['state'] == "MIGRATION_SUCCEED" or
     __nexus_db_migration_status__.json['state'] == "MIGRATION_FAILED" or
     __nexus_db_migration_status__.json['state'] == "MIGRATION_FAILED_RETRYABLE"
