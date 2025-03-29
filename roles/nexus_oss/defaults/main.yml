@@ -132,6 +132,8 @@ nexus_audit_enabled: false
 # Enable/disable log4j visualizer
 nexus_log4j_visualizer_enabled: false
 
+nexus_ssl_truststore: []
+
 # email server
 nexus_email_server_enabled: false
 nexus_email_server_host: localhost
