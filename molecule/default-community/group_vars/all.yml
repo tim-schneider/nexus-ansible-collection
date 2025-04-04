@@ -159,7 +159,9 @@ nexus_security_realms:
   - DockerToken
   - LdapRealm
   - NpmToken
-# - rutauth-realm # Broken in COMMUNITY edition since NXRM 3.78.x
+# - rutauth-realm
+# TODO: Enable rutauth-realm once fixed in NXRM Community
+# Broken since NXRM 3.78.x
 
 nexus_blobstores:
   - name: default
