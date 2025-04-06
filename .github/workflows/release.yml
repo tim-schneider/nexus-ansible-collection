@@ -4,6 +4,12 @@ name: Publish new version to Galaxy
 on:
   release:
     types: [released]
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: 'Tag to release'
+        required: true
+        type: string
 
 permissions:
   contents: read
@@ -15,14 +21,14 @@ jobs:
       - name: checkout
         uses: actions/checkout@v4.2.2
         with:
-          ref: ${{ github.event.release.tag_name }}
+          ref: ${{ github.event.release.tag_name || github.event.inputs.release_tag }}
 
       - name: Update version in galaxy.yml
         run: |
           # Remove 'v' prefix if present in tag name
-          VERSION=$(echo ${{ github.event.release.tag_name }} | sed 's/^v//')
-          # Update version in galaxy.yml
-          sed -i '' "s/^version: .*/version: $VERSION/" galaxy.yml
+            VERSION=$(echo ${{ github.event.release.tag_name || github.event.inputs.release_tag }} | sed 's/^v//')
+          # Update version in galaxy.yml (Linux syntax)
+          sed -i "s/^version: .*/version: $VERSION/" galaxy.yml
 
       - name: Set up Python 3.
         uses: actions/setup-python@v5
