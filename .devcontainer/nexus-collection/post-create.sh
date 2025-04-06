@@ -7,6 +7,8 @@ python_version=$(python --version | cut -d " " -f 2)
 echo "export python_version=$python_version" >> /etc/profile
 
 # Create and activate a Python virtual environment
-echo "Creating Python virtual environment for Python $python_version"
-python3 -m venv .venv-$python_version
-source .venv-$python_version/bin/activate
+echo "Creating UV virtual environment for Python $python_version"
+curl -LsSf https://astral.sh/uv/install.sh | sh
+echo 'eval "$(uv generate-shell-completion bash)"' >> ~/.bashrc
+source ~/.bashrc
+uv sync --frozen
