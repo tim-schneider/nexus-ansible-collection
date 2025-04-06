@@ -24,10 +24,26 @@
           ansible.builtin.include_role:
             name: cloudkrafter.nexus.config_api
             tasks_from: license-api.yml
+        
+        - name: Get Nexus container name
+          community.docker.docker_host_info:
+            containers: true
+          register: nexus_container_info
+
+        - name: Set Nexus container name
+          ansible.builtin.set_fact:
+            nexus_container_name: >-
+              {{
+                nexus_container_info.containers |
+                selectattr('Image', 'defined') |
+                selectattr('Image', 'search', 'sonatype/nexus') |
+                map(attribute='Id') |
+                first
+              }}
 
         - name: Restart Nexus container
           community.docker.docker_container:
-            name: nexus3-pro
+            name: "{{ nexus_container_name }}"
             state: started
             restart: true
           changed_when: false # just to pass idempotence check
