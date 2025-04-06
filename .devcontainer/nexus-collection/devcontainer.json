@@ -60,23 +60,14 @@
 	},
 	"portsAttributes": {
 		"8081": {
-			"label": "Nexus OSS",
+			"label": "Nexus COMMUNITY",
 			"protocol": "http",
 			"onAutoForward": "notify"
-		},
-		"9081": {
-			"label": "Nexus Pro (Postgres)",
-			"protocol": "http",
-			"onAutoForward": "notify"
-		},
-		"5432": {
-			"label": "Postgres",
-			"onAutoForward": "ignore"
 		}
 	},
-	"mounts": [
-		"source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind"
-	],
+	// "mounts": [
+	// 	"source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind"
+	// ],
 	// Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
 	"remoteUser": "root"
 }
