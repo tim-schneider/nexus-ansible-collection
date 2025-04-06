@@ -2,12 +2,11 @@
 name: Publish new version to Galaxy
 
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - galaxy.yml
-  workflow_dispatch:
+  release:
+    types: [released]
+
+permissions:
+  contents: read
 
 jobs:
   build:
@@ -15,6 +14,16 @@ jobs:
     steps:
       - name: checkout
         uses: actions/checkout@v4.2.2
+        with:
+          ref: ${{ github.event.release.tag_name }}
+
+      - name: Update version in galaxy.yml
+        run: |
+          # Remove 'v' prefix if present in tag name
+          VERSION=$(echo ${{ github.event.release.tag_name }} | sed 's/^v//')
+          # Update version in galaxy.yml
+          sed -i '' "s/^version: .*/version: $VERSION/" galaxy.yml
+
       - name: Set up Python 3.
         uses: actions/setup-python@v5
         with:
@@ -25,5 +34,6 @@ jobs:
 
       - name: Build collection
         run: ansible-galaxy collection build
-      - name: Trigger a new import on Galaxy.
+
+      - name: Publish to Galaxy.
         run: ansible-galaxy collection publish cloudkrafter-nexus-*.tar.gz --token ${{ secrets.GALAXY_API_KEY }}
