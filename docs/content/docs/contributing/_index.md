@@ -77,6 +77,27 @@ If working with an environment variable is not an option, you can provide the ba
 
 Coming soon
 
+## Running tests
+
+```bash
+# Install local collection
+$ uv run  ansible-galaxy collection install . --force
+# Change dir to collection
+cd /root/.ansible/collections/ansible_collections/cloudkrafter/nexus
+# Sanity & Unit tests
+$ uv run ansible-test sanity plugins/modules/ plugins/module_utils/ tests/
+$ uv run ansible-test units --docker default --coverage
+
+# Molecule tests
+# Needs to run from workspace dir /workspaces/nexus-ansible-collection
+cd /workspaces/nexus-ansible-collection
+# Define Nexus version to test with (default-community is a Molecule scenario that uses the Sonatype/nexus3 container, not suitable for testing nexus_oss role changes!)
+NEXUS_VERSION=3.79.0 uv run molecule converge -s default-community
+
+# Use default-rockylinux9 to test nexus_oss role changes.
+uv run molecule converge -s default-rockylinux9
+```
+
 ## Some guidelines to comply with desired-state-config principles
 
 This role aims to identify changes to singular items. That can be a single repository, LDAP server, routing rule, cleanup policy etc..
