@@ -497,7 +497,7 @@ def test_main(mock_module, mock_get_latest, mock_get_url, mock_download):
 
     main()
     module_instance.fail_json.assert_called_with(
-        msg="When state is 'present', the 'version' parameter must be provided."
+        msg="When state is 'present', the 'version' parameter must be provided unless URL points directly to a .tar.gz file."
     )
 
     #################################
@@ -593,7 +593,7 @@ def test_main(mock_module, mock_get_latest, mock_get_url, mock_download):
 
     main()
     module_instance.fail_json.assert_called_with(
-        msg="Version must be provided when using a custom URL"
+        msg="Version must be provided when using a custom URL that doesn't point directly to a .tar.gz file"
     )
 
     #################################
@@ -943,3 +943,127 @@ def test_get_download_url(mock_get_valid_urls):
             arch='x86-64',
             validate_certs=True
         )
+
+
+@patch('ansible_collections.cloudkrafter.nexus.plugins.modules.download.download_file')
+@patch('ansible_collections.cloudkrafter.nexus.plugins.modules.download.validate_download_url')
+@patch('ansible_collections.cloudkrafter.nexus.plugins.modules.download.AnsibleModule')
+def test_direct_url_download(mock_module, mock_validate, mock_download):
+    """Test direct URL download functionality"""
+    # Setup module mock
+    module_instance = setup_ansible_module_mock(mock_module)
+
+    # Setup validation mock to return success
+    mock_validate.return_value = (True, 200)
+
+    # Setup download mock
+    mock_download.return_value = (
+        True, "File downloaded successfully", "/tmp/custom-nexus.tar.gz", 200)
+
+    #################################
+    # Test direct .tar.gz URL
+    #################################
+    module_instance.params = {
+        'state': 'present',
+        'url': 'https://custom-server.com/path/nexus-3.78.0-01-unix.tar.gz',
+        'dest': '/tmp',
+        'validate_certs': True,
+        'timeout': 30
+    }
+
+    main()
+
+    # Verify URL was validated
+    mock_validate.assert_called_with(
+        'https://custom-server.com/path/nexus-3.78.0-01-unix.tar.gz',
+        True
+    )
+
+    # Verify direct URL was used (no URL resolution needed)
+    mock_download.assert_called_with(
+        module_instance,
+        'https://custom-server.com/path/nexus-3.78.0-01-unix.tar.gz',
+        '/tmp',
+        True
+    )
+
+    # Verify version was extracted from filename
+    module_instance.exit_json.assert_called_with(
+        changed=True,
+        download_url='https://custom-server.com/path/nexus-3.78.0-01-unix.tar.gz',
+        version='3.78.0-01',  # Extracted from filename
+        msg="File downloaded successfully",
+        destination="/tmp/custom-nexus.tar.gz",
+        status_code=200
+    )
+
+    #################################
+    # Test custom .tar.gz URL without extractable version
+    #################################
+    module_instance.reset_mock()
+    mock_validate.reset_mock()
+    mock_download.reset_mock()
+
+    # Setup for custom filename without version
+    module_instance.params = {
+        'state': 'present',
+        'url': 'https://custom-server.com/path/custom-nexus.tar.gz',
+        'dest': '/tmp',
+        'validate_certs': True,
+        'timeout': 30
+    }
+
+    main()
+
+    # Verify version is set to "custom" when not extractable
+    module_instance.exit_json.assert_called_with(
+        changed=True,
+        download_url='https://custom-server.com/path/custom-nexus.tar.gz',
+        version='custom',  # Default when version not extractable
+        msg="File downloaded successfully",
+        destination="/tmp/custom-nexus.tar.gz",
+        status_code=200
+    )
+
+    #################################
+    # Test direct URL validation failure
+    #################################
+    module_instance.reset_mock()
+    mock_validate.reset_mock()
+    mock_download.reset_mock()
+
+    # Setup for URL validation failure
+    mock_validate.return_value = (False, 404)
+    module_instance.params = {
+        'state': 'present',
+        'url': 'https://custom-server.com/path/nonexistent.tar.gz',
+        'dest': '/tmp',
+        'validate_certs': True,
+        'timeout': 30
+    }
+
+    main()
+
+    # Verify failure handling
+    module_instance.fail_json.assert_called_with(
+        msg="Error determining download URL: The provided URL https://custom-server.com/path/nonexistent.tar.gz is not accessible",
+        download_url='https://custom-server.com/path/nonexistent.tar.gz',
+        version=None
+    )
+
+    #################################
+    # Test direct URL with latest state (should fail)
+    #################################
+    module_instance.reset_mock()
+    module_instance.params = {
+        'state': 'latest',
+        'url': 'https://custom-server.com/path/nexus.tar.gz',
+        'dest': '/tmp',
+        'validate_certs': True
+    }
+
+    main()
+
+    module_instance.fail_json.assert_called_with(
+        msg="URL can only be used when state is 'present'"
+    )

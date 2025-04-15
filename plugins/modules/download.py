@@ -39,7 +39,10 @@ options:
   url:
     description:
       - Custom base URL to download Nexus from.
+      - If the URL ends with '.tar.gz', it will be used directly as the download URL.
+      - Otherwise, it will be used as a base URL to find package files.
       - Can only be used when state is 'present' and version is defined.
+      - Version parameter is required if URL doesn't end with '.tar.gz'.
     required: false
     type: str
   dest:
@@ -85,6 +88,13 @@ EXAMPLES = '''
     dest: /path/to/download/dir
     validate_certs: false
     arch: aarch64
+
+- name: Download from a direct URL
+  cloudkrafter.nexus.download:
+    state: present
+    url: https://example.com/nexus-3.78.0-01-unix.tar.gz
+    dest: /path/to/download/dir
+    validate_certs: true
 
 - name: Download from a custom URL
   cloudkrafter.nexus.download:
@@ -420,6 +430,9 @@ def validate_parameters(module, state, version, url):
     Validates module parameters in a specific order.
     Returns (is_valid, error_message) tuple.
     """
+    # Direct URL to .tar.gz file check
+    is_direct_url = url and url.lower().endswith('.tar.gz')
+
     # Order of validation checks
     validations = [
         # URL state check
@@ -429,13 +442,13 @@ def validate_parameters(module, state, version, url):
         ),
         # URL version check
         (
-            url and not version,
-            "Version must be provided when using a custom URL"
+            url and not is_direct_url and not version,
+            "Version must be provided when using a custom URL that doesn't point directly to a .tar.gz file"
         ),
         # Present state version check
         (
-            state == 'present' and not version,
-            "When state is 'present', the 'version' parameter must be provided."
+            state == 'present' and not version and not is_direct_url,
+            "When state is 'present', the 'version' parameter must be provided unless URL points directly to a .tar.gz file."
         )
     ]
 
@@ -480,15 +493,32 @@ def main():
 
     try:
         if url:
-            base_url = url.rstrip('/') + '/'
-            actual_version = version  # We know version is set when url is used
-            valid_urls = get_valid_download_urls(
-                actual_version, arch=arch, validate_certs=validate_certs, base_url=base_url)
-            if len(valid_urls) == 1:
-                download_url = valid_urls[0]
+            if url.lower().endswith('.tar.gz'):
+                # Direct URL to a .tar.gz file
+                download_url = url
+
+                # Validate that the URL exists
+                is_valid, status_code = validate_download_url(download_url, validate_certs)
+                if not is_valid:
+                    raise ValueError(f"The provided URL {download_url} is not accessible")
+
+                # Try to extract version from filename or use 'custom'
+                filename = url.split('/')[-1]
+                version_match = re.search(r'nexus-.*?(\d+\.\d+\.\d+-\d+)', filename)
+                if version_match:
+                    actual_version = version_match.group(1)
+                else:
+                    actual_version = "custom"
             else:
-                download_url = get_download_url(
-                    state, actual_version, arch=arch, validate_certs=validate_certs, base_url=base_url)
+                base_url = url.rstrip('/') + '/'
+                actual_version = version  # We know version is set when url is used
+                valid_urls = get_valid_download_urls(
+                    actual_version, arch=arch, validate_certs=validate_certs, base_url=base_url)
+                if len(valid_urls) == 1:
+                    download_url = valid_urls[0]
+                else:
+                    download_url = get_download_url(
+                        state, actual_version, arch=arch, validate_certs=validate_certs, base_url=base_url)
         else:
             # For non-custom URLs, get latest version if needed
             actual_version = version if state == 'present' else get_latest_version(
