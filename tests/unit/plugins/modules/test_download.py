@@ -975,7 +975,7 @@ def test_direct_url_download(mock_module, mock_validate, mock_download):
 
     # Verify URL was validated
     mock_validate.assert_called_with(
-        'https://custom-server.com/path/nexus-3.78.0-01-unix.tar.gz', 
+        'https://custom-server.com/path/nexus-3.78.0-01-unix.tar.gz',
         True
     )
 
@@ -992,6 +992,34 @@ def test_direct_url_download(mock_module, mock_validate, mock_download):
         changed=True,
         download_url='https://custom-server.com/path/nexus-3.78.0-01-unix.tar.gz',
         version='3.78.0-01',  # Extracted from filename
+        msg="File downloaded successfully",
+        destination="/tmp/custom-nexus.tar.gz",
+        status_code=200
+    )
+
+    #################################
+    # Test custom .tar.gz URL without extractable version
+    #################################
+    module_instance.reset_mock()
+    mock_validate.reset_mock()
+    mock_download.reset_mock()
+
+    # Setup for custom filename without version
+    module_instance.params = {
+        'state': 'present',
+        'url': 'https://custom-server.com/path/custom-nexus.tar.gz',
+        'dest': '/tmp',
+        'validate_certs': True,
+        'timeout': 30
+    }
+
+    main()
+
+    # Verify version is set to "custom" when not extractable
+    module_instance.exit_json.assert_called_with(
+        changed=True,
+        download_url='https://custom-server.com/path/custom-nexus.tar.gz',
+        version='custom',  # Default when version not extractable
         msg="File downloaded successfully",
         destination="/tmp/custom-nexus.tar.gz",
         status_code=200
