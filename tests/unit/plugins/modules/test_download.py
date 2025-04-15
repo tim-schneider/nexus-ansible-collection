@@ -497,7 +497,7 @@ def test_main(mock_module, mock_get_latest, mock_get_url, mock_download):
 
     main()
     module_instance.fail_json.assert_called_with(
-        msg="When state is 'present', the 'version' parameter must be provided."
+        msg="When state is 'present', the 'version' parameter must be provided unless URL points directly to a .tar.gz file."
     )
 
     #################################
@@ -593,7 +593,7 @@ def test_main(mock_module, mock_get_latest, mock_get_url, mock_download):
 
     main()
     module_instance.fail_json.assert_called_with(
-        msg="Version must be provided when using a custom URL"
+        msg="Version must be provided when using a custom URL that doesn't point directly to a .tar.gz file"
     )
 
     #################################
