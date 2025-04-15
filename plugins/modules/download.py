@@ -504,10 +504,9 @@ def main():
 
                 # Try to extract version from filename or use 'custom'
                 filename = url.split('/')[-1]
-                if 'nexus-' in filename and '.tar.gz' in filename:
-                    # Try to extract version using regex
-                    version_match = re.search(r'nexus-.*?-(\d+\.\d+\.\d+-\d+)[-.]', filename)
-                    actual_version = version_match.group(1) if version_match else "custom"
+                version_match = re.search(r'nexus-.*?(\d+\.\d+\.\d+-\d+)', filename)
+                if version_match:
+                    actual_version = version_match.group(1)
                 else:
                     actual_version = "custom"
             else:
