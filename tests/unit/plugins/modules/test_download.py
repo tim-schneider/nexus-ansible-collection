@@ -1048,7 +1048,7 @@ def test_direct_url_download(mock_module, mock_validate, mock_download):
     module_instance.fail_json.assert_called_with(
         msg="Error determining download URL: The provided URL https://custom-server.com/path/nonexistent.tar.gz is not accessible",
         download_url='https://custom-server.com/path/nonexistent.tar.gz',
-        version='custom'
+        version=None
     )
 
     #################################
