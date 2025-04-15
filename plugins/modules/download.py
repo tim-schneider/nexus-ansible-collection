@@ -256,20 +256,26 @@ def get_possible_package_names(version, arch=None, java_version=None):
     if arch:
         variants.extend([
             f"nexus-unix-{arch}-{version}.tar.gz",
+            f"nexus-linux-{arch}-{version}.tar.gz",
             f"nexus-{arch}-unix-{version}.tar.gz",
+            f"nexus-{arch}-linux-{version}.tar.gz",
         ])
 
     # Java version variants (medium priority)
     if java_version:
         variants.extend([
             f"nexus-unix-{version}-{java_version}.tar.gz",
+            f"nexus-linux-{version}-{java_version}.tar.gz",
             f"nexus-{version}-unix-{java_version}.tar.gz",
+            f"nexus-{version}-linux-{java_version}.tar.gz",
         ])
 
     # Base names (lowest priority)
     base_names = [
         f"nexus-{version}-unix.tar.gz",
-        f"nexus-unix-{version}.tar.gz"
+        f"nexus-{version}-linux.tar.gz",
+        f"nexus-unix-{version}.tar.gz",
+        f"nexus-linux-{version}.tar.gz"
     ]
 
     # Return all variants in order of priority
@@ -282,8 +288,8 @@ def get_download_url(state, version=None, arch=None, base_url=None, validate_cer
 
     The URL is selected based on the following precedence:
     1. Architecture-specific package (nexus-{arch}-{version}.tar.gz)
-    2. Standard unix package (nexus-{version}-unix.tar.gz)
-    3. Alternative unix package (nexus-unix-{version}.tar.gz)
+    2. Standard linux/unix package (nexus-{version}-linux.tar.gz or nexus-{version}-unix.tar.gz)
+    3. Alternative unix package (nexus-linux-{version}.tar.gz or nexus-unix-{version}.tar.gz)
     4. Java version specific package (nexus-{version}-{java_version}-unix.tar.gz)
 
     Args:
@@ -319,9 +325,9 @@ def get_download_url(state, version=None, arch=None, base_url=None, validate_cer
         # Define URL patterns in order of precedence
         patterns = [
             rf"nexus-{arch}-.*?{version}\.tar\.gz$" if arch else None,
-            rf"nexus-{version}-unix\.tar\.gz$",
-            rf"nexus-unix-{version}\.tar\.gz$",
-            rf"nexus-{version}-.*?-unix\.tar\.gz$"
+            rf"nexus-{version}-(linux|unix)\.tar\.gz$",
+            rf"nexus-(linux|unix)-{version}\.tar\.gz$",
+            rf"nexus-{version}-.*?-(linux|unix)\.tar\.gz$"
         ]
 
         # Filter out None patterns
