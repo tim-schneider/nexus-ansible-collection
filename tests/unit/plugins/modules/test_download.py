@@ -42,6 +42,29 @@ def test_is_valid_version(version, expected):
     assert result == expected
 
 
+@pytest.mark.parametrize('arch_input,expected_variants', [
+    ('x86-64', ['x86-64', 'x86_64']),
+    ('x86_64', ['x86_64', 'x86-64']),
+    ('aarch64', ['aarch64', 'aarch_64']),
+    ('aarch_64', ['aarch_64', 'aarch64']),
+    ('arm64', ['arm64']),  # Non-standard arch should have just one variant
+])
+def test_architecture_variants(arch_input, expected_variants):
+    """Test that architecture variants are properly handled"""
+    result = get_possible_package_names('3.78.0-01', arch=arch_input)
+
+    # Check that package names for all expected variants are generated
+    for variant in expected_variants:
+        assert any(variant in name for name in result), f"Missing {variant} in result"
+
+    # Make sure we have the specific packages we test for in other tests
+    # For example, check for linux-x86_64 pattern when x86_64 is an expected variant
+    if 'x86_64' in expected_variants:
+        assert any('linux-x86_64' in name for name in result)
+    if 'x86-64' in expected_variants:
+        assert any('linux-x86-64' in name for name in result)
+
+
 def setup_ansible_module_mock(mock_module, params=None):
     """Helper to setup common AnsibleModule mock attributes"""
     mock_instance = MagicMock()
@@ -240,7 +263,9 @@ class TestNexusDownloadModule:
         None,
         [
             'nexus-3.78.0-01-unix.tar.gz',
-            'nexus-unix-3.78.0-01.tar.gz'
+            'nexus-3.78.0-01-linux.tar.gz',
+            'nexus-unix-3.78.0-01.tar.gz',
+            'nexus-linux-3.78.0-01.tar.gz'
         ]
     ),
     (
@@ -248,10 +273,25 @@ class TestNexusDownloadModule:
         'aarch64',
         None,
         [
+            # aarch64 variants
+            'nexus-3.78.0-01-linux-aarch64.tar.gz',
+            'nexus-3.78.0-01-aarch64-linux.tar.gz',
+            'nexus-aarch64-linux-3.78.0-01.tar.gz',
+            'nexus-linux-aarch64-3.78.0-01.tar.gz',
             'nexus-unix-aarch64-3.78.0-01.tar.gz',
             'nexus-aarch64-unix-3.78.0-01.tar.gz',
+            # aarch_64 variants
+            'nexus-3.78.0-01-linux-aarch_64.tar.gz',
+            'nexus-3.78.0-01-aarch_64-linux.tar.gz',
+            'nexus-aarch_64-linux-3.78.0-01.tar.gz',
+            'nexus-linux-aarch_64-3.78.0-01.tar.gz',
+            'nexus-unix-aarch_64-3.78.0-01.tar.gz',
+            'nexus-aarch_64-unix-3.78.0-01.tar.gz',
+            # Base names without arch or java version
             'nexus-3.78.0-01-unix.tar.gz',
-            'nexus-unix-3.78.0-01.tar.gz'
+            'nexus-3.78.0-01-linux.tar.gz',
+            'nexus-unix-3.78.0-01.tar.gz',
+            'nexus-linux-3.78.0-01.tar.gz'
         ]
     ),
     (
@@ -260,9 +300,13 @@ class TestNexusDownloadModule:
         'java11',
         [
             'nexus-unix-3.78.0-01-java11.tar.gz',
+            'nexus-linux-3.78.0-01-java11.tar.gz',
             'nexus-3.78.0-01-unix-java11.tar.gz',
+            'nexus-3.78.0-01-linux-java11.tar.gz',
             'nexus-3.78.0-01-unix.tar.gz',
-            'nexus-unix-3.78.0-01.tar.gz'
+            'nexus-3.78.0-01-linux.tar.gz',
+            'nexus-unix-3.78.0-01.tar.gz',
+            'nexus-linux-3.78.0-01.tar.gz'
         ]
     ),
     (
@@ -270,12 +314,30 @@ class TestNexusDownloadModule:
         'aarch64',
         'java11',
         [
+            # aarch64 and aarch_64 variants
+            'nexus-3.78.0-01-linux-aarch64.tar.gz',
+            'nexus-3.78.0-01-aarch64-linux.tar.gz',
+            'nexus-aarch64-linux-3.78.0-01.tar.gz',
+            'nexus-linux-aarch64-3.78.0-01.tar.gz',
             'nexus-unix-aarch64-3.78.0-01.tar.gz',
             'nexus-aarch64-unix-3.78.0-01.tar.gz',
+            # aarch_64 variants
+            'nexus-3.78.0-01-linux-aarch_64.tar.gz',
+            'nexus-3.78.0-01-aarch_64-linux.tar.gz',
+            'nexus-aarch_64-linux-3.78.0-01.tar.gz',
+            'nexus-linux-aarch_64-3.78.0-01.tar.gz',
+            'nexus-unix-aarch_64-3.78.0-01.tar.gz',
+            'nexus-aarch_64-unix-3.78.0-01.tar.gz',
+            # Java version variants
             'nexus-unix-3.78.0-01-java11.tar.gz',
+            'nexus-linux-3.78.0-01-java11.tar.gz',
             'nexus-3.78.0-01-unix-java11.tar.gz',
+            'nexus-3.78.0-01-linux-java11.tar.gz',
+            # Base names without arch or java version
             'nexus-3.78.0-01-unix.tar.gz',
-            'nexus-unix-3.78.0-01.tar.gz'
+            'nexus-3.78.0-01-linux.tar.gz',
+            'nexus-unix-3.78.0-01.tar.gz',
+            'nexus-linux-3.78.0-01.tar.gz'
         ]
     ),
 ])
@@ -325,22 +387,24 @@ def test_validate_download_url(mock_open_url):
 def test_get_valid_download_urls(mock_validate):
     """Test getting valid download URLs by checking headers"""
     # Setup mock responses for different URLs
-    mock_validate.side_effect = [
-        (True, 200),   # First URL is valid
-        (False, 404),  # Second URL is invalid
-        (True, 200),   # Third URL is valid
-        (False, 404),  # Fourth URL is invalid
-    ]
+    def side_effect_func(url, *args, **kwargs):
+        # Return True for specific patterns, False for others
+        if "aarch64" in url or "aarch_64" in url:
+            return (True, 200)
+        return (False, 404)
+
+    mock_validate.side_effect = side_effect_func
 
     # Test successful case
     base_url = "https://download.sonatype.com/nexus/3/"
     result = get_valid_download_urls(
-        '3.78.1-02', arch='aarch64', base_url=base_url)
+        '3.78.1-02', arch='aarch64', base_url=base_url, validate_certs=True)
 
     # Verify we got valid URLs
-    assert len(result) == 2
+    assert len(result) > 0
     assert all(url.startswith(base_url) for url in result)
     assert all('3.78.1-02' in url for url in result)
+    assert any('aarch64' in url or 'aarch_64' in url for url in result)
 
     # Test invalid version
     mock_validate.reset_mock()
@@ -349,7 +413,7 @@ def test_get_valid_download_urls(mock_validate):
 
     # Test when no valid URLs found
     mock_validate.reset_mock()
-    mock_validate.side_effect = [(False, 404)] * 10  # All URLs return 404
+    mock_validate.side_effect = lambda url, *args, **kwargs: (False, 404)  # All URLs return 404
     with pytest.raises(ValueError, match="No valid download URLs found"):
         get_valid_download_urls('3.78.1-02')
 

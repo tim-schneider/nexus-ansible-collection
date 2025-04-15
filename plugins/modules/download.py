@@ -254,12 +254,32 @@ def get_possible_package_names(version, arch=None, java_version=None):
 
     # Architecture variants (highest priority)
     if arch:
-        variants.extend([
-            f"nexus-unix-{arch}-{version}.tar.gz",
-            f"nexus-linux-{arch}-{version}.tar.gz",
-            f"nexus-{arch}-unix-{version}.tar.gz",
-            f"nexus-{arch}-linux-{version}.tar.gz",
-        ])
+        # Handle arch format variants (x86-64 vs x86_64, aarch64 vs aarch_64)
+        arch_variants = []
+
+        # Original provided arch
+        arch_variants.append(arch)
+
+        # Add alternative format if using common architectures
+        if arch == 'x86-64':
+            arch_variants.append('x86_64')
+        elif arch == 'x86_64':
+            arch_variants.append('x86-64')
+        elif arch == 'aarch64':
+            arch_variants.append('aarch_64')
+        elif arch == 'aarch_64':
+            arch_variants.append('aarch64')
+
+        # Generate patterns for all architecture variants
+        for arch_var in arch_variants:
+            variants.extend([
+                f"nexus-{version}-linux-{arch_var}.tar.gz",
+                f"nexus-{version}-{arch_var}-linux.tar.gz",
+                f"nexus-{arch_var}-linux-{version}.tar.gz",
+                f"nexus-linux-{arch_var}-{version}.tar.gz",
+                f"nexus-unix-{arch_var}-{version}.tar.gz",
+                f"nexus-{arch_var}-unix-{version}.tar.gz",
+            ])
 
     # Java version variants (medium priority)
     if java_version:
